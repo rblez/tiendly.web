@@ -15,16 +15,17 @@
 	let deleteError = $state('');
 
 	async function confirmDelete() {
-		if (!deleteTarget || !auth.session) return;
+		const target = deleteTarget;
+		if (!target || !auth.session) return;
 		deleting = true;
 		deleteError = '';
-		const { error: err } = await supabase.from('stores').delete().eq('id', deleteTarget.id);
+		const { error: err } = await supabase.from('stores').delete().eq('id', target.id);
 		deleting = false;
 		if (err) {
 			deleteError = err.message;
 			return;
 		}
-		stores = stores.filter((s) => s.id !== deleteTarget.id);
+		stores = stores.filter((s) => s.id !== target.id);
 		deleteTarget = null;
 	}
 
