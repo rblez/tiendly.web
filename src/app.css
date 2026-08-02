@@ -24,8 +24,6 @@
 	--color-body: #a0a0a0;
 	--color-muted: #707070;
 	--color-muted-soft: #505050;
-	--color-ember: var(--accent);
-	--color-ember-active: var(--accent-active);
 	--color-card: #111111;
 	--color-error: #ef4444;
 	--color-success: #22c55e;
@@ -38,6 +36,11 @@
 	--radius-btn: 8px;
 	--radius-card: 12px;
 	--radius-pill: 9999px;
+}
+
+@theme inline {
+	--color-ember: var(--accent);
+	--color-ember-active: var(--accent-active);
 }
 
 body {
