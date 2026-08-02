@@ -148,6 +148,7 @@ export type Database = {
           slug: string
           social: Json
           theme_color: string
+          visits: number
           whatsapp: string | null
         }
         Insert: {
@@ -161,6 +162,7 @@ export type Database = {
           slug: string
           social?: Json
           theme_color?: string
+          visits?: number
           whatsapp?: string | null
         }
         Update: {
@@ -174,6 +176,7 @@ export type Database = {
           slug?: string
           social?: Json
           theme_color?: string
+          visits?: number
           whatsapp?: string | null
         }
         Relationships: [
@@ -191,6 +194,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_store_visit: { Args: { p_slug: string }; Returns: number }
       is_store_owner: { Args: { store_id: string }; Returns: boolean }
     }
     Enums: {

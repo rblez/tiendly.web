@@ -679,6 +679,11 @@ async function duplicateProduct(p: Product) {
 						</span>
 						En vivo
 					</span>
+					<span class="text-[10px] font-medium text-muted flex items-center gap-1 ml-1">
+						<i class="ri-eye-line"></i>
+						<span class="tabular-nums">{store.visits ?? 0}</span>
+						visitas
+					</span>
 				</div>
 			<div class="flex items-center gap-2">
 				<button

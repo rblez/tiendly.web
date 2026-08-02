@@ -62,6 +62,7 @@ export interface Store {
 	description: string | null;
 	active: boolean;
 	created_at: string;
+	visits?: number;
 	social?: StoreSocial;
 }
 

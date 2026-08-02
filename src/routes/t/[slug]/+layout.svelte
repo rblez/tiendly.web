@@ -11,6 +11,17 @@
 
 	let store = $state(data.store);
 
+	$effect(() => {
+		try {
+			const key = `tiendly-visited-${store.slug}`;
+			if (sessionStorage.getItem(key)) return;
+			sessionStorage.setItem(key, '1');
+			fetch(`/api/track-visit/${store.slug}`, { method: 'POST' }).catch(() => {});
+		} catch {
+			// privado: no se registra la visita
+		}
+	});
+
 	onMount(() => {
 		const channel = supabase
 			.channel(`store-layout-${data.store.id}`)
