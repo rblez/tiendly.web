@@ -33,6 +33,10 @@
 			<p class="text-sm text-muted max-w-md">
 				Crea tu tienda online y compártela en minutos. Sin tarjetas, sin complicaciones.
 			</p>
+			<div class="flex items-center gap-4 text-xs">
+				<a href="/precios" class="text-body hover:text-ember transition-colors no-underline">Planes y precios</a>
+				<a href="/crear" class="text-body hover:text-ember transition-colors no-underline">Crear mi tienda</a>
+			</div>
 			<p class="text-xs text-muted-soft">&copy; {new Date().getFullYear()} Tiendly. Todos los derechos reservados.</p>
 		{/if}
 	</div>
