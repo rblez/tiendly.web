@@ -21,25 +21,41 @@ import QRCode from 'qrcode';
 	let unreadOrders = $state(0);
 	let statusModalOrder = $state<Order | null>(null);
 
+	type NotifPrefs = { sound: boolean; browser: boolean; badge: boolean };
+
+	function getNotifPrefs(): NotifPrefs {
+		const defaults: NotifPrefs = { sound: true, browser: true, badge: true };
+		try {
+			const raw = localStorage.getItem('tiendly-notif-prefs');
+			if (!raw) return defaults;
+			return { ...defaults, ...(JSON.parse(raw) as Partial<NotifPrefs>) };
+		} catch {
+			return defaults;
+		}
+	}
+
 	function notifyNewOrder(customerName: string | null) {
+		const { sound, browser } = getNotifPrefs();
 		const name = customerName ?? 'un cliente';
 		const text = `Nuevo pedido de ${name}`;
-		const audioCtx = new AudioContext();
-		const now = audioCtx.currentTime;
-		const notes = [880, 1108.73];
-		for (let i = 0; i < notes.length; i++) {
-			const osc = audioCtx.createOscillator();
-			const gain = audioCtx.createGain();
-			osc.type = 'sine';
-			osc.frequency.value = notes[i];
-			gain.gain.setValueAtTime(0.0001, now + i * 0.18);
-			gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.18 + 0.02);
-			gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.18 + 0.16);
-			osc.connect(gain).connect(audioCtx.destination);
-			osc.start(now + i * 0.18);
-			osc.stop(now + i * 0.18 + 0.2);
+		if (sound) {
+			const audioCtx = new AudioContext();
+			const now = audioCtx.currentTime;
+			const notes = [880, 1108.73];
+			for (let i = 0; i < notes.length; i++) {
+				const osc = audioCtx.createOscillator();
+				const gain = audioCtx.createGain();
+				osc.type = 'sine';
+				osc.frequency.value = notes[i];
+				gain.gain.setValueAtTime(0.0001, now + i * 0.18);
+				gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.18 + 0.02);
+				gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.18 + 0.16);
+				osc.connect(gain).connect(audioCtx.destination);
+				osc.start(now + i * 0.18);
+				osc.stop(now + i * 0.18 + 0.2);
+			}
 		}
-		if ('Notification' in window && Notification.permission === 'granted') {
+		if (browser && 'Notification' in window && Notification.permission === 'granted') {
 			new Notification('Tiendly', { body: text });
 		}
 	}
@@ -405,7 +421,7 @@ import QRCode from 'qrcode';
 				{ event: 'INSERT', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
 				(payload) => {
 					const row = payload.new as Partial<Order>;
-					unreadOrders += 1;
+					if (getNotifPrefs().badge) unreadOrders += 1;
 					notifyNewOrder(row.customer_name ?? null);
 					loadOrders(true);
 				},
