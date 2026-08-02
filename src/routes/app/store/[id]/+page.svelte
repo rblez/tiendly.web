@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
+	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
@@ -262,9 +263,9 @@
 		})) ?? [];
 	}
 
-	async function loadOrders() {
+	async function loadOrders(silent = false) {
 		if (!editingStoreId) return;
-		ordersLoading = true;
+		if (!silent) ordersLoading = true;
 		const { data } = await supabase
 			.from('orders')
 			.select('*')
@@ -276,6 +277,26 @@
 		})) ?? [];
 		ordersLoading = false;
 	}
+
+	onMount(() => {
+		if (!editingStoreId) return;
+		const channel = supabase
+			.channel(`store-realtime-${editingStoreId}`)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
+				() => loadOrders(true),
+			)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'products', filter: `store_id=eq.${editingStoreId}` },
+				() => reloadProducts(),
+			)
+			.subscribe();
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	});
 
 	const ORDER_STATUSES = [
 		{ value: 'nuevo', label: 'Nuevo', cls: 'bg-ember/15 text-ember' },
@@ -521,7 +542,7 @@
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
 				<p class="text-sm text-muted">Pedidos recibidos. Contacta al cliente por WhatsApp.</p>
 				<button
-					onclick={loadOrders}
+					onclick={() => loadOrders()}
 					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
 				>
 					<i class="ri-refresh-line"></i>
