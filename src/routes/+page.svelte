@@ -7,6 +7,35 @@
 	import { auth } from '$lib/stores/auth.svelte';
 
 	$effect(() => { auth.init(); });
+
+	let openFaq = $state<string | null>(null);
+
+	const faqs = [
+		{
+			q: '¿Qué es Tiendly?',
+			a: 'Es una plataforma para crear tu tienda online en minutos: agregas tus productos y los clientes hacen pedidos que te llegan directo a tu WhatsApp.',
+		},
+		{
+			q: '¿Cuánto cuesta?',
+			a: 'Empezar es gratis y sin tarjeta. Cuando quieras crecer, hay planes Pro y Premium con más tiendas y productos, con precios en USD que se pagan en cripto (USDT).',
+		},
+		{
+			q: '¿Necesito saber programar?',
+			a: 'No. Creas tu tienda con un asistente de 4 pasos: nombre, productos, color y tu WhatsApp. Lista para compartir.',
+		},
+		{
+			q: '¿Cómo recibo los pedidos?',
+			a: 'Cada pedido llega como mensaje de WhatsApp con el detalle de productos, cantidades y datos del cliente. Tú lo confirmas y acuerdan la entrega.',
+		},
+		{
+			q: '¿Puedo tener más de una tienda?',
+			a: 'El plan Free incluye 1 tienda. Con Pro puedes tener hasta 5 y con Premium hasta 15.',
+		},
+		{
+			q: '¿Cómo se pagan los planes?',
+			a: 'Los precios están en USD y el pago se hace en criptomonedas (USDT). Al elegir un plan recibes la dirección de pago e instrucciones.',
+		},
+	];
 </script>
 
 <svelte:head>
