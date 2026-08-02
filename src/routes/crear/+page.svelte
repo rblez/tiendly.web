@@ -4,6 +4,7 @@
 	import { auth } from '$lib/stores/auth.svelte';
 	import { slugify, uploadImage } from '$lib/utils';
 	import { saveDraft } from '$lib/storeDraft';
+	import { PLAN_MAP } from '$lib/plans';
 
 	type WizardProduct = { name: string; price: string; category: string };
 
@@ -76,7 +77,8 @@
 	}
 
 	function addProduct() {
-		if (products.length < 10) {
+		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 10) : 10;
+		if (products.length < limit) {
 			products = [...products, { name: '', price: '', category: 'General' }];
 		}
 	}

@@ -8,6 +8,7 @@ import { supabase } from '$lib/supabase/client';
 	import { formatPrice, productImage, slugify, storeUrl, uploadImage, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
+import { PLAN_MAP } from '$lib/plans';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
 
@@ -83,6 +84,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let productError = $state('');
 	let pickerCurrencyOpen = $state(false);
 	let pickerCategoryOpen = $state(false);
+	let atProductLimit = $state(false);
 
 	// Settings form
 	let settings = $state({
@@ -194,6 +196,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	});
 
 	function openNewProduct() {
+		const limit = PLAN_MAP[auth.plan]?.limitProducts ?? 10;
+		const atLimit = products.length >= limit;
 		productModalOpen = true;
 		editingId = null;
 		formName = '';
@@ -206,7 +210,10 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		formActive = true;
 		formVariants = '';
 		formImages = [];
-		productError = '';
+		productError = atLimit
+			? `Límite del plan ${PLAN_MAP[auth.plan].name}: máximo ${limit} productos. Mejora tu plan para agregar más.`
+			: '';
+		atProductLimit = atLimit;
 	}
 
 	function openEditProduct(p: Product) {
@@ -286,6 +293,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 
 	function closeProductModal() {
 		productModalOpen = false;
+		atProductLimit = false;
 		editingId = null;
 	}
 
@@ -1008,6 +1016,22 @@ async function duplicateProduct(p: Product) {
 						</button>
 					</div>
 					<div class="p-5 sm:p-6 space-y-4">
+						{#if atProductLimit}
+							<div class="text-center py-10">
+								<div class="w-14 h-14 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
+									<i class="ri-star-line text-2xl text-ember"></i>
+								</div>
+								<h4 class="font-bold text-ink mb-1">Límite de productos alcanzado</h4>
+								<p class="text-sm text-body mb-6">{productError}</p>
+								<a
+									href="/app"
+									class="inline-flex items-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+								>
+									<i class="ri-arrow-left-line"></i>
+									Ver planes
+								</a>
+							</div>
+						{:else}
 						<div>
 							<label for="p-name" class="block text-sm font-medium text-body mb-1.5">Nombre *</label>
 							<input
@@ -1137,6 +1161,7 @@ async function duplicateProduct(p: Product) {
 						>
 							{formSaving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Agregar producto'}
 						</button>
+						{/if}
 					</div>
 				</div>
 			</div>

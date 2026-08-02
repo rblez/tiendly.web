@@ -90,7 +90,7 @@
 				</span>
 				<div class="text-left">
 					<p class="font-bold text-ink">Estás en el plan Free</p>
-					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Pro para crear tiendas ilimitadas.</p>
+					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Pro o Premium para más tiendas y productos.</p>
 				</div>
 			</div>
 			<span class="inline-flex items-center gap-1.5 text-sm font-medium text-ember flex-shrink-0 mt-1">
@@ -188,22 +188,22 @@
 					<i class="ri-close-line text-xl"></i>
 				</button>
 				<h2 class="text-xl font-bold text-ink mb-1">Elige tu plan</h2>
-				<p class="text-sm text-muted mb-6">Pagos en USDT · próximamente</p>
+				<p class="text-sm text-muted mb-6">Precios en USD · pago en cripto (USDT) · próximamente</p>
 
-				<div class="grid gap-4 sm:grid-cols-2">
+				<div class="grid gap-4 sm:grid-cols-3">
 					{#each PLANS as p}
-						<div class={`border rounded-card p-5 ${p.id === plan.id ? 'border-ember border-2' : 'border-hairline'}`}>
+						<div class={`border rounded-card p-5 flex flex-col ${p.id === plan.id ? 'border-ember border-2' : 'border-hairline'}`}>
 							<div class="flex items-center justify-between mb-1">
 								<h3 class="font-bold text-ink">{p.name}</h3>
 								{#if p.id === plan.id}
 									<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5">Actual</span>
-								{:else}
-									<span class="text-[10px] font-bold bg-ember text-white rounded-full px-2 py-0.5">Pro</span>
+								{:else if p.id === 'premium'}
+									<span class="text-[10px] font-bold bg-ember text-white rounded-full px-2 py-0.5">Top</span>
 								{/if}
 							</div>
 							<p class="text-2xl font-black text-ink mb-1">{p.priceLabel}</p>
 							<p class="text-xs text-muted mb-4">{p.tagline}</p>
-							<ul class="space-y-1.5 mb-5">
+							<ul class="space-y-1.5 mb-5 flex-1">
 								{#each p.features as feat}
 									<li class="text-xs text-body flex items-start gap-1.5">
 										<i class="ri-check-line text-ember mt-0.5 flex-shrink-0"></i>
@@ -211,13 +211,13 @@
 									</li>
 								{/each}
 							</ul>
-							{#if p.id === 'pro'}
-								<a
-									href="/crear?plan=pro"
-									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+							{#if p.id !== 'free'}
+								<span
+									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium no-underline opacity-90"
 								>
+									<i class="ri-currency-line"></i>
 									Próximamente
-								</a>
+								</span>
 							{/if}
 						</div>
 					{/each}
@@ -225,7 +225,7 @@
 
 				<p class="text-xs text-muted-soft mt-5 flex items-center gap-1.5">
 					<i class="ri-gift-line"></i>
-					Al suscribirte a Pro soportas el desarrollo de Tiendly.
+					Al suscribirte a un plan de pago soportas el desarrollo de Tiendly.
 				</p>
 			</div>
 		</div>

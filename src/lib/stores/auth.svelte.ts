@@ -2,15 +2,15 @@ import { supabase } from '$lib/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import type { PlanId } from '$lib/plans';
 
-let session = $state<Session | null>(null);
-let plan = $state<PlanId>('free');
-let ready = $state(false);
-let initialized = false;
+	let session = $state<Session | null>(null);
+	let plan = $state<PlanId>('free');
+	let ready = $state(false);
+	let initialized = false;
 
-async function loadProfile(userId: string) {
-	const { data } = await supabase.from('profiles').select('plan').eq('id', userId).maybeSingle();
-	if (data && (data.plan === 'free' || data.plan === 'pro')) plan = data.plan;
-}
+	async function loadProfile(userId: string) {
+		const { data } = await supabase.from('profiles').select('plan').eq('id', userId).maybeSingle();
+		if (data && (data.plan === 'free' || data.plan === 'pro' || data.plan === 'premium')) plan = data.plan;
+	}
 
 function init() {
 	if (initialized) return;
