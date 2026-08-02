@@ -66,7 +66,7 @@
 			<p class="text-body">
 				Tu pedido fue enviado a
 				<span class="font-semibold text-ink">{data.store.name}</span>
-				por WhatsApp. Ellos te contactarán para confirmar la entrega.
+				por WhatsApp. Te contactarán pronto para confirmar la entrega.
 			</p>
 		</div>
 

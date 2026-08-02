@@ -187,11 +187,11 @@
 </script>
 
 <svelte:head>
-	<title>Checkout | {data.store.name}</title>
+	<title>Completar pedido | {data.store.name}</title>
 </svelte:head>
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
-	<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-10">Checkout</h1>
+	<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-10">Completar tu pedido</h1>
 
 	{#if cartEmpty && !cacheReady}
 		<div class="flex items-center justify-center py-20">
@@ -199,7 +199,9 @@
 		</div>
 	{:else if cartEmpty}
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
-			<p class="text-lg text-muted mb-6">Tu carrito está vacío</p>
+			<i class="ri-shopping-bag-line text-3xl text-muted-soft mb-4 block"></i>
+			<p class="text-lg text-muted mb-2">Tu carrito está vacío</p>
+			<p class="text-sm text-muted-soft mb-6">Agrega productos al carrito y vuelve aquí para completar tu pedido.</p>
 			<a
 				href={`/@${data.store.slug}`}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
@@ -211,6 +213,7 @@
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
 			<i class="ri-store-2-line text-3xl text-muted-soft mb-4 block"></i>
 			<p class="text-lg text-muted mb-2">Esta tienda aún no configura cómo recibir pedidos</p>
+			<p class="text-sm text-muted-soft mb-6">Vuelve más tarde o contacta a la tienda por otro medio.</p>
 			<a
 				href={`/@${data.store.slug}`}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"

@@ -728,7 +728,7 @@ async function duplicateProduct(p: Product) {
 						<i class="ri-shopping-bag-line text-2xl text-ember"></i>
 					</div>
 					<p class="text-body mb-1">Aún no tienes productos</p>
-					<p class="text-xs text-muted-soft mb-5">Agrega tu primer producto para llenar tu tienda.</p>
+					<p class="text-xs text-muted-soft mb-5">Agrega tu primer producto y empieza a recibir pedidos.</p>
 					<button onclick={openNewProduct} class="bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer">
 						Agregar producto
 					</button>

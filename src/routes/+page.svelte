@@ -52,9 +52,14 @@
 					Mi cuenta
 				</a>
 			{:else}
-				<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline">
-					Iniciar sesión
-				</a>
+				<div class="flex items-center gap-4">
+					<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline">
+						Iniciar sesión
+					</a>
+					<a href="/wizard" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
+						Comenzar gratis
+					</a>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -81,8 +86,8 @@
 			<a href={'/wizard'} class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 				Crear mi tienda gratis
 			</a>
-			<a href={auth.session ? '/app' : '/login'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
-				Ver una tienda de ejemplo
+			<a href={auth.session ? '/app' : '/pricing'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
+				Ver los planes
 			</a>
 		</div>
 		<div class="hidden md:flex justify-end max-w-2xl mx-auto mt-2">
@@ -101,7 +106,7 @@
 				<span class="text-3xl text-ember/70 rotate-3">1</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Regístrate</h3>
-			<p class="text-sm text-body leading-relaxed">Crea tu cuenta gratis con tu correo. Solo toma un minuto.</p>
+			<p class="text-sm text-body leading-relaxed">Crea tu cuenta gratis con tu correo. Solo toma un minuto y no necesitas tarjeta.</p>
 		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:rotate-1">
 			<div class="flex items-center justify-between mb-4">
@@ -121,7 +126,7 @@
 				<span class="text-3xl text-ember/70 rotate-2">3</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Comparte tu tienda</h3>
-			<p class="text-sm text-body leading-relaxed">Recibe pedidos directo en tu WhatsApp. Sin comisiones.</p>
+			<p class="text-sm text-body leading-relaxed">Recibe pedidos directo en tu WhatsApp. Sin comisiones y sin pasarelas de pago.</p>
 		</div>
 	</div>
 
