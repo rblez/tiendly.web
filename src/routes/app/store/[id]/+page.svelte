@@ -211,9 +211,44 @@ import QRCode from 'qrcode';
 			images: Array.isArray(p.images) ? p.images : [],
 		})) ?? [];
 		await loadOrders();
+		await loadVisitChart();
 		loading = false;
 		})();
 	});
+
+	type VisitDay = { label: string; visits: number };
+
+	let visitChart = $state<VisitDay[]>([]);
+	let visitMax = $state(1);
+
+	async function loadVisitChart() {
+		if (!editingStoreId) return;
+		const days = 7;
+		const from = new Date();
+		from.setDate(from.getDate() - days + 1);
+		const fromStr = from.toISOString().slice(0, 10);
+
+		const { data: rows } = await supabase
+			.from('store_visits')
+			.select('visit_date, visits')
+			.eq('store_id', editingStoreId)
+			.gte('visit_date', fromStr)
+			.order('visit_date', { ascending: true });
+
+		const byDate = new Map<string, number>();
+		for (const r of rows ?? []) byDate.set(r.visit_date, r.visits);
+
+		const today = new Date();
+		const chart: VisitDay[] = [];
+		for (let i = 0; i < days; i++) {
+			const d = new Date(today);
+			d.setDate(today.getDate() - (days - 1 - i));
+			const key = d.toISOString().slice(0, 10);
+			chart.push({ label: key.slice(5), visits: byDate.get(key) ?? 0 });
+		}
+		visitChart = chart;
+		visitMax = Math.max(1, ...chart.map((c) => c.visits));
+	}
 
 	function openNewProduct() {
 		const limit = PLAN_MAP[auth.plan]?.limitProducts ?? 10;
@@ -640,6 +675,30 @@ async function duplicateProduct(p: Product) {
 		</div>
 
 		{#if tab === 'productos'}
+			<div class="bg-card border border-hairline rounded-card p-5 mb-6">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-sm font-semibold text-ink flex items-center gap-2">
+						<i class="ri-bar-chart-line text-ember"></i>
+						Visitas · últimos 7 días
+					</h2>
+					<span class="text-2xl font-black text-ink tabular-nums">{visitChart.reduce((s, d) => s + d.visits, 0)}</span>
+				</div>
+				<div class="flex items-end gap-1.5 h-28">
+					{#each visitChart as day}
+						<div class="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+							<span class="text-[9px] text-muted-soft tabular-nums">{day.visits > 0 ? day.visits : ''}</span>
+							<div class="w-full bg-bone rounded-t-md overflow-hidden flex items-end" style="height:100%">
+								<div
+									class="w-full bg-gradient-to-t from-ember to-ember/60 transition-all duration-500"
+									style="height:{Math.max(4, (day.visits / visitMax) * 100)}%"
+								></div>
+							</div>
+							<span class="text-[9px] text-muted-soft">{day.label}</span>
+						</div>
+					{/each}
+				</div>
+			</div>
+
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
 				<p class="text-sm text-muted">Agrega y edita los productos de tu catálogo.</p>
 				<button

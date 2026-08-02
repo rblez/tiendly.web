@@ -192,6 +192,35 @@ export type Database = {
           },
         ]
       }
+      store_visits: {
+        Row: {
+          id: string
+          store_id: string
+          visit_date: string
+          visits: number
+        }
+        Insert: {
+          id?: string
+          store_id: string
+          visit_date?: string
+          visits?: number
+        }
+        Update: {
+          id?: string
+          store_id?: string
+          visit_date?: string
+          visits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_visits_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
