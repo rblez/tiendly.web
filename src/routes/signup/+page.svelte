@@ -2,6 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/components/Logo.svelte';
+	import { loadDraft, clearDraft, createStoreFromDraft } from '$lib/storeDraft';
 
 	let name = $state('');
 	let email = $state('');
@@ -9,6 +10,21 @@
 	let error = $state('');
 	let info = $state('');
 	let loading = $state(false);
+
+	async function afterAuth(userId: string) {
+		const draft = loadDraft();
+		if (draft) {
+			clearDraft();
+			try {
+				const storeId = await createStoreFromDraft(draft, userId);
+				goto(`/app/store/${storeId}?created=1`);
+				return;
+			} catch (e) {
+				console.error('No se pudo crear la tienda desde el borrador', e);
+			}
+		}
+		goto('/app');
+	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
@@ -26,7 +42,7 @@
 			return;
 		}
 		if (data.session) {
-			goto('/app/new');
+			await afterAuth(data.session.user.id);
 		} else {
 			info = 'Revisa tu correo para confirmar la cuenta, luego inicia sesión.';
 		}

@@ -49,7 +49,7 @@
 			Gratis, sin tarjetas y sin complicaciones.
 		</p>
 		<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-			<a href={auth.session ? '/app/new' : '/signup'} class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
+			<a href={'/crear'} class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 				Crear mi tienda gratis
 			</a>
 			<a href={auth.session ? '/app' : '/login'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
@@ -101,7 +101,7 @@
 			<span class="font-hand text-ember text-3xl sm:text-4xl mr-2">¿Listo</span>para vender?
 		</h2>
 		<p class="text-body max-w-md mx-auto mb-6">Miles de emprendedores ya venden con Tiendly. Tú puedes ser el próximo.</p>
-		<a href={auth.session ? '/app/new' : '/signup'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
+		<a href={'/crear'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 			Empezar ahora
 		</a>
 	</div>

@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { slugify, uploadImage } from '$lib/utils';
+	import { saveDraft } from '$lib/storeDraft';
 
 	type WizardProduct = { name: string; price: string; category: string };
 
@@ -23,12 +24,10 @@
 	let creating = $state(false);
 	let createdStoreId = $state('');
 
-	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6', '#ffffff'];
+	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
 
 	let canContinue = $derived.by(() => {
 		if (step === 1) return name.trim().length > 0 && slug.trim().length >= 3;
-		if (step === 2) return true;
-		if (step === 3) return true;
 		return true;
 	});
 
@@ -61,17 +60,6 @@
 		logoUrl = '';
 	}
 
-	async function ensureUniqueSlug(base: string): Promise<string> {
-		let candidate = base || 'tienda';
-		let suffix = 2;
-		for (let i = 0; i < 20; i++) {
-			const { data } = await supabase.from('stores').select('id').eq('slug', candidate).maybeSingle();
-			if (!data) return candidate;
-			candidate = `${base}-${suffix++}`;
-		}
-		return `${base}-${Date.now() % 10000}`;
-	}
-
 	function addProduct() {
 		if (products.length < 10) {
 			products = [...products, { name: '', price: '', category: 'General' }];
@@ -86,47 +74,71 @@
 		error = '';
 		creating = true;
 		try {
-			const uniqueSlug = await ensureUniqueSlug(slug);
-			slug = uniqueSlug;
+			if (auth.session) {
+				const uniqueSlug = await ensureUniqueSlug(slug);
+				slug = uniqueSlug;
 
-			const { data: store, error: storeError } = await supabase
-				.from('stores')
-				.insert({
-					owner_id: auth.session!.user.id,
+				const { data: store, error: storeError } = await supabase
+					.from('stores')
+					.insert({
+						owner_id: auth.session.user.id,
+						name: name.trim(),
+						slug: uniqueSlug,
+						logo: logoUrl || null,
+						whatsapp: whatsapp.trim() || null,
+						theme_color: themeColor,
+						description: description.trim() || null,
+					})
+					.select('id')
+					.single();
+
+				if (storeError) throw storeError;
+
+				const validProducts = products
+					.filter((p) => p.name.trim() && p.price.trim())
+					.map((p, i) => ({
+						store_id: store.id,
+						name: p.name.trim(),
+						price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
+						currency: 'CUP',
+						category: p.category.trim() || 'General',
+						position: i,
+					}));
+
+				if (validProducts.length > 0) {
+					const { error: productsError } = await supabase.from('products').insert(validProducts);
+					if (productsError) throw productsError;
+				}
+
+				createdStoreId = store.id;
+				goto(`/app/store/${store.id}?created=1`);
+			} else {
+				saveDraft({
 					name: name.trim(),
-					slug: uniqueSlug,
-					logo: logoUrl || null,
-					whatsapp: whatsapp.trim() || null,
-					theme_color: themeColor,
-					description: description.trim() || null,
-				})
-				.select('id')
-				.single();
-
-			if (storeError) throw storeError;
-
-			const validProducts = products
-				.filter((p) => p.name.trim() && p.price.trim())
-				.map((p, i) => ({
-					store_id: store.id,
-					name: p.name.trim(),
-					price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
-					currency: 'CUP',
-					category: p.category.trim() || 'General',
-					position: i,
-				}));
-
-			if (validProducts.length > 0) {
-				const { error: productsError } = await supabase.from('products').insert(validProducts);
-				if (productsError) throw productsError;
+					slug,
+					description: description.trim(),
+					whatsapp: whatsapp.trim(),
+					themeColor,
+					products,
+					createdAt: Date.now(),
+				});
+				goto('/signup?from=crear');
 			}
-
-			createdStoreId = store.id;
-			goto(`/app/store/${store.id}?created=1`);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Ocurrió un error al crear la tienda.';
 			creating = false;
 		}
+	}
+
+	async function ensureUniqueSlug(base: string): Promise<string> {
+		let candidate = base || 'tienda';
+		let suffix = 2;
+		for (let i = 0; i < 20; i++) {
+			const { data } = await supabase.from('stores').select('id').eq('slug', candidate).maybeSingle();
+			if (!data) return candidate;
+			candidate = `${base}-${suffix++}`;
+		}
+		return `${base}-${Date.now() % 10000}`;
 	}
 
 	function next() {
@@ -144,6 +156,13 @@
 		<h1 class="text-2xl sm:text-3xl font-bold text-ink mb-2">Crea tu tienda</h1>
 		<p class="text-sm text-muted">Solo 4 pasos y listo para compartir.</p>
 	</div>
+
+	{#if !auth.session}
+		<div class="flex items-center gap-2.5 bg-ember/10 border border-ember/20 rounded-card px-4 py-3 mb-6 text-sm text-body">
+			<i class="ri-save-3-line text-ember"></i>
+			<span>Tu tienda se guardará aquí en tu dispositivo y al final te pediremos crear tu cuenta gratis para publicarla.</span>
+		</div>
+	{/if}
 
 	<!-- Progress -->
 	<div class="flex items-center gap-2 mb-8">
@@ -342,7 +361,11 @@
 				disabled={creating}
 				class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
-				{creating ? 'Creando tu tienda...' : 'Crear mi tienda'}
+				{creating
+					? 'Creando tu tienda...'
+					: auth.session
+						? 'Crear mi tienda'
+						: 'Guardar y crear mi cuenta'}
 			</button>
 		{/if}
 	</div>

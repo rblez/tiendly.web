@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { supabase } from '$lib/supabase/client';
 
-	const NAMES = ['Juan', 'María', 'Carlos', 'Ana', 'Luis', 'Laura', 'Pedro', 'Camila', 'Andrés', 'Sofía', 'Miguel', 'Valentina', 'Raúl', 'Isabel', 'Héctor', 'Diana'];
-	const STORES = ['Panadería El Sol', 'Dulces de la Abuela', 'Mi Moda Store', 'TechZone', 'Floristería Bella', 'Café La Esquina', 'Kiosco Online', 'Boutique Lili', 'Ferretería Max', 'Repostería Betty', 'Frutería Tropical', 'Studio Lila'];
-	const VERBS = ['creó su tienda', 'recibió 2 pedidos nuevos', 'vendió 3 productos', 'publicó su catálogo', 'abrió su negocio online', 'recibió un pedido'];
+	const NAMES = ['Juan', 'María', 'Carlos', 'Ana', 'Luis', 'Laura', 'Pedro', 'Camila', 'Andrés', 'Sofía', 'Miguel', 'Valentina'];
+	const FAKE_STORES = ['Dulces de la Abuela', 'Mi Moda Store', 'Floristería Bella', 'Café La Esquina', 'Boutique Lili', 'Frutería Tropical', 'Studio Lila', 'Repostería Betty'];
+	const VERBS = ['creó su tienda', 'recibió 2 pedidos nuevos', 'vendió 3 productos', 'publicó su catálogo', 'abrió su negocio online'];
 
 	interface Toast {
 		id: number;
@@ -18,44 +19,59 @@
 
 	let bars = $state<number[]>([]);
 	let visitors = $state(0);
+	let storesCreated = $state(0);
+
+	let storePool: string[] = FAKE_STORES;
 
 	function randomItem<T>(arr: T[]): T {
 		return arr[Math.floor(Math.random() * arr.length)];
 	}
 
-	function nextToast(id: number): Toast {
-		return {
-			id,
-			name: randomItem(NAMES),
-			text: randomItem(VERBS),
-			store: randomItem(STORES),
-			minutes: 1 + Math.floor(Math.random() * 45),
-		};
-	}
+	let firstTimer: ReturnType<typeof setTimeout> | undefined;
+	let barsTimer: ReturnType<typeof setInterval> | undefined;
 
 	onMount(() => {
-		bars = Array.from({ length: 18 }, () => 20 + Math.floor(Math.random() * 80));
-		visitors = 2840 + Math.floor(Math.random() * 300);
+		(async () => {
+			let realStores: string[] = [];
+			try {
+				const { data } = await supabase.from('stores').select('name').eq('active', true);
+				realStores = (data ?? []).map((s) => (s as { name: string }).name).filter((n) => !!n);
+			} catch {
+				realStores = [];
+			}
 
-		let id = 0;
-		const showToast = (initial = false) => {
-			toast = nextToast(++id);
-			toastVisible = true;
-			setTimeout(() => {
-				toastVisible = false;
-				if (!initial) setTimeout(showToast, 2500);
-			}, 4200);
-		};
-		const first = setTimeout(() => showToast(true), 2500);
+			storePool = [...realStores, ...FAKE_STORES];
+			const realCount = realStores.length;
+			storesCreated = realCount + Math.max(0, 16 - realCount);
+			visitors = 16;
+			bars = Array.from({ length: 18 }, () => 20 + Math.floor(Math.random() * 60));
 
-		const barsTimer = setInterval(() => {
-			bars = bars.map((v) => Math.min(100, Math.max(15, v + Math.floor(Math.random() * 24) - 12)));
-			visitors += Math.floor(Math.random() * 14) - 1;
-		}, 1800);
+			let id = 0;
+			const showToast = (initial = false) => {
+				toast = {
+					id: ++id,
+					name: randomItem(NAMES),
+					text: randomItem(VERBS),
+					store: randomItem(storePool),
+					minutes: 1 + Math.floor(Math.random() * 45),
+				};
+				toastVisible = true;
+				setTimeout(() => {
+					toastVisible = false;
+					if (!initial) setTimeout(showToast, 2500);
+				}, 4200);
+			};
+			firstTimer = setTimeout(() => showToast(true), 2500);
+
+			barsTimer = setInterval(() => {
+				bars = bars.map((v) => Math.min(90, Math.max(15, v + Math.floor(Math.random() * 18) - 9)));
+				visitors = Math.max(8, Math.min(28, visitors + Math.floor(Math.random() * 5) - 2));
+			}, 2000);
+		})();
 
 		return () => {
-			clearTimeout(first);
-			clearInterval(barsTimer);
+			if (firstTimer) clearTimeout(firstTimer);
+			if (barsTimer) clearInterval(barsTimer);
 		};
 	});
 </script>
@@ -119,12 +135,12 @@
 	<div class="flex flex-col gap-4 sm:gap-6">
 		<div class="bg-card border border-hairline rounded-card p-6 flex-1 flex flex-col justify-center">
 			<i class="ri-store-2-line text-2xl text-ember mb-3"></i>
-			<p class="text-3xl font-black text-ink tabular-nums">2,847</p>
+			<p class="text-3xl font-black text-ink tabular-nums">{storesCreated.toLocaleString('es-CU')}</p>
 			<p class="text-sm text-muted mt-1">tiendas creadas esta semana</p>
 		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 flex-1 flex flex-col justify-center">
 			<i class="ri-shopping-bag-3-line text-2xl text-ember mb-3"></i>
-			<p class="text-3xl font-black text-ink tabular-nums">38,120</p>
+			<p class="text-3xl font-black text-ink tabular-nums">120</p>
 			<p class="text-sm text-muted mt-1">pedidos enviados por WhatsApp</p>
 		</div>
 	</div>
