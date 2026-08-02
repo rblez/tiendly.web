@@ -291,6 +291,34 @@ import { supabase } from '$lib/supabase/client';
 		await reloadProducts();
 	}
 
+	function exportOrdersCSV() {
+		if (orders.length === 0) return;
+		const esc = (v: string | null | undefined) => `"${(v ?? '').replace(/"/g, '""')}"`;
+		const rows = [
+			['Fecha', 'Cliente', 'Teléfono', 'Estado', 'Productos', 'Total', 'Moneda', 'Notas'],
+			...orders.map((o) => [
+				new Date(o.created_at).toLocaleString('es-CU'),
+				o.customer_name,
+				o.customer_phone,
+				o.status,
+				o.items.map((i) => `${i.productName}${i.label ? ` (${i.label})` : ''} x${i.quantity}`).join('; '),
+				String(o.total),
+				o.currency,
+				o.notes ?? '',
+			]),
+		];
+		const csv = rows.map((r) => r.map(esc).join(',')).join('\n');
+		const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `pedidos-${store!.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		URL.revokeObjectURL(url);
+	}
+
 	async function reloadProducts() {
 		const { data } = await supabase
 			.from('products')
@@ -652,6 +680,14 @@ async function duplicateProduct(p: Product) {
 						En vivo
 					</span>
 				</div>
+			<div class="flex items-center gap-2">
+				<button
+					onclick={() => exportOrdersCSV()}
+					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+				>
+					<i class="ri-file-download-line"></i>
+					Exportar CSV
+				</button>
 				<button
 					onclick={() => loadOrders()}
 					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
@@ -659,6 +695,7 @@ async function duplicateProduct(p: Product) {
 					<i class="ri-refresh-line"></i>
 					Actualizar
 				</button>
+			</div>
 			</div>
 
 			{#if ordersLoading}
