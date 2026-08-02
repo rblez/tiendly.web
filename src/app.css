@@ -68,3 +68,56 @@ input[type='color']::-webkit-color-swatch {
 	border: 1px solid var(--color-hairline);
 	border-radius: var(--radius-btn);
 }
+
+.field-select,
+.select-pill {
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23707070' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.7rem center;
+	background-size: 0.9rem;
+	cursor: pointer;
+}
+
+.field-select {
+	width: 100%;
+	padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+	background-color: var(--color-canvas);
+	border: 1px solid var(--color-hairline);
+	border-radius: var(--radius-btn);
+	font-size: 0.875rem;
+	color: var(--color-ink);
+	transition: border-color 0.2s, background-color 0.2s;
+}
+
+.field-select:hover {
+	border-color: #2e2e2e;
+}
+
+.field-select:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.select-pill {
+	padding: 0.375rem 1.9rem 0.375rem 0.85rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	border: 1px solid var(--color-hairline);
+	background-color: var(--color-canvas);
+	transition: border-color 0.2s, background-color 0.2s;
+}
+
+.select-pill:hover {
+	border-color: #2e2e2e;
+}
+
+.select-pill:focus {
+	outline: none;
+}
+
+select option {
+	background-color: var(--color-card);
+	color: var(--color-ink);
+}

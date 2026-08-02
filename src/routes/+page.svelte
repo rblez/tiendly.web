@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import Squiggle from '$lib/components/Squiggle.svelte';
 	import DoodleArrow from '$lib/components/DoodleArrow.svelte';
+	import SocialProof from '$lib/components/SocialProof.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	$effect(() => { auth.init(); });
@@ -59,6 +60,8 @@
 			<DoodleArrow class="w-16 h-14 text-ember/80 -rotate-12 -mt-16 mr-6" />
 		</div>
 	</div>
+
+	<SocialProof />
 
 	<div class="grid sm:grid-cols-3 gap-4 sm:gap-6 pb-20">
 		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:-rotate-1">

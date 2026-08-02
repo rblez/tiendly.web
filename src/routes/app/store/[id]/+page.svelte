@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
-	import { formatPrice, productImage, slugify, storeUrl, themeStyle, uploadImage, waLink } from '$lib/utils';
+	import { formatPrice, productImage, slugify, storeUrl, uploadImage, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
@@ -310,10 +310,10 @@
 	});
 
 	const ORDER_STATUSES = [
-		{ value: 'nuevo', label: 'Nuevo', cls: 'bg-ember/15 text-ember' },
-		{ value: 'enviado', label: 'Enviado', cls: 'bg-blue-400/15 text-blue-400' },
-		{ value: 'completado', label: 'Completado', cls: 'bg-green-400/15 text-green-400' },
-		{ value: 'cancelado', label: 'Cancelado', cls: 'bg-red-400/15 text-red-400' },
+		{ value: 'nuevo', label: 'Nuevo', cls: 'bg-ember/15 text-ember', selCls: 'border-ember/40 text-ember' },
+		{ value: 'enviado', label: 'Enviado', cls: 'bg-blue-400/15 text-blue-400', selCls: 'border-blue-400/40 text-blue-400' },
+		{ value: 'completado', label: 'Completado', cls: 'bg-green-400/15 text-green-400', selCls: 'border-green-400/40 text-green-400' },
+		{ value: 'cancelado', label: 'Cancelado', cls: 'bg-red-400/15 text-red-400', selCls: 'border-red-400/40 text-red-400' },
 	] as const;
 
 	function statusInfo(status: string) {
@@ -403,7 +403,7 @@
 	<title>{store ? `${store.name} | Tiendly` : 'Tienda | Tiendly'}</title>
 </svelte:head>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10" style={themeStyle({ theme_color: settings.theme_color })}>
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	{#if $page.url.searchParams.get('created')}
 		<div class="bg-ember/10 border border-ember/25 rounded-card p-5 mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
 			<div class="flex-1">
@@ -861,18 +861,15 @@
 							</div>
 							<div>
 								<label for="p-currency" class="block text-sm font-medium text-body mb-1.5">Moneda</label>
-								<div class="relative">
-									<select
-										id="p-currency"
-										bind:value={formCurrency}
-										class="appearance-none w-full px-3.5 py-2.5 pr-9 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-									>
-										{#each CURRENCIES as c}
-											<option value={c} class="bg-card text-ink">{c}</option>
-										{/each}
-									</select>
-									<i class="ri-arrow-down-s-line absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"></i>
-								</div>
+								<select
+									id="p-currency"
+									bind:value={formCurrency}
+									class="field-select"
+								>
+									{#each CURRENCIES as c}
+										<option value={c}>{c}</option>
+									{/each}
+								</select>
 							</div>
 						</div>
 						<div>
@@ -895,22 +892,19 @@
 									</button>
 								</div>
 							{:else}
-								<div class="relative">
-									<select
-										id="p-category"
-										bind:value={formCategory}
-										onchange={(e) => {
-											if ((e.target as HTMLSelectElement).value === '__new__') startNewCategory();
-										}}
-										class="appearance-none w-full px-3.5 py-2.5 pr-9 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-									>
-										{#each categories as cat}
-											<option value={cat} class="bg-card text-ink">{cat}</option>
-										{/each}
-										<option value="__new__" class="bg-card text-ink">+ Crear nueva</option>
-									</select>
-									<i class="ri-arrow-down-s-line absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"></i>
-								</div>
+								<select
+									id="p-category"
+									bind:value={formCategory}
+									onchange={(e) => {
+										if ((e.target as HTMLSelectElement).value === '__new__') startNewCategory();
+									}}
+									class="field-select"
+								>
+									{#each categories as cat}
+										<option value={cat}>{cat}</option>
+									{/each}
+									<option value="__new__">+ Crear nueva</option>
+								</select>
 							{/if}
 						</div>
 						<div>
