@@ -38,7 +38,7 @@
 		};
 	});
 
-	const storeUrl = $derived(`https://www.tiendly.lat/t/${store.slug}`);
+	const storeUrl = $derived(`https://www.tiendly.lat/@${store.slug}`);
 	const logoUrl = $derived.by(() => {
 		if (!store.logo) return null;
 		if (store.logo.startsWith('http')) return store.logo;

@@ -106,12 +106,12 @@
 		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:rotate-1">
 			<div class="flex items-center justify-between mb-4">
 				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
-					<i class="ri-store-2-line text-xl text-ember"></i>
+					<i class="ri-function-add-line text-xl text-ember"></i>
 				</div>
 				<span class="text-3xl text-ember/70 -rotate-3">2</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Agrega tus productos</h3>
-			<p class="text-sm text-body leading-relaxed">Nombre, precio y descripción. Personaliza el color y tu número de WhatsApp.</p>
+			<p class="text-sm text-body leading-relaxed">Nombre, precio y foto. Personaliza el color y tu número de WhatsApp.</p>
 		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:-rotate-1">
 			<div class="flex items-center justify-between mb-4">

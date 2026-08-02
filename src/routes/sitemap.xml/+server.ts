@@ -9,7 +9,7 @@ export const GET = async () => {
 	const urls = [
 		...staticUrls.map((path) => `<url><loc>https://www.tiendly.lat${path}</loc><changefreq>monthly</changefreq></url>`),
 		...(stores ?? []).map(
-			(s) => `<url><loc>https://www.tiendly.lat/t/${s.slug}</loc><changefreq>weekly</changefreq></url>`,
+			(s) => `<url><loc>https://www.tiendly.lat/@${s.slug}</loc><changefreq>weekly</changefreq></url>`,
 		),
 	];
 

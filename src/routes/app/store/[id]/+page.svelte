@@ -5,7 +5,7 @@ import { supabase } from '$lib/supabase/client';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
-	import { formatPrice, productImage, slugify, storeUrl, uploadImage, waLink } from '$lib/utils';
+	import { formatPrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 import { PLAN_MAP } from '$lib/plans';
@@ -146,25 +146,6 @@ import QRCode from 'qrcode';
 	function cancelNewCategory() {
 		formCreatingCategory = false;
 		formCategory = categories[0] ?? 'General';
-	}
-
-	function parseVariants(text: string): Variant[] {
-		return text
-			.split('\n')
-			.map((line) => line.trim())
-			.filter(Boolean)
-			.map((line) => {
-				const [label, rawPrice] = line.split(/[=:]/);
-				return {
-					id: `v-${Math.random().toString(36).slice(2, 8)}`,
-					label: label.trim(),
-					price: Number(rawPrice?.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
-				};
-			});
-	}
-
-	function variantsToText(variants: Variant[]): string {
-		return variants.map((v) => `${v.label}=${v.price}`).join('\n');
 	}
 
 	$effect(() => {
