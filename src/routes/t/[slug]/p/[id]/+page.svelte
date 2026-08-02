@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, productImages, waLink } from '$lib/utils';
+	import { appUrl, formatPrice, productImage, productImages, waLink } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
@@ -24,7 +24,7 @@
 	);
 
 	const img = $derived(productImage(data.product));
-	const shareUrl = $derived(`${window.location.origin}/t/${data.store.slug}/p/${data.product.id}`);
+	const shareUrl = $derived(`${appUrl() || window.location.origin}/t/${data.store.slug}/p/${data.product.id}`);
 	const shareText = $derived(`Mira esto: ${data.product.name}${selectedVariant ? ` — ${selectedVariant.label}` : ''} — ${formatPrice(currentPrice, data.product.currency)}`);
 
 	function buyNow() {

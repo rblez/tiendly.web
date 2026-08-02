@@ -1,5 +1,12 @@
+import { PUBLIC_APP_URL } from '$env/static/public';
 import { supabase } from '$lib/supabase/client';
 import type { Product } from '$lib/types';
+
+export function appUrl(): string {
+	if (PUBLIC_APP_URL) return PUBLIC_APP_URL.replace(/\/+$/, '');
+	if (typeof window !== 'undefined') return window.location.origin;
+	return '';
+}
 
 export function formatPrice(price: number, currency: string): string {
 	return `$${price.toLocaleString('es-CU')} ${currency}`;
@@ -48,6 +55,8 @@ export function themeStyle(store: { theme_color: string }): string {
 }
 
 export function storeUrl(slug: string): string {
+	const base = appUrl();
+	if (base) return `${base}/t/${slug}`;
 	if (typeof window !== 'undefined') return `${window.location.origin}/t/${slug}`;
 	return `/t/${slug}`;
 }
