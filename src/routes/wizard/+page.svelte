@@ -2,11 +2,20 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { slugify, uploadImage } from '$lib/utils';
+	import { fileToDataUrl, parseVariants, slugify, uploadImage } from '$lib/utils';
 	import { saveDraft } from '$lib/storeDraft';
 	import { PLAN_MAP } from '$lib/plans';
 
-	type WizardProduct = { name: string; price: string; category: string };
+	type WizardProduct = {
+		name: string;
+		price: string;
+		category: string;
+		description: string;
+		currency: string;
+		variants: string;
+		agotado: boolean;
+		images: string[];
+	};
 
 	let step = $state(1);
 
@@ -18,8 +27,9 @@
 	let whatsapp = $state('');
 	let themeColor = $state('#22c55e');
 	let products = $state<WizardProduct[]>([
-		{ name: '', price: '', category: 'General' },
+		{ name: '', price: '', category: 'General', description: '', currency: 'CUP', variants: '', agotado: false, images: [] },
 	]);
+	let uploadingImages = $state(0);
 
 	let error = $state('');
 	let creating = $state(false);
@@ -28,6 +38,14 @@
 	let limitLoading = $state(true);
 
 	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
+	const CURRENCIES = ['CUP', 'USD', 'MXN', 'ARS', 'EUR'];
+
+	const STEP_META = [
+		{ title: '¿Cómo se llama tu tienda?', icon: 'ri-store-2-line', desc: 'Elige un nombre y tu username' },
+		{ title: 'Agrega tu logo', icon: 'ri-image-line', desc: 'Opcional, pero ayuda a que te reconozcan' },
+		{ title: 'Contacto y estilo', icon: 'ri-whatsapp-line', desc: 'Dónde recibes pedidos y el color de tu tienda' },
+		{ title: 'Agrega tus productos', icon: 'ri-shopping-bag-line', desc: 'Con foto, precio y variantes' },
+	];
 
 	$effect(() => {
 		auth.init();
@@ -60,11 +78,15 @@
 	async function handleLogoChange(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
-		if (!file || !auth.session) return;
+		if (!file) return;
 		uploadingLogo = true;
 		error = '';
 		try {
-			logoUrl = await uploadImage(file, auth.session.user.id);
+			if (auth.session) {
+				logoUrl = await uploadImage(file, auth.session.user.id);
+			} else {
+				logoUrl = await fileToDataUrl(file);
+			}
 		} catch {
 			error = 'No se pudo subir el logo. Intenta con otra imagen.';
 		}
@@ -79,12 +101,43 @@
 	function addProduct() {
 		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 10) : 10;
 		if (products.length < limit) {
-			products = [...products, { name: '', price: '', category: 'General' }];
+			products = [...products, { name: '', price: '', category: 'General', description: '', currency: 'CUP', variants: '', agotado: false, images: [] }];
 		}
 	}
 
 	function removeProduct(index: number) {
 		products = products.filter((_, i) => i !== index);
+	}
+
+	async function handleProductImages(e: Event, index: number) {
+		const input = e.target as HTMLInputElement;
+		const files = Array.from(input.files ?? []);
+		if (files.length === 0) return;
+		error = '';
+		uploadingImages += files.length;
+		try {
+			for (const file of files) {
+				if (auth.session) {
+					const url = await uploadImage(file, auth.session.user.id);
+					products[index].images.push(url);
+				} else {
+					const dataUrl = await fileToDataUrl(file);
+					products[index].images.push(dataUrl);
+				}
+			}
+		} catch {
+			error = 'No se pudieron subir las imágenes.';
+		}
+		uploadingImages -= files.length;
+		input.value = '';
+	}
+
+	function removeProductImage(index: number, imgIndex: number) {
+		products[index].images = products[index].images.filter((_, i) => i !== imgIndex);
+	}
+
+	function updateProduct(index: number, key: keyof WizardProduct, value: unknown) {
+		products[index] = { ...products[index], [key]: value };
 	}
 
 	async function createStore() {
@@ -101,7 +154,7 @@
 						owner_id: auth.session.user.id,
 						name: name.trim(),
 						slug: uniqueSlug,
-						logo: logoUrl || null,
+						logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
 						whatsapp: whatsapp.trim() || null,
 						theme_color: themeColor,
 						description: description.trim() || null,
@@ -116,9 +169,14 @@
 					.map((p, i) => ({
 						store_id: store.id,
 						name: p.name.trim(),
+						description: p.description.trim() || null,
 						price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
-						currency: 'CUP',
+						currency: p.currency,
 						category: p.category.trim() || 'General',
+						agotado: p.agotado,
+						variants: parseVariants(p.variants) as unknown as import('$lib/database.types').Database['public']['Tables']['products']['Row']['variants'],
+						images: p.images.filter((img) => !img.startsWith('data:')),
+						image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
 						position: i,
 					}));
 
@@ -136,6 +194,7 @@
 					description: description.trim(),
 					whatsapp: whatsapp.trim(),
 					themeColor,
+					logo: logoUrl || undefined,
 					products,
 					createdAt: Date.now(),
 				});
@@ -191,8 +250,16 @@
 		</div>
 	{:else}
 	<div class="mb-8">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink mb-2">Crea tu tienda</h1>
-		<p class="text-sm text-muted">Solo 4 pasos y listo para compartir.</p>
+		<div class="flex items-center gap-3 mb-3">
+			<span class="h-10 w-10 flex items-center justify-center rounded-xl bg-ember/10 text-ember flex-shrink-0">
+				<i class={`${STEP_META[step - 1].icon} text-lg`}></i>
+			</span>
+			<div>
+				<p class="text-xs font-semibold text-ember uppercase tracking-wide">Paso {step} de 4</p>
+				<h1 class="text-xl sm:text-2xl font-bold text-ink leading-tight">{STEP_META[step - 1].title}</h1>
+			</div>
+		</div>
+		<p class="text-sm text-muted">{STEP_META[step - 1].desc}</p>
 	</div>
 
 	{#if !auth.session}
@@ -205,15 +272,19 @@
 	<!-- Progress -->
 	<div class="flex items-center gap-2 mb-8">
 		{#each Array(4) as _, i}
-			<div class="flex-1 h-1.5 rounded-full {i < step ? 'bg-ember' : 'bg-bone'} transition-colors"></div>
+			<button
+				onclick={() => { if (i < step) { step = i + 1; error = ''; } }}
+				class="flex-1 flex flex-col items-center gap-1 group"
+				aria-label={`Paso ${i + 1}`}
+			>
+				<div class={`w-full h-1.5 rounded-full transition-colors ${i < step ? 'bg-ember' : 'bg-bone group-hover:bg-hairline'}`}></div>
+				<span class={`text-[10px] font-medium ${i < step ? 'text-ember' : 'text-muted-soft'}`}>{STEP_META[i].icon.replace('ri-', '')}</span>
+			</button>
 		{/each}
 	</div>
 
 	{#if step === 1}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-			<h2 class="text-lg font-bold text-ink mb-1">¿Cómo se llama tu tienda?</h2>
-			<p class="text-sm text-muted mb-6">Este será el username que compartirás con tus clientes.</p>
-
 			<div class="space-y-5">
 				<div>
 					<label for="store-name" class="block text-sm font-medium text-body mb-1.5">Nombre de la tienda</label>
@@ -239,6 +310,7 @@
 							class="flex-1 px-1 py-2.5 pr-3.5 bg-transparent text-sm text-ink placeholder:text-muted-soft focus:outline-none"
 						/>
 					</div>
+					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones. Sin espacios ni símbolos.</p>
 				</div>
 				<div>
 					<label for="store-desc" class="block text-sm font-medium text-body mb-1.5">Descripción <span class="text-muted-soft">(opcional)</span></label>
@@ -256,7 +328,6 @@
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h2 class="text-lg font-bold text-ink mb-1">Agrega tu logo</h2>
 			<p class="text-sm text-muted mb-6">Opcional. Si no agregas uno, usaremos la inicial de tu tienda.</p>
-
 			<div class="flex items-center gap-5">
 				<div class="h-20 w-20 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
 					{#if logoUrl}
@@ -323,53 +394,108 @@
 			</div>
 		</div>
 	{:else}
-		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-			<h2 class="text-lg font-bold text-ink mb-1">Agrega tus primeros productos</h2>
-			<p class="text-sm text-muted mb-6">Puedes empezar con pocos y agregar más después.</p>
+		<div class="space-y-4">
+			{#each products as product, i}
+				<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
+					<div class="flex items-center justify-between">
+						<span class="inline-flex items-center gap-2 text-xs font-semibold text-muted">
+							<span class="h-6 w-6 flex items-center justify-center rounded-full bg-ember/10 text-ember">{i + 1}</span>
+							Producto
+						</span>
+						{#if products.length > 1}
+							<button onclick={() => removeProduct(i)} class="text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Quitar producto">
+								<i class="ri-delete-bin-6-line text-lg"></i>
+							</button>
+						{/if}
+					</div>
 
-			<div class="space-y-4">
-				{#each products as product, i}
-					<div class="bg-bone rounded-card p-4 space-y-3">
-						<div class="flex items-center justify-between">
-							<span class="text-xs font-medium text-muted">Producto {i + 1}</span>
-							{#if products.length > 1}
-								<button onclick={() => removeProduct(i)} class="text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Quitar producto">
-									<i class="ri-close-line"></i>
-								</button>
-							{/if}
+					<div class="flex items-start gap-4">
+						<div class="flex-shrink-0">
+							<div class="h-20 w-20 rounded-xl overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
+								{#if product.images.length > 0}
+									<img src={product.images[0]} alt={`Foto de ${product.name || `producto ${i + 1}`}`} class="w-full h-full object-cover" />
+								{:else}
+									<i class="ri-image-line text-2xl text-muted-soft"></i>
+								{/if}
+							</div>
+							<label class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-ember hover:text-ember-active transition-colors cursor-pointer">
+								<i class="ri-upload-2-line"></i>
+								{product.images.length > 0 ? 'Cambiar' : 'Subir foto'}
+								<input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleProductImages(e, i)} />
+							</label>
 						</div>
-						<input
-							type="text"
-							bind:value={product.name}
-							placeholder="Nombre (Ej: Pastel de chocolate)"
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-						/>
-						<div class="grid grid-cols-2 gap-3">
+
+						<div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div class="sm:col-span-2">
+								<input
+									type="text"
+									value={product.name}
+									oninput={(e) => updateProduct(i, 'name', (e.target as HTMLInputElement).value)}
+									placeholder="Nombre (Ej: Pastel de chocolate)"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
 							<input
 								type="text"
-								bind:value={product.price}
+								value={product.price}
+								oninput={(e) => updateProduct(i, 'price', (e.target as HTMLInputElement).value)}
 								placeholder="Precio (Ej: 500)"
 								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 							/>
-							<input
-								type="text"
-								bind:value={product.category}
-								placeholder="Categoría (Ej: Postres)"
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-							/>
+							<select
+								value={product.currency}
+								onchange={(e) => updateProduct(i, 'currency', (e.target as HTMLSelectElement).value)}
+								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+							>
+								{#each CURRENCIES as c}
+									<option value={c}>{c}</option>
+								{/each}
+							</select>
+							<div class="sm:col-span-2">
+								<input
+									type="text"
+									value={product.category}
+									oninput={(e) => updateProduct(i, 'category', (e.target as HTMLInputElement).value)}
+									placeholder="Categoría (Ej: Postres)"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+							<div class="sm:col-span-2">
+								<textarea
+									value={product.description}
+									oninput={(e) => updateProduct(i, 'description', (e.target as HTMLTextAreaElement).value)}
+									rows="2"
+									placeholder="Descripción (opcional)"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+								></textarea>
+							</div>
+							<div class="sm:col-span-2">
+								<textarea
+									value={product.variants}
+									oninput={(e) => updateProduct(i, 'variants', (e.target as HTMLTextAreaElement).value)}
+									rows="2"
+									placeholder="Variantes (opcional, una por línea: etiqueta=precio) Ej: 1 unidad=500"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+								></textarea>
+							</div>
 						</div>
 					</div>
-				{/each}
-			</div>
 
-			<button
-				onclick={addProduct}
-				class="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-hairline rounded-btn text-sm font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-			>
-				<i class="ri-add-line"></i>
-				Agregar otro producto
-			</button>
+					<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
+						<input type="checkbox" checked={product.agotado} onchange={(e) => updateProduct(i, 'agotado', (e.target as HTMLInputElement).checked)} class="w-4 h-4 accent-ember cursor-pointer" />
+						Agotado
+					</label>
+				</div>
+			{/each}
 		</div>
+
+		<button
+			onclick={addProduct}
+			class="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-hairline rounded-btn text-sm font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+		>
+			<i class="ri-add-line"></i>
+			Agregar otro producto
+		</button>
 	{/if}
 
 	{#if error}
@@ -380,8 +506,9 @@
 		{#if step > 1}
 			<button
 				onclick={() => { step -= 1; error = ''; }}
-				class="px-5 py-3 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer"
+				class="inline-flex items-center gap-1.5 px-5 py-3 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer"
 			>
+				<i class="ri-arrow-left-line"></i>
 				Atrás
 			</button>
 		{/if}
@@ -389,22 +516,26 @@
 			<button
 				onclick={next}
 				disabled={!canContinue}
-				class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="flex-1 inline-flex items-center justify-center gap-1.5 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
 				Continuar
+				<i class="ri-arrow-right-line"></i>
 			</button>
 		{:else}
 			<button
 				onclick={createStore}
 				disabled={creating}
-				class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="flex-1 inline-flex items-center justify-center gap-1.5 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
-				{creating
-					? 'Creando tu tienda...'
-					: auth.session
-						? 'Crear mi tienda'
-						: 'Guardar y crear mi cuenta'}
-			</button>
+			{creating
+				? 'Creando tu tienda...'
+				: auth.session
+					? 'Crear mi tienda'
+					: 'Guardar y crear mi cuenta'}
+			{#if !creating}
+				<i class="ri-check-double-line"></i>
+			{/if}
+		</button>
 		{/if}
 	</div>
 	{/if}

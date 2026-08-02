@@ -7,6 +7,7 @@
 	let name = $state('');
 	let email = $state('');
 	let password = $state('');
+	let showPassword = $state(false);
 	let error = $state('');
 	let info = $state('');
 	let loading = $state(false);
@@ -60,7 +61,7 @@
 		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
-			<p class="text-sm text-muted mb-6">Gratis. Tu tienda estará lista en 5 minutos.</p>
+			<p class="text-sm text-muted mb-6">Gratis, sin tarjeta. Tu tienda lista en 5 minutos.</p>
 
 			<form onsubmit={handleSubmit} class="space-y-4">
 				<div>
@@ -71,7 +72,8 @@
 						required
 						bind:value={name}
 						placeholder="Ana Pérez"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						autocomplete="name"
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 					/>
 				</div>
 				<div>
@@ -82,20 +84,32 @@
 						required
 						bind:value={email}
 						placeholder="tu@correo.com"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						autocomplete="email"
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 					/>
 				</div>
 				<div>
 					<label for="password" class="block text-sm font-medium text-body mb-1.5">Contraseña</label>
-					<input
-						id="password"
-						type="password"
-						required
-						minlength="6"
-						bind:value={password}
-						placeholder="Mínimo 6 caracteres"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-					/>
+					<div class="relative">
+						<input
+							id="password"
+							type={showPassword ? 'text' : 'password'}
+							required
+							minlength="6"
+							bind:value={password}
+							placeholder="Mínimo 6 caracteres"
+							autocomplete="new-password"
+							class="w-full px-3.5 py-2.5 pr-11 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+						/>
+						<button
+							type="button"
+							onclick={() => (showPassword = !showPassword)}
+							class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer"
+							aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+						>
+							<i class={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-lg`}></i>
+						</button>
+					</div>
 				</div>
 
 				{#if error}
@@ -108,10 +122,11 @@
 				<button
 					type="submit"
 					disabled={loading}
-					class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					{loading ? 'Creando cuenta...' : 'Crear cuenta'}
 				</button>
+				<p class="text-xs text-muted-soft text-center">Al crear tu cuenta aceptas los términos de Tiendly.</p>
 			</form>
 		</div>
 		<p class="text-center text-sm text-muted mt-6">
