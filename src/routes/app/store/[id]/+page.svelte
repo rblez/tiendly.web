@@ -551,7 +551,17 @@
 
 		{:else if tab === 'pedidos'}
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-				<p class="text-sm text-muted">Pedidos recibidos. Contacta al cliente por WhatsApp.</p>
+				<div class="flex items-center gap-2.5">
+					<p class="text-sm text-muted">Pedidos recibidos</p>
+					<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5 tabular-nums">{orders.length}</span>
+					<span class="inline-flex items-center gap-1.5 text-[10px] text-muted-soft">
+						<span class="relative flex h-1.5 w-1.5">
+							<span class="absolute inline-flex h-full w-full rounded-full bg-ember opacity-60 animate-ping"></span>
+							<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ember"></span>
+						</span>
+						En vivo
+					</span>
+				</div>
 				<button
 					onclick={() => loadOrders()}
 					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
@@ -577,42 +587,51 @@
 				<div class="space-y-3">
 					{#each orders as order}
 						{@const status = statusInfo(order.status)}
-						<div class="bg-card border border-hairline rounded-card p-5">
-							<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+						<div class="bg-card border border-hairline rounded-card p-5 hover:border-ember/30 transition-colors">
+							<div class="flex items-start justify-between gap-3 mb-4">
 								<div class="flex items-center gap-3 min-w-0">
-									<div class="h-10 w-10 flex items-center justify-center rounded-full bg-ember/10 text-ember font-bold flex-shrink-0">
+									<div class={`h-10 w-10 flex items-center justify-center rounded-full font-bold flex-shrink-0 ${status.cls}`}>
 										{order.customer_name.charAt(0).toUpperCase()}
 									</div>
 									<div class="min-w-0">
 										<h3 class="font-semibold text-ink truncate">{order.customer_name}</h3>
-										<p class="text-xs text-muted">{formatOrderDate(order.created_at)}</p>
+										<p class="text-xs text-muted flex items-center gap-1 mt-0.5">
+											<i class="ri-phone-line text-[10px]"></i>
+											<span class="truncate">{order.customer_phone}</span>
+										</p>
+										<p class="text-xs text-muted-soft mt-0.5">{formatOrderDate(order.created_at)}</p>
 									</div>
 								</div>
-								<div class="flex items-center gap-2">
+								<div class="flex flex-col items-end gap-2 flex-shrink-0">
 									<span class={`text-[10px] font-medium px-2.5 py-1 rounded-full ${status.cls}`}>{status.label}</span>
-									<span class="text-sm font-bold text-ember">
+									<span class="text-sm font-bold text-ink tabular-nums">
 										${Number(order.total).toLocaleString('es-CU')} {order.currency}
 									</span>
 								</div>
 							</div>
 
-							<div class="bg-canvas rounded-btn px-4 py-3 space-y-1 mb-3">
+							<div class="bg-canvas rounded-btn px-4 py-3 mb-3 divide-y divide-hairline-soft">
 								{#each order.items as item}
-									<div class="flex items-center justify-between gap-3 text-sm">
-										<span class="text-body truncate">
-											{item.productName}
-											{#if item.label}
-												<span class="text-ember"> — {item.label}</span>
-											{/if}
-											<span class="text-muted"> x{item.quantity}</span>
+									<div class="flex items-center justify-between gap-3 py-1.5 text-sm first:pt-0 last:pb-0">
+										<span class="text-body min-w-0 flex items-center gap-2">
+											<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 flex-shrink-0">x{item.quantity}</span>
+											<span class="truncate">
+												{item.productName}
+												{#if item.label}
+													<span class="text-ember"> — {item.label}</span>
+												{/if}
+											</span>
 										</span>
-										<span class="text-ink font-medium flex-shrink-0">{formatPrice(item.price * item.quantity, item.currency)}</span>
+										<span class="text-ink font-medium flex-shrink-0 tabular-nums">{formatPrice(item.price * item.quantity, item.currency)}</span>
 									</div>
 								{/each}
 							</div>
 
 							{#if order.notes}
-								<p class="text-xs text-body mb-3"><span class="text-muted">Notas:</span> {order.notes}</p>
+								<p class="text-xs text-body mb-3 flex items-start gap-1.5">
+									<i class="ri-sticky-note-line text-muted mt-0.5"></i>
+									<span><span class="text-muted">Notas:</span> {order.notes}</span>
+								</p>
 							{/if}
 
 							<div class="flex flex-wrap items-center gap-2">
@@ -625,16 +644,18 @@
 									<i class="ri-whatsapp-line"></i>
 									Contactar
 								</a>
-								{#each ORDER_STATUSES as s}
-									{#if s.value !== order.status}
-										<button
-											onclick={() => updateOrderStatus(order, s.value)}
-											class="text-xs font-medium px-3 py-1.5 rounded-btn border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-										>
-											{s.label}
-										</button>
-									{/if}
-								{/each}
+								<div class="ml-auto">
+									<select
+										value={order.status}
+										onchange={(e) => updateOrderStatus(order, (e.target as HTMLSelectElement).value)}
+										class={`select-pill ${status.selCls}`}
+										aria-label="Cambiar estado del pedido"
+									>
+										{#each ORDER_STATUSES as s}
+											<option value={s.value}>{s.label}</option>
+										{/each}
+									</select>
+								</div>
 							</div>
 						</div>
 					{/each}
