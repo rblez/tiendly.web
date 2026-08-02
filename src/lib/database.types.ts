@@ -142,6 +142,7 @@ export type Database = {
       stores: {
         Row: {
           active: boolean
+          banner: string | null
           created_at: string
           description: string | null
           id: string
@@ -156,6 +157,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          banner?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -170,6 +172,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          banner?: string | null
           created_at?: string
           description?: string | null
           id?: string

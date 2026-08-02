@@ -57,6 +57,7 @@ export interface Store {
 	name: string;
 	slug: string;
 	logo: string | null;
+	banner: string | null;
 	whatsapp: string | null;
 	theme_color: string;
 	description: string | null;

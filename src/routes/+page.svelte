@@ -60,9 +60,9 @@
 	</div>
 </nav>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 landing-serif">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 	<div class="text-center py-20 sm:py-28">
-		<div class="inline-flex items-center gap-2 bg-ember/10 border border-ember/20 rounded-full px-4 py-1.5 mb-6 text-xs font-medium text-ember -rotate-1 font-hand text-base">
+		<div class="inline-flex items-center gap-2 bg-ember/10 border border-ember/20 rounded-full px-4 py-1.5 mb-6 text-xs font-medium text-ember -rotate-1 text-base">
 			<i class="ri-timer-line"></i>
 			Tu tienda lista en menos de 5 minutos
 		</div>
@@ -98,7 +98,7 @@
 				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
 					<i class="ri-user-add-line text-xl text-ember"></i>
 				</div>
-				<span class="font-hand text-3xl text-ember/70 rotate-3">1</span>
+				<span class="text-3xl text-ember/70 rotate-3">1</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Regístrate</h3>
 			<p class="text-sm text-body leading-relaxed">Crea tu cuenta gratis con tu correo. Solo toma un minuto.</p>
@@ -108,7 +108,7 @@
 				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
 					<i class="ri-store-2-line text-xl text-ember"></i>
 				</div>
-				<span class="font-hand text-3xl text-ember/70 -rotate-3">2</span>
+				<span class="text-3xl text-ember/70 -rotate-3">2</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Agrega tus productos</h3>
 			<p class="text-sm text-body leading-relaxed">Nombre, precio y descripción. Personaliza el color y tu número de WhatsApp.</p>
@@ -118,7 +118,7 @@
 				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
 					<i class="ri-share-forward-line text-xl text-ember"></i>
 				</div>
-				<span class="font-hand text-3xl text-ember/70 rotate-2">3</span>
+				<span class="text-3xl text-ember/70 rotate-2">3</span>
 			</div>
 			<h3 class="text-lg font-bold text-ink mb-1.5">Comparte tu tienda</h3>
 			<p class="text-sm text-body leading-relaxed">Recibe pedidos directo en tu WhatsApp. Sin comisiones.</p>
@@ -127,7 +127,7 @@
 
 	<div class="max-w-2xl mx-auto pb-20">
 		<h2 class="text-2xl sm:text-3xl font-bold text-ink text-center mb-10">
-			Preguntas <span class="font-hand text-ember text-3xl sm:text-4xl">frecuentes</span>
+			Preguntas <span class="text-ember text-3xl sm:text-4xl">frecuentes</span>
 		</h2>
 		<div class="space-y-3">
 			{#each faqs as faq}
@@ -150,9 +150,9 @@
 
 	<div class="bg-card border border-hairline rounded-card p-8 sm:p-12 mb-20 text-center">
 		<h2 class="text-2xl sm:text-3xl font-bold text-ink mb-3">
-			<span class="font-hand text-ember text-3xl sm:text-4xl mr-2">¿Listo</span>para vender?
+			<span class="text-ember text-3xl sm:text-4xl mr-2">¿Listo</span>para vender?
 		</h2>
-		<p class="text-body max-w-md mx-auto mb-6">Miles de emprendedores ya venden con Tiendly. Tú puedes ser el próximo.</p>
+		<p class="text-body max-w-md mx-auto mb-6">Tu tienda online te toma 5 minutos. Sin tarjetas, sin complicaciones.</p>
 		<a href={'/create'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 			Empezar ahora
 		</a>
