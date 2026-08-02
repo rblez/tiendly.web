@@ -10,6 +10,23 @@
 	let stats = $state<StoreStats>({});
 	let loading = $state(true);
 	let upgradeOpen = $state(false);
+	let deleteTarget = $state<Store | null>(null);
+	let deleting = $state(false);
+	let deleteError = $state('');
+
+	async function confirmDelete() {
+		if (!deleteTarget || !auth.session) return;
+		deleting = true;
+		deleteError = '';
+		const { error: err } = await supabase.from('stores').delete().eq('id', deleteTarget.id);
+		deleting = false;
+		if (err) {
+			deleteError = err.message;
+			return;
+		}
+		stores = stores.filter((s) => s.id !== deleteTarget.id);
+		deleteTarget = null;
+	}
 
 	const plan = PLAN_MAP[auth.plan] ?? PLAN_MAP.free;
 	const atLimit = $derived(stores.length >= (plan.limitStores ?? Infinity));
@@ -174,14 +191,60 @@
 							<i class="ri-external-link-line"></i>
 							Ver
 						</button>
+						<button
+							onclick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								deleteTarget = store;
+							}}
+							class="ml-auto inline-flex items-center justify-center h-8 w-8 rounded-full bg-bone text-muted hover:bg-error/10 hover:text-error transition-colors cursor-pointer"
+							aria-label="Eliminar tienda"
+							title="Eliminar tienda"
+						>
+							<i class="ri-delete-bin-6-line"></i>
+						</button>
 					</div>
 				</a>
 			{/each}
 		</div>
 	{/if}
 
-	{#if upgradeOpen}
+	{#if deleteTarget}
 		<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" role="presentation">
+			<button type="button" class="absolute inset-0 bg-black/60 cursor-default" onclick={() => (deleteTarget = null)} aria-label="Cerrar"></button>
+			<div class="relative bg-card border border-hairline rounded-card w-full max-w-sm p-6 sm:p-8 text-center">
+				<div class="w-14 h-14 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+					<i class="ri-delete-bin-6-line text-2xl text-error"></i>
+				</div>
+				<h2 class="text-lg font-bold text-ink mb-1">¿Eliminar {deleteTarget.name}?</h2>
+				<p class="text-sm text-muted mb-6">
+					Se borrarán permanentemente sus {stats[deleteTarget.id]?.products ?? 0} productos y {stats[deleteTarget.id]?.orders ?? 0} pedidos. Esta acción no se puede deshacer.
+				</p>
+				{#if deleteError}
+					<p class="text-xs text-error mb-4">{deleteError}</p>
+				{/if}
+				<div class="flex flex-col sm:flex-row gap-3">
+					<button
+						onclick={() => (deleteTarget = null)}
+						disabled={deleting}
+						class="flex-1 px-5 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer disabled:opacity-50"
+					>
+						Cancelar
+					</button>
+					<button
+						onclick={confirmDelete}
+						disabled={deleting}
+						class="flex-1 inline-flex items-center justify-center gap-2 bg-error text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+					>
+						<i class="ri-delete-bin-6-line"></i>
+						{deleting ? 'Eliminando...' : 'Eliminar'}
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if upgradeOpen}		<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" role="presentation">
 			<button type="button" class="absolute inset-0 bg-black/60 cursor-default" onclick={() => (upgradeOpen = false)} aria-label="Cerrar"></button>
 			<div class="relative bg-card border border-hairline rounded-card w-full max-w-3xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
 				<button onclick={() => (upgradeOpen = false)} class="absolute top-4 right-4 text-muted hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
