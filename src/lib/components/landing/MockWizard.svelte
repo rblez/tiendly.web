@@ -1,34 +1,46 @@
 <script lang="ts">
 	import MockFrame from './MockFrame.svelte';
+
+	let { class: className }: { class?: string } = $props();
+
+	const steps = [
+		{ label: 'Nombre', icon: 'ri-store-2-line' },
+		{ label: 'Logo', icon: 'ri-image-line' },
+		{ label: 'Contacto', icon: 'ri-whatsapp-line' },
+		{ label: 'Productos', icon: 'ri-shopping-bag-line' },
+	];
 </script>
 
-<MockFrame url="tiendly.lat/wizard">
-	<div class="p-4 bg-canvas/70">
+<MockFrame url="tiendly.lat/wizard" className={className}>
+	<div class="px-4 pt-4 pb-3 bg-canvas/70">
 		<div class="flex items-center gap-1.5 mb-4">
-			{#each ['Registro', 'Productos', 'Personaliza', 'Listo'] as label, i}
-				<div class="flex-1">
-					<div class="h-1 rounded-full {i < 2 ? 'bg-ember' : 'bg-bone'} mb-1"></div>
-					<p class="text-[8px] text-muted truncate text-center">{label}</p>
+			{#each steps as s, i}
+				<div class="flex-1 flex flex-col items-center gap-1.5">
+					<div class="flex items-center w-full">
+						<div class={`h-1.5 flex-1 rounded-full ${i > 0 ? (i < 2 ? 'bg-ember' : 'bg-bone') : 'bg-transparent'}`}></div>
+						<span class={`h-6 w-6 flex items-center justify-center rounded-full text-[10px] flex-shrink-0 ${i < 2 ? 'bg-ember text-white font-bold' : 'bg-bone text-muted'}`}>
+							{#if i < 2}
+								{i + 1}
+							{:else}
+								<i class="{s.icon} text-[9px]"></i>
+							{/if}
+						</span>
+						<div class={`h-1.5 flex-1 rounded-full ${i < 1 ? 'bg-ember' : 'bg-bone'}`}></div>
+					</div>
+					<span class={`text-[8px] font-medium ${i < 2 ? 'text-ember' : 'text-muted-soft'}`}>{s.label}</span>
 				</div>
 			{/each}
 		</div>
 
-		<div class="bg-card border border-hairline rounded-xl p-3.5 mb-3">
-			<p class="text-[10px] font-semibold text-ink mb-2">Agrega tu primer producto</p>
-			<div class="flex items-center gap-2.5 bg-canvas border border-hairline rounded-lg p-2.5 mb-2">
-				<div class="h-8 w-8 rounded-md bg-gradient-to-br from-bone/80 to-bone/30 flex items-center justify-center flex-shrink-0">
-					<i class="ri-cup-line text-sm text-muted"></i>
-				</div>
-				<div class="min-w-0 flex-1">
-					<p class="text-[10px] font-medium text-ink truncate">Café de especialidad</p>
-					<p class="text-[9px] text-muted">CUP 150</p>
-				</div>
-				<i class="ri-checkbox-circle-fill text-ember"></i>
+		<p class="text-[10px] font-semibold text-ember uppercase tracking-wide mb-0.5">Paso 2 de 4</p>
+		<h3 class="text-xs font-bold text-ink mb-3">Agrega tu logo</h3>
+
+		<div class="flex items-center justify-center rounded-xl border-2 border-dashed border-hairline bg-card py-6 mb-3">
+			<div class="flex flex-col items-center gap-1.5">
+				<span class="h-12 w-12 rounded-full bg-ember flex items-center justify-center text-lg font-black text-white">T</span>
+				<span class="text-[10px] text-muted">Tu logo aquí</span>
+				<span class="text-[9px] text-muted-soft">Opcional · JPG o PNG</span>
 			</div>
-			<button class="w-full flex items-center justify-center gap-1.5 border border-dashed border-hairline text-muted text-[10px] font-medium py-2 rounded-lg">
-				<i class="ri-add-line"></i>
-				Agregar otro producto
-			</button>
 		</div>
 
 		<button class="w-full flex items-center justify-center gap-1.5 bg-ember text-white text-[10px] font-semibold py-2.5 rounded-lg">
