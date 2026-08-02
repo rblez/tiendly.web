@@ -23,8 +23,23 @@
 	let error = $state('');
 	let creating = $state(false);
 	let createdStoreId = $state('');
+	let atLimit = $state(false);
+	let limitLoading = $state(true);
 
 	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
+
+	$effect(() => {
+		auth.init();
+		if (!auth.ready || !auth.session) {
+			limitLoading = false;
+			return;
+		}
+		(async () => {
+			const { count } = await supabase.from('stores').select('id', { count: 'exact', head: true }).eq('owner_id', auth.session!.user.id);
+			atLimit = auth.plan === 'free' && (count ?? 0) >= 1;
+			limitLoading = false;
+		})();
+	});
 
 	let canContinue = $derived.by(() => {
 		if (step === 1) return name.trim().length > 0 && slug.trim().length >= 3;
@@ -152,6 +167,27 @@
 </svelte:head>
 
 <section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+	{#if atLimit}
+		<div class="text-center py-16 bg-card border border-hairline rounded-card">
+			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
+				<i class="ri-star-line text-3xl text-ember"></i>
+			</div>
+			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Free</h1>
+			<p class="text-body mb-2">El plan Free incluye 1 tienda. Ya tienes una en Tiendly.</p>
+			<p class="text-xs text-muted-soft mb-8">Actualiza a Pro para crear tiendas ilimitadas cuando esté disponible.</p>
+			<a
+				href="/app"
+				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+			>
+				<i class="ri-arrow-left-line"></i>
+				Volver a mis tiendas
+			</a>
+		</div>
+	{:else if limitLoading}
+		<div class="flex items-center justify-center py-32">
+			<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
+		</div>
+	{:else}
 	<div class="mb-8">
 		<h1 class="text-2xl sm:text-3xl font-bold text-ink mb-2">Crea tu tienda</h1>
 		<p class="text-sm text-muted">Solo 4 pasos y listo para compartir.</p>
@@ -369,4 +405,5 @@
 			</button>
 		{/if}
 	</div>
+	{/if}
 </section>

@@ -7,6 +7,7 @@ import { supabase } from '$lib/supabase/client';
 	import type { Order, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, productImage, slugify, storeUrl, uploadImage, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
+import OptionModal from '$lib/components/OptionModal.svelte';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
 
@@ -16,6 +17,7 @@ import { supabase } from '$lib/supabase/client';
 	let ordersLoading = $state(false);
 	let loading = $state(true);
 	let unreadOrders = $state(0);
+	let statusModalOrder = $state<Order | null>(null);
 
 	function notifyNewOrder(customerName: string | null) {
 		const name = customerName ?? 'un cliente';
@@ -79,6 +81,8 @@ import { supabase } from '$lib/supabase/client';
 	let formImages = $state<string[]>([]);
 	let formSaving = $state(false);
 	let productError = $state('');
+	let pickerCurrencyOpen = $state(false);
+	let pickerCategoryOpen = $state(false);
 
 	// Settings form
 	let settings = $state({
@@ -776,23 +780,45 @@ async function duplicateProduct(p: Product) {
 									<i class="ri-whatsapp-line"></i>
 									Contactar
 								</a>
-								<div class="ml-auto">
-									<select
-										value={order.status}
-										onchange={(e) => updateOrderStatus(order, (e.target as HTMLSelectElement).value)}
-										class={`select-pill ${status.selCls}`}
-										aria-label="Cambiar estado del pedido"
-									>
-										{#each ORDER_STATUSES as s}
-											<option value={s.value}>{s.label}</option>
-										{/each}
-									</select>
-								</div>
+							<div class="ml-auto">
+								<button
+									onclick={() => (statusModalOrder = order)}
+									class={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-btn border cursor-pointer transition-colors hover:brightness-110 ${status.selCls}`}
+									aria-label="Cambiar estado del pedido"
+								>
+									<i class="ri-arrow-down-s-line"></i>
+									{status.label}
+								</button>
+							</div>
 							</div>
 						</div>
 					{/each}
 				</div>
 			{/if}
+
+			<OptionModal title="Cambiar estado" open={statusModalOrder !== null} onClose={() => (statusModalOrder = null)}>
+				<div class="space-y-1">
+					{#each ORDER_STATUSES as s}
+						<button
+							onclick={() => {
+								if (statusModalOrder) updateOrderStatus(statusModalOrder, s.value);
+								statusModalOrder = null;
+							}}
+							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
+								statusModalOrder?.status === s.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+							}`}
+						>
+							<span class="flex items-center gap-2.5">
+								<span class={`w-2.5 h-2.5 rounded-full ${s.cls.split(' ')[0]}`}></span>
+								{s.label}
+							</span>
+							{#if statusModalOrder?.status === s.value}
+								<i class="ri-check-line text-ember"></i>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</OptionModal>
 
 		{:else}
 			<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -1012,18 +1038,17 @@ async function duplicateProduct(p: Product) {
 									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 								/>
 							</div>
-							<div>
-								<label for="p-currency" class="block text-sm font-medium text-body mb-1.5">Moneda</label>
-								<select
-									id="p-currency"
-									bind:value={formCurrency}
-									class="field-select"
-								>
-									{#each CURRENCIES as c}
-										<option value={c}>{c}</option>
-									{/each}
-								</select>
-							</div>
+						<div>
+							<label for="p-currency" class="block text-sm font-medium text-body mb-1.5">Moneda</label>
+							<button
+								type="button"
+								onclick={() => (pickerCurrencyOpen = true)}
+								class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink hover:border-ember/50 transition-colors cursor-pointer"
+							>
+								<span>{formCurrency}</span>
+								<i class="ri-arrow-down-s-line text-muted"></i>
+							</button>
+						</div>
 						</div>
 						<div>
 							<label for="p-category" class="block text-sm font-medium text-body mb-1.5">Categoría</label>
@@ -1045,19 +1070,14 @@ async function duplicateProduct(p: Product) {
 									</button>
 								</div>
 							{:else}
-								<select
-									id="p-category"
-									bind:value={formCategory}
-									onchange={(e) => {
-										if ((e.target as HTMLSelectElement).value === '__new__') startNewCategory();
-									}}
-									class="field-select"
+								<button
+									type="button"
+									onclick={() => (pickerCategoryOpen = true)}
+									class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink hover:border-ember/50 transition-colors cursor-pointer"
 								>
-									{#each categories as cat}
-										<option value={cat}>{cat}</option>
-									{/each}
-									<option value="__new__">+ Crear nueva</option>
-								</select>
+									<span>{formCategory}</span>
+									<i class="ri-arrow-down-s-line text-muted"></i>
+								</button>
 							{/if}
 						</div>
 						<div>
@@ -1120,6 +1140,62 @@ async function duplicateProduct(p: Product) {
 					</div>
 				</div>
 			</div>
+		{/if}
+
+		{#if pickerCurrencyOpen}
+			<OptionModal title="Elegir moneda" open onClose={() => (pickerCurrencyOpen = false)}>
+				<div class="space-y-1">
+					{#each CURRENCIES as c}
+						<button
+							onclick={() => {
+								formCurrency = c;
+								pickerCurrencyOpen = false;
+							}}
+							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
+								formCurrency === c ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+							}`}
+						>
+							<span>{c}</span>
+							{#if formCurrency === c}
+								<i class="ri-check-line text-ember"></i>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</OptionModal>
+		{/if}
+
+		{#if pickerCategoryOpen}
+			<OptionModal title="Elegir categoría" open onClose={() => (pickerCategoryOpen = false)}>
+				<div class="space-y-1">
+					{#each categories as cat}
+						<button
+							onclick={() => {
+								formCategory = cat;
+								pickerCategoryOpen = false;
+							}}
+							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
+								formCategory === cat ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+							}`}
+						>
+							<span>{cat}</span>
+							{#if formCategory === cat}
+								<i class="ri-check-line text-ember"></i>
+							{/if}
+						</button>
+					{/each}
+					<button
+						onclick={() => {
+							pickerCategoryOpen = false;
+							startNewCategory();
+						}}
+						class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-btn text-sm font-medium text-ember hover:bg-ember/10 transition-colors cursor-pointer"
+					>
+						<i class="ri-add-line"></i>
+						Crear nueva
+					</button>
+				</div>
+			</OptionModal>
 		{/if}
 	{/if}
 </section>
