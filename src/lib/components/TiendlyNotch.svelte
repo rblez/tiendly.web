@@ -29,7 +29,7 @@
 				href="https://www.tiendly.lat"
 				class="inline-flex items-center justify-center gap-1.5 bg-ember text-white px-4 py-2 rounded-btn text-sm font-semibold hover:bg-ember-active transition-colors no-underline"
 			>
-				Visita tiendly <i class="ri-external-link-line text-xs"></i>
+				Visita Tiendly <i class="ri-external-link-line text-xs"></i>
 			</a>
 		</div>
 	</div>
