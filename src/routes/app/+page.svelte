@@ -183,7 +183,7 @@
 	{#if upgradeOpen}
 		<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" role="presentation">
 			<button type="button" class="absolute inset-0 bg-black/60 cursor-default" onclick={() => (upgradeOpen = false)} aria-label="Cerrar"></button>
-			<div class="relative bg-card border border-hairline rounded-card w-full max-w-lg p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+			<div class="relative bg-card border border-hairline rounded-card w-full max-w-3xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
 				<button onclick={() => (upgradeOpen = false)} class="absolute top-4 right-4 text-muted hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
 					<i class="ri-close-line text-xl"></i>
 				</button>
