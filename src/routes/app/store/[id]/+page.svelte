@@ -647,7 +647,7 @@ async function duplicateProduct(p: Product) {
 				{/if}
 				<div>
 					<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-					<a href={`/@/${store.slug}`} target="_blank" rel="noopener noreferrer" class="text-sm text-ember hover:text-ember-active no-underline inline-flex items-center gap-1">
+					<a href={`/@${store.slug}`} target="_blank" rel="noopener noreferrer" class="text-sm text-ember hover:text-ember-active no-underline inline-flex items-center gap-1">
 						tiendly.lat/@{store.slug}
 						<i class="ri-external-link-line text-xs"></i>
 					</a>

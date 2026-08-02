@@ -18,7 +18,7 @@
 	);
 
 	const img = $derived(productImage(product));
-	const productUrl = $derived(`/@/${store.slug}/p/${product.id}`);
+	const productUrl = $derived(`/@${store.slug}/p/${product.id}`);
 </script>
 
 <a
