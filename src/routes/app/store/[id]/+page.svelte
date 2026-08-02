@@ -668,7 +668,7 @@ async function duplicateProduct(p: Product) {
 									<i class="ri-pencil-line"></i>
 								</button>
 								<button onclick={() => duplicateProduct(product)} class="p-2.5 text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Duplicar">
-									<i class="ri-file-copy-line"></i>
+									<i class="ri-file-copy-2-line"></i>
 								</button>
 								<button onclick={() => deleteProduct(product.id)} class="p-2.5 text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Eliminar">
 									<i class="ri-delete-bin-line"></i>
