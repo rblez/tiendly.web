@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import StoreNavbar from '$lib/components/StoreNavbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import TiendlyNotch from '$lib/components/TiendlyNotch.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { themeStyle } from '$lib/utils';
 	import type { Store } from '$lib/types';
@@ -38,4 +39,5 @@
 		{@render children()}
 	</main>
 	<Footer {store} />
+	<TiendlyNotch />
 </div>
