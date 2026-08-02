@@ -31,7 +31,7 @@
 		<p class="text-sm text-muted mt-1">tiendas creadas en Tiendly</p>
 	</div>
 	<div class="bg-card border border-hairline rounded-card p-6">
-		<i class="ri-shopping-bag-3-line text-2xl text-ember mb-3"></i>
+		<i class="ri-shopping-bag-line text-2xl text-ember mb-3"></i>
 		<p class="text-3xl font-black text-ink tabular-nums">{productsCount.toLocaleString('es-CU')}</p>
 		<p class="text-sm text-muted mt-1">productos publicados</p>
 	</div>
