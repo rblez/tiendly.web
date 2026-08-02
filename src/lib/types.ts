@@ -21,6 +21,36 @@ export interface Product {
 	position: number;
 }
 
+export interface OrderItem {
+	productId: string;
+	variantId?: string;
+	quantity: number;
+	productName: string;
+	label?: string | null;
+	price: number;
+	currency: string;
+}
+
+export interface Order {
+	id: string;
+	store_id: string;
+	customer_name: string;
+	customer_phone: string;
+	notes: string | null;
+	items: OrderItem[];
+	total: number;
+	currency: string;
+	status: string;
+	created_at: string;
+}
+
+export interface StoreSocial {
+	fb?: string | null;
+	ig?: string | null;
+	yt?: string | null;
+	tg?: string | null;
+}
+
 export interface Store {
 	id: string;
 	owner_id: string;
@@ -32,6 +62,7 @@ export interface Store {
 	description: string | null;
 	active: boolean;
 	created_at: string;
+	social?: StoreSocial;
 }
 
 export interface CartLine {

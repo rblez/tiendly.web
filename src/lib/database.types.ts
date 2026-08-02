@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      orders: {
+        Row: {
+          id: string
+          store_id: string
+          customer_name: string
+          customer_phone: string
+          notes: string | null
+          items: Json
+          total: number
+          currency: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          store_id: string
+          customer_name: string
+          customer_phone: string
+          notes?: string | null
+          items?: Json
+          total?: number
+          currency?: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          store_id?: string
+          customer_name?: string
+          customer_phone?: string
+          notes?: string | null
+          items?: Json
+          total?: number
+          currency?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean
@@ -99,6 +146,7 @@ export type Database = {
           name: string
           owner_id: string
           slug: string
+          social: Json
           theme_color: string
           whatsapp: string | null
         }
@@ -111,6 +159,7 @@ export type Database = {
           name: string
           owner_id: string
           slug: string
+          social?: Json
           theme_color?: string
           whatsapp?: string | null
         }
@@ -123,6 +172,7 @@ export type Database = {
           name?: string
           owner_id?: string
           slug?: string
+          social?: Json
           theme_color?: string
           whatsapp?: string | null
         }

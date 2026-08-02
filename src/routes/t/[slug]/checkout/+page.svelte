@@ -39,7 +39,7 @@
 	}
 
 	// Products cache: fetched lazily on mount for cart items
-	let cartProductsCache: Record<string, Product> = {};
+	let cartProductsCache = $state<Record<string, Product>>({});
 	let cacheReady = $state(false);
 
 	$effect(() => {
@@ -125,13 +125,38 @@
 		return encodeURIComponent(lines.join('\n'));
 	}
 
-	function handleSubmit(e: SubmitEvent) {
+	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		if (!name || !phone || sending) return;
 
 		sending = true;
 		const msg = buildWhatsAppMessage();
 		const wa = data.store.whatsapp;
+
+		const items = cartLines.map((cp) => ({
+			productId: cp.productId,
+			variantId: cp.variantId ?? undefined,
+			quantity: cp.quantity,
+			productName: cp.product.name,
+			label: cp.label,
+			price: cp.price,
+			currency: cp.product.currency,
+		}));
+
+		try {
+			const { supabase } = await import('$lib/supabase/client');
+			await supabase.from('orders').insert({
+				store_id: data.store.id,
+				customer_name: name.trim(),
+				customer_phone: phone.trim(),
+				notes: notes.trim() || null,
+				items,
+				total,
+				currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+			});
+		} catch {
+			// no bloquea el envío por WhatsApp
+		}
 
 		setTimeout(() => {
 			submitted = true;
