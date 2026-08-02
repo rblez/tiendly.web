@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { supabase } from '$lib/supabase/client';
+	import type { Database } from '$lib/database.types';
+import { supabase } from '$lib/supabase/client';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -14,6 +15,50 @@
 	let orders = $state<Order[]>([]);
 	let ordersLoading = $state(false);
 	let loading = $state(true);
+	let unreadOrders = $state(0);
+
+	function notifyNewOrder(customerName: string | null) {
+		const name = customerName ?? 'un cliente';
+		const text = `Nuevo pedido de ${name}`;
+		const audioCtx = new AudioContext();
+		const now = audioCtx.currentTime;
+		const notes = [880, 1108.73];
+		for (let i = 0; i < notes.length; i++) {
+			const osc = audioCtx.createOscillator();
+			const gain = audioCtx.createGain();
+			osc.type = 'sine';
+			osc.frequency.value = notes[i];
+			gain.gain.setValueAtTime(0.0001, now + i * 0.18);
+			gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.18 + 0.02);
+			gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.18 + 0.16);
+			osc.connect(gain).connect(audioCtx.destination);
+			osc.start(now + i * 0.18);
+			osc.stop(now + i * 0.18 + 0.2);
+		}
+		if ('Notification' in window && Notification.permission === 'granted') {
+			new Notification('Tiendly', { body: text });
+		}
+	}
+
+	async function requestNotificationPermission() {
+		if ('Notification' in window && Notification.permission === 'default') {
+			try {
+				await Notification.requestPermission();
+			} catch {
+				/* noop */
+			}
+		}
+	}
+
+	function markOrdersRead() {
+		unreadOrders = 0;
+	}
+
+	let documentTitle = $derived(unreadOrders > 0 ? `(${unreadOrders}) ${store?.name ?? ''} | Tiendly` : `${store?.name ?? ''} | Tiendly`);
+
+	$effect(() => {
+		document.title = documentTitle;
+	});
 	let tab = $state<Tab>($page.url.searchParams.get('created') ? 'ajustes' : 'productos');
 	let error = $state('');
 	let savedFlash = $state(false);
@@ -276,11 +321,27 @@
 
 	onMount(() => {
 		if (!editingStoreId) return;
+		requestNotificationPermission();
 		const channel = supabase
 			.channel(`store-realtime-${editingStoreId}`)
 			.on(
 				'postgres_changes',
-				{ event: '*', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
+				{ event: 'INSERT', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
+				(payload) => {
+					const row = payload.new as Partial<Order>;
+					unreadOrders += 1;
+					notifyNewOrder(row.customer_name ?? null);
+					loadOrders(true);
+				},
+			)
+			.on(
+				'postgres_changes',
+				{ event: 'UPDATE', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
+				() => loadOrders(true),
+			)
+			.on(
+				'postgres_changes',
+				{ event: 'DELETE', schema: 'public', table: 'orders', filter: `store_id=eq.${editingStoreId}` },
 				() => loadOrders(true),
 			)
 			.on(
@@ -397,7 +458,28 @@
 		savedMessage = 'Enlace copiado';
 		setTimeout(() => (savedFlash = false), 2500);
 	}
-</script>
+async function duplicateProduct(p: Product) {
+								const { data } = await supabase.from('products').select('*').eq('id', p.id).single();
+								if (!data) return;
+								const src = data as unknown as Product;
+								const { error } = await supabase.from('products').insert({
+									store_id: editingStoreId,
+									position: products.length,
+									name: `${src.name} (copia)`,
+									description: src.description,
+									price: src.price,
+									currency: src.currency,
+									category: src.category,
+									agotado: src.agotado,
+									active: src.active,
+									image: src.image,
+								images: Array.isArray(src.images) ? src.images : [],
+								variants: Array.isArray(src.variants) ? (src.variants as unknown as Database['public']['Tables']['products']['Row']['variants']) : [],
+								});
+								if (error) return;
+								await reloadProducts();
+							}
+						</script>
 
 <svelte:head>
 	<title>{store ? `${store.name} | Tiendly` : 'Tienda | Tiendly'}</title>
@@ -470,12 +552,17 @@
 					Productos
 				</button>
 				<button
-					onclick={() => { tab = 'pedidos'; $page.url.searchParams.delete('created'); }}
-					class="px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer
+					onclick={() => { tab = 'pedidos'; markOrdersRead(); $page.url.searchParams.delete('created'); }}
+					class="px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5
 						{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 				>
-					<i class="ri-folder-line mr-1.5"></i>
+					<i class="ri-folder-line"></i>
 					Pedidos
+					{#if unreadOrders > 0}
+						<span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-canvas rounded-full tabular-nums">
+							{unreadOrders}
+						</span>
+					{/if}
 				</button>
 				<button
 					onclick={() => { tab = 'ajustes'; $page.url.searchParams.delete('created'); }}
@@ -539,6 +626,9 @@
 							<div class="flex items-center gap-1">
 								<button onclick={() => openEditProduct(product)} class="p-2.5 text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Editar">
 									<i class="ri-pencil-line"></i>
+								</button>
+								<button onclick={() => duplicateProduct(product)} class="p-2.5 text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Duplicar">
+									<i class="ri-file-copy-line"></i>
 								</button>
 								<button onclick={() => deleteProduct(product.id)} class="p-2.5 text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Eliminar">
 									<i class="ri-delete-bin-line"></i>
