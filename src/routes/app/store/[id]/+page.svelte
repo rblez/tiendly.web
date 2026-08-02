@@ -1246,5 +1246,40 @@ async function duplicateProduct(p: Product) {
 				</div>
 			</OptionModal>
 		{/if}
+
+		{#if qrOpen}
+			<div class="fixed inset-0 z-[90] flex items-center justify-center p-4" role="presentation">
+				<button type="button" class="fixed inset-0 bg-black/60 cursor-default" onclick={() => (qrOpen = false)} aria-label="Cerrar"></button>
+				<div class="relative w-full max-w-sm bg-card border border-hairline shadow-2xl rounded-card p-6">
+					<button onclick={() => (qrOpen = false)} class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
+						<i class="ri-close-line text-xl"></i>
+					</button>
+					<h3 class="font-bold text-ink mb-1 text-center">QR de tu tienda</h3>
+					<p class="text-xs text-muted text-center mb-5">Imprímelo y colócalo en tu local para que tus clientes entren directo.</p>
+					<div class="flex items-center justify-center mb-5">
+						{#if qrGenerating}
+							<div class="w-64 h-64 flex items-center justify-center">
+								<i class="ri-loader-4-line animate-spin text-3xl text-ember"></i>
+							</div>
+						{:else if qrDataUrl}
+							<img src={qrDataUrl} alt={`QR de ${store.name}`} class="w-64 h-64 rounded-xl" />
+						{:else}
+							<p class="text-sm text-error">No se pudo generar el QR.</p>
+						{/if}
+					</div>
+					<div class="text-center mb-5">
+						<p class="text-xs text-muted-soft break-all">https://www.tiendly.lat/t/{store.slug}</p>
+					</div>
+					<a
+						href={qrDataUrl}
+						download={`qr-${store.slug}.png`}
+						class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active no-underline"
+					>
+						<i class="ri-download-2-line"></i>
+						Descargar PNG
+					</a>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </section>
