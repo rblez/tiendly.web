@@ -78,7 +78,7 @@
 			Gratis, sin tarjetas y sin complicaciones.
 		</p>
 		<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-			<a href={'/create'} class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
+			<a href={'/wizard'} class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 				Crear mi tienda gratis
 			</a>
 			<a href={auth.session ? '/app' : '/login'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
@@ -153,7 +153,7 @@
 			<span class="text-ember text-3xl sm:text-4xl mr-2">¿Listo</span>para vender?
 		</h2>
 		<p class="text-body max-w-md mx-auto mb-6">Tu tienda online te toma 5 minutos. Sin tarjetas, sin complicaciones.</p>
-		<a href={'/create'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
+		<a href={'/wizard'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 			Empezar ahora
 		</a>
 	</div>

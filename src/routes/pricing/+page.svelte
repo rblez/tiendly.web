@@ -11,7 +11,7 @@
 
 <header class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
 	<a href="/" class="no-underline"><Logo /></a>
-	<a href="/create" class="inline-flex items-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline">
+	<a href="/wizard" class="inline-flex items-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline">
 		<i class="ri-add-line"></i>
 		Crear mi tienda
 	</a>
@@ -45,7 +45,7 @@
 					{/each}
 				</ul>
 				<a
-					href="/create"
+					href="/wizard"
 					class={`w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 no-underline ${
 						p.id === 'free' ? 'bg-bone border border-hairline text-ink hover:border-ember/50' : 'bg-ember text-white hover:bg-ember-active'
 					}`}

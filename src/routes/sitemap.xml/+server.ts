@@ -5,7 +5,7 @@ export const prerender = false;
 export const GET = async () => {
 	const { data: stores } = await supabase.from('stores').select('slug').eq('active', true);
 
-	const staticUrls = ['/', '/create', '/pricing', '/login', '/signup'];
+	const staticUrls = ['/', '/wizard', '/pricing', '/login', '/signup'];
 	const urls = [
 		...staticUrls.map((path) => `<url><loc>https://www.tiendly.lat${path}</loc><changefreq>monthly</changefreq></url>`),
 		...(stores ?? []).map(
