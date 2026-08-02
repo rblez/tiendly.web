@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { filters } from '$lib/stores/filters.svelte';
+	import { storeSocials } from '$lib/socials';
 	import { productImage } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
@@ -9,6 +10,9 @@
 
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
+
+	const socials = $derived(storeSocials(store));
+	const headerSocial = $derived(socials.length === 1 ? socials[0] : null);
 
 	function handleSearch(e: Event) {
 		filters.setSearchQuery((e.target as HTMLInputElement).value);
@@ -57,6 +61,18 @@
 			{/if}
 
 			<div class="flex items-center gap-4 sm:gap-5">
+				{#if headerSocial}
+					<a
+						href={headerSocial.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex items-center justify-center transition-colors no-underline text-body hover:text-ember"
+						aria-label={headerSocial.label}
+						title={headerSocial.label}
+					>
+						<img src={headerSocial.icon} alt={headerSocial.label} class="h-5 w-5" />
+					</a>
+				{/if}
 				{#if $page.url.pathname !== `/t/${store.slug}/cart`}
 					<a
 						href={`/t/${store.slug}/cart`}

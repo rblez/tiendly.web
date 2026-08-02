@@ -5,6 +5,7 @@
 	import { auth } from '$lib/stores/auth.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, productImage, slugify, storeUrl, themeStyle, uploadImage, waLink } from '$lib/utils';
+	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
 
@@ -48,14 +49,9 @@
 	let initialSettings = $state('');
 	let initialSocial = $state('');
 
-	const SOCIAL_NETWORKS = [
-		{ key: 'fb', label: 'Facebook', icon: 'https://cdn.simpleicons.org/Facebook/1877F2', placeholder: 'https://facebook.com/tutienda' },
-		{ key: 'ig', label: 'Instagram', icon: 'https://cdn.simpleicons.org/Instagram/E4405F', placeholder: 'https://instagram.com/tutienda' },
-		{ key: 'yt', label: 'YouTube', icon: 'https://cdn.simpleicons.org/YouTube/FF0000', placeholder: 'https://youtube.com/@tutienda' },
-		{ key: 'tg', label: 'Telegram', icon: 'https://cdn.simpleicons.org/Telegram/229ED9', placeholder: 'https://t.me/tutienda' },
-	] as const;
+	const SOCIAL_NETWORKS = NETWORKS;
 
-	type SocialKey = (typeof SOCIAL_NETWORKS)[number]['key'];
+	type SocialKey = SocialKeyType;
 	let social = $state<Partial<Record<SocialKey, string>>>({});
 	let justSaved = $state(false);
 
