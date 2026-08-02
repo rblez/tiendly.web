@@ -5,7 +5,7 @@ export const load = async ({ params }) => {
 	const { data: store } = await supabase
 		.from('stores')
 		.select('*')
-		.eq('slug', params.slug)
+		.eq('slug', params.username)
 		.maybeSingle();
 
 	if (!store) throw error(404, 'Tienda no encontrada');

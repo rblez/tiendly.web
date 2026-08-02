@@ -139,7 +139,7 @@
 						{/if}
 						<div class="min-w-0">
 							<h3 class="font-bold text-ink truncate">{store.name}</h3>
-							<p class="text-xs text-muted truncate">/t/{store.slug}</p>
+							<p class="text-xs text-muted truncate">@{store.slug}</p>
 						</div>
 						{#if !store.active}
 							<span class="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-full bg-error/10 text-error text-[10px] flex-shrink-0">
@@ -170,7 +170,7 @@
 							<i class="ri-settings-3-line"></i>
 							Gestionar
 						</span>
-						<button onclick={() => window.open(`/t/${store.slug}`, '_blank', 'noopener,noreferrer')} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer">
+						<button onclick={() => window.open(`/@/${store.slug}`, '_blank', 'noopener,noreferrer')} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer">
 							<i class="ri-external-link-line"></i>
 							Ver
 						</button>

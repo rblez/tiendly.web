@@ -212,7 +212,7 @@
 	{#if step === 1}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h2 class="text-lg font-bold text-ink mb-1">¿Cómo se llama tu tienda?</h2>
-			<p class="text-sm text-muted mb-6">Este será el enlace que compartirás con tus clientes.</p>
+			<p class="text-sm text-muted mb-6">Este será el username que compartirás con tus clientes.</p>
 
 			<div class="space-y-5">
 				<div>
@@ -227,15 +227,15 @@
 					/>
 				</div>
 				<div>
-					<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Enlace de tu tienda</label>
+					<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 					<div class="flex items-center bg-canvas border border-hairline rounded-btn focus-within:border-ember transition-colors overflow-hidden">
-						<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/t/</span>
+						<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/@</span>
 						<input
 							id="store-slug"
 							type="text"
 							bind:value={slug}
 							oninput={onSlugInput}
-							placeholder="dulces-de-ana"
+							placeholder="dulcesdeana"
 							class="flex-1 px-1 py-2.5 pr-3.5 bg-transparent text-sm text-ink placeholder:text-muted-soft focus:outline-none"
 						/>
 					</div>

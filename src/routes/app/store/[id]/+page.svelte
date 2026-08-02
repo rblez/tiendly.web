@@ -95,7 +95,7 @@ import QRCode from 'qrcode';
 		qrOpen = true;
 		qrGenerating = true;
 		try {
-			qrDataUrl = await QRCode.toDataURL(`https://www.tiendly.lat/t/${store.slug}`, {
+			qrDataUrl = await QRCode.toDataURL(`https://www.tiendly.lat/@${store.slug}`, {
 				width: 512,
 				margin: 2,
 				color: { dark: '#ffffff', light: '#111111' },
@@ -631,8 +631,8 @@ async function duplicateProduct(p: Product) {
 				{/if}
 				<div>
 					<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-					<a href={`/t/${store.slug}`} target="_blank" rel="noopener noreferrer" class="text-sm text-ember hover:text-ember-active no-underline inline-flex items-center gap-1">
-						tiendly.lat/t/{store.slug}
+					<a href={`/@/${store.slug}`} target="_blank" rel="noopener noreferrer" class="text-sm text-ember hover:text-ember-active no-underline inline-flex items-center gap-1">
+						tiendly.lat/@{store.slug}
 						<i class="ri-external-link-line text-xs"></i>
 					</a>
 				</div>
@@ -959,9 +959,9 @@ async function duplicateProduct(p: Product) {
 							/>
 						</div>
 						<div>
-							<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Enlace</label>
+							<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 							<div class="flex items-center bg-canvas border border-hairline rounded-btn focus-within:border-ember transition-colors overflow-hidden">
-								<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/t/</span>
+								<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/@</span>
 								<input
 									id="s-slug"
 									type="text"
@@ -1344,7 +1344,7 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</div>
 					<div class="text-center mb-5">
-						<p class="text-xs text-muted-soft break-all">https://www.tiendly.lat/t/{store.slug}</p>
+						<p class="text-xs text-muted-soft break-all">https://www.tiendly.lat/@{store.slug}</p>
 					</div>
 					<a
 						href={qrDataUrl}

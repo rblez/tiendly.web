@@ -96,7 +96,7 @@
 
 	$effect(() => {
 		if (cartEmpty && cacheReady) {
-			goto(`/t/${data.store.slug}`);
+			goto(`/@/${data.store.slug}`);
 		}
 	});
 
@@ -181,7 +181,7 @@
 		setTimeout(() => {
 			cart.clear();
 			window.open(waLink(wa ?? '', msg), '_blank');
-			goto(`/t/${data.store.slug}/gracias`);
+			goto(`/@/${data.store.slug}/gracias`);
 		}, 1200);
 	}
 </script>
@@ -201,7 +201,7 @@
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
 			<p class="text-lg text-muted mb-6">Tu carrito está vacío</p>
 			<a
-				href={`/t/${data.store.slug}`}
+				href={`/@/${data.store.slug}`}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
 			>
 				Ver productos
@@ -212,7 +212,7 @@
 			<i class="ri-store-2-line text-3xl text-muted-soft mb-4 block"></i>
 			<p class="text-lg text-muted mb-2">Esta tienda aún no configura cómo recibir pedidos</p>
 			<a
-				href={`/t/${data.store.slug}`}
+				href={`/@/${data.store.slug}`}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
 			>
 				Volver al catálogo

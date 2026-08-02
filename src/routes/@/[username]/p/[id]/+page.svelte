@@ -47,12 +47,12 @@
 	);
 
 	const img = $derived(productImage(product));
-	const shareUrl = $derived(`${appUrl() || window.location.origin}/t/${data.store.slug}/p/${product.id}`);
+	const shareUrl = $derived(`${appUrl() || window.location.origin}/@/${data.store.slug}/p/${product.id}`);
 	const shareText = $derived(`Mira esto: ${product.name}${selectedVariant ? ` — ${selectedVariant.label}` : ''} — ${formatPrice(currentPrice, product.currency)}`);
 
 	function buyNow() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
-		goto(`/t/${data.store.slug}/checkout`);
+		goto(`/@/${data.store.slug}/checkout`);
 	}
 
 	function shareWhatsApp() {
@@ -96,7 +96,7 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-	<a href={`/t/${data.store.slug}`} class="inline-flex items-center gap-1.5 text-sm text-body hover:text-ember transition-colors no-underline mb-6">
+	<a href={`/@/${data.store.slug}`} class="inline-flex items-center gap-1.5 text-sm text-body hover:text-ember transition-colors no-underline mb-6">
 		<i class="ri-arrow-left-line"></i>
 		Volver al catálogo
 	</a>
