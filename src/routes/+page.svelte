@@ -60,7 +60,7 @@
 	</div>
 </nav>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 landing-serif">
 	<div class="text-center py-20 sm:py-28">
 		<div class="inline-flex items-center gap-2 bg-ember/10 border border-ember/20 rounded-full px-4 py-1.5 mb-6 text-xs font-medium text-ember -rotate-1 font-hand text-base">
 			<i class="ri-timer-line"></i>
