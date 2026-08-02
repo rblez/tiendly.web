@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Squiggle from '$lib/components/Squiggle.svelte';
+	import DoodleArrow from '$lib/components/DoodleArrow.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	$effect(() => { auth.init(); });
@@ -30,15 +32,18 @@
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 	<div class="text-center py-20 sm:py-28">
-		<div class="inline-flex items-center gap-2 bg-ember/10 border border-ember/20 rounded-full px-4 py-1.5 mb-6 text-xs font-medium text-ember">
+		<div class="inline-flex items-center gap-2 bg-ember/10 border border-ember/20 rounded-full px-4 py-1.5 mb-6 text-xs font-medium text-ember -rotate-1 font-hand text-base">
 			<i class="ri-timer-line"></i>
 			Tu tienda lista en menos de 5 minutos
 		</div>
 		<h1 class="text-4xl sm:text-6xl font-black tracking-tight text-ink leading-tight">
 			Crea tu tienda online
-			<span class="text-ember">en 5 minutos</span>
+			<span class="relative inline-block text-ember">
+				en 5 minutos
+				<Squiggle class="absolute -bottom-2 left-0 w-full h-3 text-ember" />
+			</span>
 		</h1>
-		<p class="max-w-xl mx-auto mt-5 text-base sm:text-lg text-body leading-relaxed">
+		<p class="max-w-xl mx-auto mt-6 text-base sm:text-lg text-body leading-relaxed">
 			Regístrate, agrega tus productos y comparte tu tienda por WhatsApp, Telegram o redes sociales.
 			Gratis, sin tarjetas y sin complicaciones.
 		</p>
@@ -50,34 +55,48 @@
 				Ver una tienda de ejemplo
 			</a>
 		</div>
+		<div class="hidden md:flex justify-end max-w-2xl mx-auto mt-2">
+			<DoodleArrow class="w-16 h-14 text-ember/80 -rotate-12 -mt-16 mr-6" />
+		</div>
 	</div>
 
 	<div class="grid sm:grid-cols-3 gap-4 sm:gap-6 pb-20">
-		<div class="bg-card border border-hairline rounded-card p-6">
-			<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full mb-4">
-				<i class="ri-user-add-line text-xl text-ember"></i>
+		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:-rotate-1">
+			<div class="flex items-center justify-between mb-4">
+				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
+					<i class="ri-user-add-line text-xl text-ember"></i>
+				</div>
+				<span class="font-hand text-3xl text-ember/70 rotate-3">1</span>
 			</div>
-			<h3 class="text-lg font-bold text-ink mb-1.5">1. Regístrate</h3>
+			<h3 class="text-lg font-bold text-ink mb-1.5">Regístrate</h3>
 			<p class="text-sm text-body leading-relaxed">Crea tu cuenta gratis con tu correo. Solo toma un minuto.</p>
 		</div>
-		<div class="bg-card border border-hairline rounded-card p-6">
-			<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full mb-4">
-				<i class="ri-store-2-line text-xl text-ember"></i>
+		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:rotate-1">
+			<div class="flex items-center justify-between mb-4">
+				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
+					<i class="ri-store-2-line text-xl text-ember"></i>
+				</div>
+				<span class="font-hand text-3xl text-ember/70 -rotate-3">2</span>
 			</div>
-			<h3 class="text-lg font-bold text-ink mb-1.5">2. Agrega tus productos</h3>
+			<h3 class="text-lg font-bold text-ink mb-1.5">Agrega tus productos</h3>
 			<p class="text-sm text-body leading-relaxed">Nombre, precio y descripción. Personaliza el color y tu número de WhatsApp.</p>
 		</div>
-		<div class="bg-card border border-hairline rounded-card p-6">
-			<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full mb-4">
-				<i class="ri-share-forward-line text-xl text-ember"></i>
+		<div class="bg-card border border-hairline rounded-card p-6 sm:rotate-0 transition-transform duration-300 hover:-rotate-1">
+			<div class="flex items-center justify-between mb-4">
+				<div class="w-11 h-11 flex items-center justify-center bg-ember/10 rounded-full">
+					<i class="ri-share-forward-line text-xl text-ember"></i>
+				</div>
+				<span class="font-hand text-3xl text-ember/70 rotate-2">3</span>
 			</div>
-			<h3 class="text-lg font-bold text-ink mb-1.5">3. Comparte tu tienda</h3>
+			<h3 class="text-lg font-bold text-ink mb-1.5">Comparte tu tienda</h3>
 			<p class="text-sm text-body leading-relaxed">Recibe pedidos directo en tu WhatsApp. Sin comisiones.</p>
 		</div>
 	</div>
 
 	<div class="bg-card border border-hairline rounded-card p-8 sm:p-12 mb-20 text-center">
-		<h2 class="text-2xl sm:text-3xl font-bold text-ink mb-3">¿Listo para vender?</h2>
+		<h2 class="text-2xl sm:text-3xl font-bold text-ink mb-3">
+			<span class="font-hand text-ember text-3xl sm:text-4xl mr-2">¿Listo</span>para vender?
+		</h2>
 		<p class="text-body max-w-md mx-auto mb-6">Miles de emprendedores ya venden con Tiendly. Tú puedes ser el próximo.</p>
 		<a href={auth.session ? '/app/new' : '/signup'} class="inline-flex bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 			Empezar ahora
