@@ -107,7 +107,7 @@
 			<img
 				src={productImage({ image: store.banner })!}
 				alt=""
-				class="w-full h-40 sm:h-56 object-cover"
+				class="w-full h-56 sm:h-80 lg:h-96 object-cover"
 			/>
 			<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 			<div class="absolute inset-x-0 bottom-0 p-5 sm:p-6">
