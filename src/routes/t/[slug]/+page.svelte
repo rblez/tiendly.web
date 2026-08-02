@@ -5,6 +5,7 @@
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters } from '$lib/stores/filters.svelte';
+	import { storeSocials } from '$lib/socials';
 	import { productImage } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
@@ -13,6 +14,8 @@
 	let loaded = $state(false);
 	let store = $state(data.store);
 	let products = $state<Product[]>(data.products);
+
+	const socials = $derived(storeSocials(store));
 
 	onMount(() => {
 		filters.resetFilters();
@@ -106,40 +109,54 @@
 				alt=""
 				class="w-full h-40 sm:h-56 object-cover"
 			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-			<div class="absolute inset-x-0 bottom-0 flex items-end gap-4 p-5 sm:p-6">
-				<div class="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 rounded-xl overflow-hidden bg-canvas border-2 border-white/20 shadow-lg">
-					{#if productImage({ image: store.logo })}
-						<img src={productImage({ image: store.logo })!} alt={store.name} class="w-full h-full object-cover" />
-					{:else}
-						<div class="w-full h-full flex items-center justify-center bg-card">
-							<span class="text-2xl sm:text-3xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
-						</div>
-					{/if}
-				</div>
+			<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+			<div class="absolute inset-x-0 bottom-0 p-5 sm:p-6">
 				<div class="min-w-0 text-white">
 					<h1 class="text-2xl sm:text-3xl font-bold leading-tight">{store.name}</h1>
 					{#if store.description}
-						<p class="text-sm text-white/80 mt-0.5 line-clamp-2">{store.description}</p>
+						<p class="text-sm text-white/80 mt-1 max-w-xl">{store.description}</p>
+					{/if}
+					{#if socials.length > 0}
+						<div class="flex items-center gap-2.5 mt-3">
+							{#each socials as s}
+								<a
+									href={s.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="h-8 w-8 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/25 transition-colors"
+									aria-label={s.label}
+									title={s.label}
+								>
+									<img src={s.icon} alt={s.label} class="h-3.5 w-3.5" />
+								</a>
+							{/each}
+						</div>
 					{/if}
 				</div>
 			</div>
 		</div>
 	{:else}
-		<div class="mb-8 flex items-center gap-4">
-			<div class="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 rounded-xl overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
-				{#if productImage({ image: store.logo })}
-					<img src={productImage({ image: store.logo })!} alt={store.name} class="w-full h-full object-cover" />
-				{:else}
-					<span class="text-xl sm:text-2xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
-				{/if}
-			</div>
-			<div class="min-w-0">
-				<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-				{#if store.description}
-					<p class="text-sm text-muted mt-1">{store.description}</p>
-				{/if}
-			</div>
+		<div class="mb-8">
+			<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
+			{#if store.description}
+				<p class="text-sm text-muted mt-1 max-w-xl">{store.description}</p>
+			{/if}
+			{#if socials.length > 0}
+				<div class="flex items-center gap-2.5 mt-3">
+					{#each socials as s}
+						<a
+							href={s.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="h-8 w-8 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
+							aria-label={s.label}
+							title={s.label}
+						>
+							<img src={s.icon} alt={s.label} class="h-3.5 w-3.5" />
+						</a>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 

@@ -51,6 +51,15 @@ export interface StoreSocial {
 	tg?: string | null;
 }
 
+export interface Profile {
+	id: string;
+	name: string;
+	phone: string | null;
+	avatar_url: string | null;
+	plan: string;
+	created_at: string;
+}
+
 export interface Store {
 	id: string;
 	owner_id: string;

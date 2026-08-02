@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { filters } from '$lib/stores/filters.svelte';
-	import { storeSocials } from '$lib/socials';
 	import { productImage } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
@@ -10,9 +9,6 @@
 
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
-
-	const socials = $derived(storeSocials(store));
-	const headerSocial = $derived(socials.length === 1 ? socials[0] : null);
 
 	function handleSearch(e: Event) {
 		filters.setSearchQuery((e.target as HTMLInputElement).value);
@@ -61,18 +57,6 @@
 			{/if}
 
 			<div class="flex items-center gap-4 sm:gap-5">
-				{#if headerSocial}
-					<a
-						href={headerSocial.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="flex items-center justify-center transition-colors no-underline text-body hover:text-ember"
-						aria-label={headerSocial.label}
-						title={headerSocial.label}
-					>
-						<img src={headerSocial.icon} alt={headerSocial.label} class="h-5 w-5" />
-					</a>
-				{/if}
 				{#if $page.url.pathname !== `/t/${store.slug}/cart`}
 					<a
 						href={`/t/${store.slug}/cart`}
@@ -108,19 +92,3 @@
 		</div>
 	{/if}
 </nav>
-
-{#if store.description}
-	<div class="bg-canvas-soft border-b border-hairline-soft">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center gap-2 text-xs text-body">
-			<i class="ri-store-2-line text-ember"></i>
-			<span class="truncate">{store.description}</span>
-			<button
-				onclick={() => { filters.resetFilters(); }}
-				class="ml-auto shrink-0 text-muted-soft hover:text-ember transition-colors cursor-pointer"
-				aria-label="Limpiar filtros"
-			>
-				<i class="ri-filter-off-line"></i>
-			</button>
-		</div>
-	</div>
-{/if}

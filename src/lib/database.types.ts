@@ -117,6 +117,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           id: string
           name: string
@@ -124,6 +125,7 @@ export type Database = {
           plan: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           id: string
           name?: string
@@ -131,6 +133,7 @@ export type Database = {
           plan?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -229,6 +232,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_account: { Args: { p_user_id: string }; Returns: undefined }
       increment_store_visit: { Args: { p_slug: string }; Returns: number }
       is_store_owner: { Args: { store_id: string }; Returns: boolean }
     }
