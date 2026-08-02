@@ -10,7 +10,6 @@
 	let name = $state('');
 	let phone = $state('');
 	let notes = $state('');
-	let submitted = $state(false);
 	let sending = $state(false);
 
 	let directProduct = $state<Product | null>(null);
@@ -96,7 +95,7 @@
 	let cartEmpty = $derived(cartLines.length === 0);
 
 	$effect(() => {
-		if (cartEmpty && cacheReady && !submitted) {
+		if (cartEmpty && cacheReady) {
 			goto(`/t/${data.store.slug}`);
 		}
 	});
@@ -145,23 +144,44 @@
 
 		try {
 			const { supabase } = await import('$lib/supabase/client');
-			await supabase.from('orders').insert({
-				store_id: data.store.id,
-				customer_name: name.trim(),
-				customer_phone: phone.trim(),
-				notes: notes.trim() || null,
-				items,
-				total,
-				currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
-			});
+			const { data: orderRow } = await supabase
+				.from('orders')
+				.insert({
+					store_id: data.store.id,
+					customer_name: name.trim(),
+					customer_phone: phone.trim(),
+					notes: notes.trim() || null,
+					items,
+					total,
+					currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+				})
+				.select('id')
+				.single();
+			try {
+				sessionStorage.setItem(
+					`tiendly-order-${data.store.slug}`,
+					JSON.stringify({
+						id: orderRow?.id ?? null,
+						name: name.trim(),
+						phone: phone.trim(),
+						items,
+						total,
+						currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+						storeName: data.store.name,
+						storeSlug: data.store.slug,
+					}),
+				);
+			} catch {
+				// sin sessionStorage (privado) → solo WhatsApp
+			}
 		} catch {
 			// no bloquea el envío por WhatsApp
 		}
 
 		setTimeout(() => {
-			submitted = true;
 			cart.clear();
 			window.open(waLink(wa ?? '', msg), '_blank');
+			goto(`/t/${data.store.slug}/gracias`);
 		}, 1200);
 	}
 </script>
@@ -173,21 +193,7 @@
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-10">Checkout</h1>
 
-	{#if submitted}
-		<div class="text-center py-16 bg-card border border-hairline rounded-card">
-			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
-				<i class="ri-check-line text-3xl text-ember"></i>
-			</div>
-			<h2 class="text-2xl font-bold text-ink mb-2">¡Pedido enviado!</h2>
-			<p class="text-body mb-6">Te hemos redirigido a WhatsApp para completar la compra.</p>
-			<a
-				href={`/t/${data.store.slug}`}
-				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
-			>
-				Seguir comprando
-			</a>
-		</div>
-	{:else if cartEmpty && !cacheReady}
+	{#if cartEmpty && !cacheReady}
 		<div class="flex items-center justify-center py-20">
 			<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
 		</div>
