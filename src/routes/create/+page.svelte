@@ -139,7 +139,7 @@
 					products,
 					createdAt: Date.now(),
 				});
-				goto('/signup?from=crear');
+				goto('/signup?from=create');
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Ocurrió un error al crear la tienda.';

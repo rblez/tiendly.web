@@ -69,7 +69,7 @@
 				</button>
 			{:else}
 				<a
-					href="/crear"
+					href="/create"
 					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
 				>
 					<i class="ri-add-line"></i>
@@ -118,7 +118,7 @@
 			<h2 class="text-xl font-bold text-ink mb-2">Aún no tienes tiendas</h2>
 			<p class="text-body mb-6">Crea tu primera tienda gratis en menos de 5 minutos.</p>
 			<a
-				href="/crear"
+				href="/create"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
 				<i class="ri-add-line"></i>
