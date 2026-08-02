@@ -28,7 +28,7 @@
 		{:else}
 			<div class="flex items-center gap-2.5">
 				<span class="h-7 w-7 flex items-center justify-center rounded-md bg-ember text-canvas font-black text-xs select-none">T</span>
-				<span class="font-bold text-lg text-ink">tiendly</span>
+				<span class="font-bold text-lg text-ink">Tiendly</span>
 			</div>
 			<p class="text-sm text-muted max-w-md">
 				Crea tu tienda online y compártela en minutos. Sin tarjetas, sin complicaciones.

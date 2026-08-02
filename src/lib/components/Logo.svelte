@@ -7,6 +7,6 @@
 		T
 	</span>
 	{#if showText}
-		<span class="text-xl font-bold tracking-tight">tiendly</span>
+		<span class="text-xl font-bold tracking-tight">Tiendly</span>
 	{/if}
 </a>
