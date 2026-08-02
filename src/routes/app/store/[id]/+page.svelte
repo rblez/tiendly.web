@@ -696,20 +696,16 @@
 					<div>
 						<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
 						<div class="flex flex-wrap items-center gap-3">
-							{#each PRESET_COLORS as color}
-								<button
-									onclick={() => settings.theme_color = color}
-									class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
-										{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
-									style={`background-color: ${color}`}
-									aria-label={`Color ${color}`}
-								></button>
-							{/each}
-							<label class="relative h-8 w-8 rounded-full border border-hairline overflow-hidden cursor-pointer flex items-center justify-center" title="Color personalizado">
-								<i class="ri-palette-line text-muted"></i>
-								<input type="color" bind:value={settings.theme_color} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-							</label>
-						</div>
+								{#each PRESET_COLORS as color}
+									<button
+										onclick={() => settings.theme_color = color}
+										class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
+											{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
+										style={`background-color: ${color}`}
+										aria-label={`Color ${color}`}
+									></button>
+								{/each}
+							</div>
 					</div>
 					<div class="flex items-center justify-between bg-bone rounded-btn px-4 py-3">
 						<div>
