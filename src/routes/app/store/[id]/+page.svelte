@@ -502,6 +502,21 @@ import QRCode from 'qrcode';
 		} catch {
 			settingsError = 'No se pudo subir el logo.';
 		}
+			input.value = '';
+	}
+
+	async function handleStoreBanner(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file || !auth.session || !store) return;
+		settingsError = '';
+		try {
+			const url = await uploadImage(file, auth.session.user.id);
+			await supabase.from('stores').update({ banner: url }).eq('id', store.id);
+			store = { ...store, banner: url };
+		} catch {
+			settingsError = 'No se pudo subir el banner.';
+		}
 		input.value = '';
 	}
 
@@ -929,6 +944,27 @@ async function duplicateProduct(p: Product) {
 							Cambiar logo
 							<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
 						</label>
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-body mb-1.5">Banner del hero</label>
+						<div class="flex items-center gap-4">
+							<div class="h-20 flex-1 max-w-sm rounded-xl overflow-hidden bg-canvas border border-hairline">
+								{#if productImage({ image: store.banner })}
+									<img src={productImage({ image: store.banner })!} alt="Banner" class="w-full h-full object-cover" />
+								{:else}
+									<div class="w-full h-full flex items-center justify-center">
+										<i class="ri-image-add-line text-muted-soft text-2xl"></i>
+									</div>
+								{/if}
+							</div>
+							<label class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+								<i class="ri-upload-2-line"></i>
+								{store.banner ? 'Cambiar banner' : 'Subir banner'}
+								<input type="file" accept="image/*" class="hidden" onchange={handleStoreBanner} />
+							</label>
+						</div>
+						<p class="text-xs text-muted-soft mt-1.5">Imagen panorámica del hero de tu tienda. Recomendado 1600×400.</p>
 					</div>
 
 					<div class="grid gap-3 sm:grid-cols-2">

@@ -5,6 +5,7 @@
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters } from '$lib/stores/filters.svelte';
+	import { productImage } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
@@ -98,12 +99,49 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
-	<div class="mb-8">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-		{#if store.description}
-			<p class="text-sm text-muted mt-1">{store.description}</p>
-		{/if}
-	</div>
+	{#if productImage({ image: store.banner })}
+		<div class="relative rounded-card overflow-hidden mb-8">
+			<img
+				src={productImage({ image: store.banner })!}
+				alt=""
+				class="w-full h-40 sm:h-56 object-cover"
+			/>
+			<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+			<div class="absolute inset-x-0 bottom-0 flex items-end gap-4 p-5 sm:p-6">
+				<div class="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 rounded-xl overflow-hidden bg-canvas border-2 border-white/20 shadow-lg">
+					{#if productImage({ image: store.logo })}
+						<img src={productImage({ image: store.logo })!} alt={store.name} class="w-full h-full object-cover" />
+					{:else}
+						<div class="w-full h-full flex items-center justify-center bg-card">
+							<span class="text-2xl sm:text-3xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
+						</div>
+					{/if}
+				</div>
+				<div class="min-w-0 text-white">
+					<h1 class="text-2xl sm:text-3xl font-bold leading-tight">{store.name}</h1>
+					{#if store.description}
+						<p class="text-sm text-white/80 mt-0.5 line-clamp-2">{store.description}</p>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="mb-8 flex items-center gap-4">
+			<div class="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 rounded-xl overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
+				{#if productImage({ image: store.logo })}
+					<img src={productImage({ image: store.logo })!} alt={store.name} class="w-full h-full object-cover" />
+				{:else}
+					<span class="text-xl sm:text-2xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
+				{/if}
+			</div>
+			<div class="min-w-0">
+				<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
+				{#if store.description}
+					<p class="text-sm text-muted mt-1">{store.description}</p>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	{#if categories.length > 1}
 		<div class="flex flex-wrap gap-2 mb-8">
