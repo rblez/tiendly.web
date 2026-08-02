@@ -9,6 +9,7 @@ import { supabase } from '$lib/supabase/client';
 	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 import { PLAN_MAP } from '$lib/plans';
+import QRCode from 'qrcode';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
 
@@ -85,6 +86,25 @@ import { PLAN_MAP } from '$lib/plans';
 	let pickerCurrencyOpen = $state(false);
 	let pickerCategoryOpen = $state(false);
 	let atProductLimit = $state(false);
+	let qrOpen = $state(false);
+	let qrDataUrl = $state('');
+	let qrGenerating = $state(false);
+
+	async function openQrModal() {
+		if (!store) return;
+		qrOpen = true;
+		qrGenerating = true;
+		try {
+			qrDataUrl = await QRCode.toDataURL(`https://www.tiendly.lat/t/${store.slug}`, {
+				width: 512,
+				margin: 2,
+				color: { dark: '#ffffff', light: '#111111' },
+			});
+		} catch {
+			qrDataUrl = '';
+		}
+		qrGenerating = false;
+	}
 
 	// Settings form
 	let settings = $state({
@@ -545,6 +565,10 @@ async function duplicateProduct(p: Product) {
 				<button onclick={copyLink} class="bg-ember text-white px-4 py-2 rounded-btn text-xs font-medium hover:bg-ember-active transition-colors cursor-pointer">
 					<i class="ri-link"></i>
 					Copiar
+				</button>
+				<button onclick={openQrModal} class="bg-card border border-hairline text-body px-4 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+					<i class="ri-qr-code-line"></i>
+					QR
 				</button>
 			</div>
 		</div>

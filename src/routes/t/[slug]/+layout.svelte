@@ -3,7 +3,6 @@
 	import StoreNavbar from '$lib/components/StoreNavbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import TiendlyNotch from '$lib/components/TiendlyNotch.svelte';
-	import WhatsAppFloat from '$lib/components/WhatsAppFloat.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { themeStyle } from '$lib/utils';
 	import type { Store } from '$lib/types';
@@ -86,5 +85,4 @@
 	</main>
 	<Footer {store} />
 	<TiendlyNotch />
-	<WhatsAppFloat whatsapp={store.whatsapp} />
 </div>
