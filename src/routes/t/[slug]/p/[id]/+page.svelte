@@ -1,34 +1,57 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
+	import { supabase } from '$lib/supabase/client';
 	import { appUrl, formatPrice, productImage, productImages, waLink } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
 
-	let selectedVariant = $state(data.product.variants[0] ?? null);
+	let product = $state(data.product);
+
+	onMount(() => {
+		const channel = supabase
+			.channel(`store-product-${product.id}`)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'products', filter: `id=eq.${product.id}` },
+				(payload) => {
+					if (payload.new && typeof payload.new === 'object') {
+						const p = payload.new as Product;
+						product = { ...p, variants: Array.isArray(p.variants) ? p.variants : [], images: Array.isArray(p.images) ? p.images : [] };
+					}
+				},
+			)
+			.subscribe();
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	});
+
+	let selectedVariant = $state(product.variants[0] ?? null);
 	let imgError = $state(false);
 	let showShare = $state(false);
 	let copied = $state(false);
 	let activeIndex = $state(0);
 
-	const photos = $derived(productImages(data.product));
+	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
 
-	let currentPrice = $derived(selectedVariant ? selectedVariant.price : data.product.price);
+	let currentPrice = $derived(selectedVariant ? selectedVariant.price : product.price);
 	let isAgotado = $derived(
-		data.product.agotado ||
-		(data.product.variants.length > 0 && data.product.variants.every((v) => v.agotado)) ||
+		product.agotado ||
+		(product.variants.length > 0 && product.variants.every((v) => v.agotado)) ||
 		selectedVariant?.agotado ||
 		false
 	);
 
-	const img = $derived(productImage(data.product));
-	const shareUrl = $derived(`${appUrl() || window.location.origin}/t/${data.store.slug}/p/${data.product.id}`);
-	const shareText = $derived(`Mira esto: ${data.product.name}${selectedVariant ? ` — ${selectedVariant.label}` : ''} — ${formatPrice(currentPrice, data.product.currency)}`);
+	const img = $derived(productImage(product));
+	const shareUrl = $derived(`${appUrl() || window.location.origin}/t/${data.store.slug}/p/${product.id}`);
+	const shareText = $derived(`Mira esto: ${product.name}${selectedVariant ? ` — ${selectedVariant.label}` : ''} — ${formatPrice(currentPrice, product.currency)}`);
 
 	function buyNow() {
-		cart.addItem(data.store.slug, data.product.id, selectedVariant?.id);
+		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
 		goto(`/t/${data.store.slug}/checkout`);
 	}
 
@@ -61,11 +84,11 @@
 </script>
 
 <svelte:head>
-	<title>{data.product.name} | {data.store.name}</title>
-	<meta name="description" content={data.product.description ?? `${data.product.name} en ${data.store.name}.`} />
+	<title>{product.name} | {data.store.name}</title>
+	<meta name="description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
 	<meta property="og:type" content="product" />
-	<meta property="og:title" content={`${data.product.name} | ${data.store.name}`} />
-	<meta property="og:description" content={data.product.description ?? `${data.product.name} en ${data.store.name}.`} />
+	<meta property="og:title" content={`${product.name} | ${data.store.name}`} />
+	<meta property="og:description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
 	<meta property="og:url" content={shareUrl} />
 	{#if img}
 		<meta property="og:image" content={img} />
@@ -83,7 +106,7 @@
 			<div class="bg-card border border-hairline rounded-card overflow-hidden">
 				<div class="aspect-[4/3] bg-canvas">
 					{#if activePhoto && !imgError}
-						<img src={activePhoto} alt={data.product.name} class="w-full h-full object-cover" onerror={() => imgError = true} />
+						<img src={activePhoto} alt={product.name} class="w-full h-full object-cover" onerror={() => imgError = true} />
 					{/if}
 				</div>
 			</div>
@@ -96,7 +119,7 @@
 								{activeIndex === i ? 'border-ember' : 'border-hairline hover:border-ember/50'}"
 							aria-label={`Ver foto ${i + 1}`}
 						>
-							<img src={photo} alt={`${data.product.name} ${i + 1}`} class="w-full h-full object-cover" />
+							<img src={photo} alt={`${product.name} ${i + 1}`} class="w-full h-full object-cover" />
 						</button>
 					{/each}
 				</div>
@@ -105,19 +128,19 @@
 
 		<div class="space-y-5">
 			<div>
-				<p class="text-xs text-muted uppercase tracking-wider mb-1">{data.product.category}</p>
-				<h1 class="text-2xl sm:text-3xl font-bold text-ink">{data.product.name}</h1>
+				<p class="text-xs text-muted uppercase tracking-wider mb-1">{product.category}</p>
+				<h1 class="text-2xl sm:text-3xl font-bold text-ink">{product.name}</h1>
 			</div>
 
-			{#if data.product.description}
-				<p class="text-sm sm:text-base text-body leading-relaxed">{data.product.description}</p>
+			{#if product.description}
+				<p class="text-sm sm:text-base text-body leading-relaxed">{product.description}</p>
 			{/if}
 
-			{#if data.product.variants.length > 0}
+			{#if product.variants.length > 0}
 				<div>
 					<p class="text-xs sm:text-sm text-muted mb-2">Elige una opción:</p>
 					<div class="flex flex-wrap gap-2">
-						{#each data.product.variants as variant}
+						{#each product.variants as variant}
 							<button
 								onclick={() => selectedVariant = variant}
 								disabled={variant.agotado}
@@ -142,7 +165,7 @@
 			{:else}
 				<div class="bg-bone rounded-btn p-3 sm:p-4">
 					<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
-					<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(currentPrice, data.product.currency)}</p>
+					<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(currentPrice, product.currency)}</p>
 				</div>
 			{/if}
 
@@ -163,7 +186,7 @@
 							Comprar
 						</button>
 						<button
-							onclick={() => cart.addItem(data.store.slug, data.product.id, selectedVariant?.id)}
+							onclick={() => cart.addItem(data.store.slug, product.id, selectedVariant?.id)}
 							class="flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer flex items-center justify-center gap-2"
 						>
 							<i class="ri-add-line"></i>

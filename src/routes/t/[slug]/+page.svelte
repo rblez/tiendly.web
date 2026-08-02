@@ -3,16 +3,51 @@
 	import { onMount } from 'svelte';
 	import ProductCard from '$lib/components/ProductCard.svelte';
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
+	import { supabase } from '$lib/supabase/client';
 	import { filters } from '$lib/stores/filters.svelte';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
 
 	let loaded = $state(false);
+	let store = $state(data.store);
+	let products = $state<Product[]>(data.products);
 
 	onMount(() => {
 		filters.resetFilters();
+		const storeId = data.store.id;
+		const channel = supabase
+			.channel(`store-catalog-${storeId}`)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'products', filter: `store_id=eq.${storeId}` },
+				() => refreshProducts(),
+			)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'stores', filter: `id=eq.${storeId}` },
+				(payload) => {
+					if (payload.new && typeof payload.new === 'object') store = payload.new as Store;
+				},
+			)
+			.subscribe();
+		return () => {
+			supabase.removeChannel(channel);
+		};
 	});
+
+	async function refreshProducts() {
+		const { data: fresh } = await supabase
+			.from('products')
+			.select('*')
+			.eq('store_id', data.store.id)
+			.order('position', { ascending: true });
+		products = (fresh as Product[] | null)?.map((p) => ({
+			...p,
+			variants: Array.isArray(p.variants) ? p.variants : [],
+			images: Array.isArray(p.images) ? p.images : [],
+		})) ?? [];
+	}
 
 	$effect(() => {
 		const t = setTimeout(() => (loaded = true), 400);
@@ -20,11 +55,11 @@
 	});
 
 	let categories = $derived(
-		Array.from(new Set(data.products.map((p) => p.category))).sort()
+		Array.from(new Set(products.map((p) => p.category))).sort()
 	);
 
 	let filtered = $derived(
-		data.products.filter((p) => {
+		products.filter((p) => {
 			const q = filters.searchQuery.toLowerCase();
 			const matchesSearch =
 				!q ||
@@ -59,14 +94,14 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <svelte:head>
-	<title>{data.store.name} | Catálogo</title>
+	<title>{store.name} | Catálogo</title>
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	<div class="mb-8">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">{data.store.name}</h1>
-		{#if data.store.description}
-			<p class="text-sm text-muted mt-1">{data.store.description}</p>
+		<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
+		{#if store.description}
+			<p class="text-sm text-muted mt-1">{store.description}</p>
 		{/if}
 	</div>
 
@@ -111,7 +146,7 @@
 	{:else if filters.selectedCategory || filters.searchQuery}
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 			{#each filtered as product}
-				<ProductCard {product} store={data.store} />
+				<ProductCard {product} store={store} />
 			{/each}
 		</div>
 	{:else}
@@ -123,7 +158,7 @@
 				</h2>
 				<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 					{#each group.products as product}
-						<ProductCard {product} store={data.store} />
+						<ProductCard {product} store={store} />
 					{/each}
 				</div>
 			</div>

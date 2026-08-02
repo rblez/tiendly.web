@@ -63,7 +63,7 @@
 		JSON.stringify(settings) !== initialSettings || JSON.stringify(social) !== initialSocial
 	);
 
-	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6', '#ffffff'];
+	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
 	const CURRENCIES = ['CUP', 'USD', 'MXN', 'ARS', 'EUR'];
 
 	let shareUrl = $derived(store ? storeUrl(store.slug) : '');
@@ -291,6 +291,21 @@
 				'postgres_changes',
 				{ event: '*', schema: 'public', table: 'products', filter: `store_id=eq.${editingStoreId}` },
 				() => reloadProducts(),
+			)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'stores', filter: `id=eq.${editingStoreId}` },
+				(payload) => {
+					if (!payload.new || typeof payload.new !== 'object') return;
+					const row = payload.new as Partial<Store>;
+					store = { ...store!, ...row } as Store;
+					if (row.name !== undefined) settings.name = row.name;
+					if (row.slug !== undefined) settings.slug = row.slug;
+					if (row.description !== undefined) settings.description = row.description ?? '';
+					if (row.whatsapp !== undefined) settings.whatsapp = row.whatsapp ?? '';
+					if (row.theme_color !== undefined) settings.theme_color = row.theme_color;
+					if (row.active !== undefined) settings.active = row.active;
+				},
 			)
 			.subscribe();
 		return () => {
