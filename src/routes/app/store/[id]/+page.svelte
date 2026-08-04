@@ -6,7 +6,7 @@ import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
-	import { SOCIAL_NETWORKS as NETWORKS, type SocialKey as SocialKeyType } from '$lib/socials';
+	import { SOCIAL_NETWORKS as NETWORKS, socialDisplay, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 import { PLAN_MAP } from '$lib/plans';
 import QRCode from 'qrcode';
@@ -528,7 +528,7 @@ import QRCode from 'qrcode';
 		const clean: Record<string, string> = {};
 		for (const net of SOCIAL_NETWORKS) {
 			const val = (social[net.key] ?? '').trim();
-			if (val) clean[net.key] = val.startsWith('http') ? val : `https://${val}`;
+			if (val) clean[net.key] = socialUrl(net.key, val);
 		}
 		const { error: err } = await supabase
 			.from('stores')
@@ -975,17 +975,15 @@ async function duplicateProduct(p: Product) {
 							/>
 						</div>
 						<div>
-							<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
-							<div class="flex items-center bg-canvas border border-hairline rounded-btn focus-within:border-ember transition-colors overflow-hidden">
-								<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/@</span>
-								<input
-									id="s-slug"
-									type="text"
-									bind:value={settings.slug}
-									oninput={onSettingsSlugInput}
-									class="flex-1 min-w-0 px-1 py-2.5 pr-3.5 bg-transparent text-sm text-ink focus:outline-none"
-								/>
-							</div>
+						<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
+						<input
+							id="s-slug"
+							type="text"
+							bind:value={settings.slug}
+							oninput={onSettingsSlugInput}
+							placeholder="tiendly.lat/@username"
+							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						/>
 						</div>
 					</div>
 					<div>
@@ -1085,8 +1083,9 @@ async function duplicateProduct(p: Product) {
 									</label>
 									<input
 										id={`s-${net.key}`}
-										type="url"
-										value={social[net.key] ?? ''}
+										type="text"
+										inputmode="url"
+										value={socialDisplay(net.key, social[net.key] ?? '')}
 										oninput={(e) => social[net.key] = (e.target as HTMLInputElement).value}
 										placeholder={net.placeholder}
 										class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"

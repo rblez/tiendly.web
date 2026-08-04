@@ -47,6 +47,7 @@ export interface Order {
 export interface StoreSocial {
 	fb?: string | null;
 	ig?: string | null;
+	x?: string | null;
 	yt?: string | null;
 	tg?: string | null;
 }

@@ -278,7 +278,7 @@
 				aria-label={`Paso ${i + 1}`}
 			>
 				<div class={`w-full h-1.5 rounded-full transition-colors ${i < step ? 'bg-ember' : 'bg-bone group-hover:bg-hairline'}`}></div>
-				<span class={`text-[10px] font-medium ${i < step ? 'text-ember' : 'text-muted-soft'}`}>{STEP_META[i].icon.replace('ri-', '')}</span>
+				<i class={`${STEP_META[i].icon} text-sm ${i < step ? 'text-ember' : 'text-muted-soft'}`}></i>
 			</button>
 		{/each}
 	</div>
@@ -299,17 +299,14 @@
 				</div>
 				<div>
 					<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
-					<div class="flex items-center bg-canvas border border-hairline rounded-btn focus-within:border-ember transition-colors overflow-hidden">
-						<span class="pl-3.5 text-sm text-muted-soft select-none">tiendly.lat/@</span>
-						<input
-							id="store-slug"
-							type="text"
-							bind:value={slug}
-							oninput={onSlugInput}
-							placeholder="dulcesdeana"
-							class="flex-1 px-1 py-2.5 pr-3.5 bg-transparent text-sm text-ink placeholder:text-muted-soft focus:outline-none"
-						/>
-					</div>
+					<input
+						id="store-slug"
+						type="text"
+						bind:value={slug}
+						oninput={onSlugInput}
+						placeholder="tiendly.lat/@username"
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+					/>
 					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones. Sin espacios ni símbolos.</p>
 				</div>
 				<div>
