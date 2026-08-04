@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
@@ -29,7 +30,8 @@
 	--color-error: #ef4444;
 	--color-success: #22c55e;
 
-	--font-sans: 'Sofia Sans', 'Archivo', 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--font-sans: 'Inter', 'Sofia Sans', 'Archivo', 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--font-display: 'Sofia Sans', 'Inter', 'Archivo', 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	--font-mono: 'Geist Mono', ui-monospace, monospace;
 
 	--spacing-section: 80px;
@@ -50,6 +52,19 @@ body {
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-display);
+}
+
+.font-display {
+	font-family: var(--font-display);
 }
 
 input[type='color'] {
