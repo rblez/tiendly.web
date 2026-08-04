@@ -121,7 +121,7 @@
 			`¿Está disponible?`,
 		];
 
-		return encodeURIComponent(lines.join('\n'));
+		return lines.join('\n');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
