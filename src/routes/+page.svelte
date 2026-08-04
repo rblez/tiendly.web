@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
-	import Squiggle from '$lib/components/Squiggle.svelte';
-	import DoodleArrow from '$lib/components/DoodleArrow.svelte';
 	import MockCatalog from '$lib/components/landing/MockCatalog.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
@@ -45,9 +43,8 @@
 			</div>
 			<h1 class="text-4xl sm:text-6xl font-black tracking-tight text-ink leading-tight">
 				Crea tu tienda online
-				<span class="relative inline-block text-ember">
+				<span class="text-ember">
 					en 5 minutos
-					<Squiggle class="absolute -bottom-2 left-0 w-full h-3 text-ember" />
 				</span>
 			</h1>
 			<p class="max-w-xl mx-auto lg:mx-0 mt-6 text-base sm:text-lg text-body leading-relaxed">
@@ -61,9 +58,6 @@
 				<a href={'/pricing'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
 					Ver los planes
 				</a>
-			</div>
-			<div class="hidden lg:flex justify-start mt-8">
-				<DoodleArrow class="w-20 h-16 text-ember/80 -rotate-12 -translate-x-2" />
 			</div>
 		</div>
 		<div class="relative">
