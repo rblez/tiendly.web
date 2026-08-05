@@ -72,6 +72,8 @@ export interface Store {
 	whatsapp: string | null;
 	theme_color: string;
 	description: string | null;
+	extra_links?: { title: string; url: string }[];
+	location?: string | null;
 	active: boolean;
 	created_at: string;
 	visits?: number;

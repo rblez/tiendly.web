@@ -146,6 +146,8 @@ import QRCode from 'qrcode';
 		whatsapp: '',
 		theme_color: '#22c55e',
 		active: true,
+		extra_links: [] as { title: string; url: string }[],
+		location: '',
 	});
 	let settingsSaving = $state(false);
 	let settingsError = $state('');
@@ -192,10 +194,10 @@ import QRCode from 'qrcode';
 			action: 'producto',
 		},
 		{ label: 'Sube el logo de tu tienda', doneLabel: 'Logo listo', done: !!store?.logo, action: 'general' },
-		{ label: 'Sube el banner del hero', doneLabel: 'Banner listo', done: !!store?.banner, action: 'general' },
 		{ label: 'Escribe la descripción', doneLabel: 'Descripción lista', done: !!settings.description.trim(), action: 'general' },
 		{ label: 'Configura el WhatsApp de pedidos', doneLabel: 'WhatsApp listo', done: !!settings.whatsapp.trim(), action: 'general' },
 		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'general' },
+		{ label: 'Añade tu ubicación al pie', doneLabel: 'Ubicación lista', done: !!settings.location.trim(), action: 'general' },
 		{ label: 'Comparte tu tienda', doneLabel: '¡Ya recibes visitas!', done: (store?.visits ?? 0) > 0, action: 'compartir' },
 	]);
 	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
@@ -225,7 +227,7 @@ import QRCode from 'qrcode';
 				loading = false;
 				return;
 			}
-			store = storeData as Store;
+			store = storeData as unknown as Store;
 			settings = {
 				name: storeData.name,
 				slug: storeData.slug,
@@ -233,6 +235,8 @@ import QRCode from 'qrcode';
 				whatsapp: storeData.whatsapp ?? '',
 				theme_color: storeData.theme_color,
 				active: storeData.active,
+				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
+				location: storeData.location ?? '',
 			};
 			const rawSocial = (storeData as { social?: Record<string, unknown> | null }).social;
 			social = {};
@@ -503,6 +507,8 @@ import QRCode from 'qrcode';
 					if (row.whatsapp !== undefined) settings.whatsapp = row.whatsapp ?? '';
 					if (row.theme_color !== undefined) settings.theme_color = row.theme_color;
 					if (row.active !== undefined) settings.active = row.active;
+					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
+					if (row.location !== undefined) settings.location = row.location ?? '';
 				},
 			)
 			.subscribe();
@@ -551,21 +557,6 @@ import QRCode from 'qrcode';
 			input.value = '';
 	}
 
-	async function handleStoreBanner(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file || !auth.session || !store) return;
-		settingsError = '';
-		try {
-			const url = await uploadImage(file, auth.session.user.id);
-			await supabase.from('stores').update({ banner: url }).eq('id', store.id);
-			store = { ...store, banner: url };
-		} catch {
-			settingsError = 'No se pudo subir el banner.';
-		}
-		input.value = '';
-	}
-
 	function onSettingsSlugInput() {
 		settings.slug = slugify(settings.slug);
 	}
@@ -579,6 +570,9 @@ import QRCode from 'qrcode';
 			const val = (social[net.key] ?? '').trim();
 			if (val) clean[net.key] = socialUrl(net.key, val);
 		}
+		const cleanLinks = settings.extra_links
+			.map((l) => ({ title: l.title.trim(), url: l.url.trim() }))
+			.filter((l) => l.title && l.url);
 		const { error: err } = await supabase
 			.from('stores')
 			.update({
@@ -589,6 +583,8 @@ import QRCode from 'qrcode';
 				theme_color: settings.theme_color,
 				active: settings.active,
 				social: clean,
+				extra_links: cleanLinks,
+				location: settings.location.trim() || null,
 			})
 			.eq('id', editingStoreId);
 		settingsSaving = false;
@@ -605,7 +601,7 @@ import QRCode from 'qrcode';
 
 	async function reloadStore() {
 		const { data } = await supabase.from('stores').select('*').eq('id', editingStoreId).maybeSingle();
-		if (data) store = data as Store;
+		if (data) store = data as unknown as Store;
 	}
 
 	async function copyLink() {
@@ -713,14 +709,14 @@ async function duplicateProduct(p: Product) {
 					<a
 						href="?tab=productos"
 						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
 						Productos
 					</a>
 					<a
 						href="?tab=pedidos"
 						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
 						Pedidos
 						{#if unreadOrders > 0}
@@ -732,7 +728,7 @@ async function duplicateProduct(p: Product) {
 					<a
 						href="?tab=general"
 						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
 						General
 					</a>
@@ -1102,7 +1098,7 @@ async function duplicateProduct(p: Product) {
 													openStatusMenu = null;
 												}}
 												class={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
-													order.status === s.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+													order.status === s.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'
 												}`}
 											>
 												<span class="flex items-center gap-2.5">
@@ -1214,7 +1210,7 @@ async function duplicateProduct(p: Product) {
 												type="button"
 												onclick={() => (social[net.key] = '')}
 												aria-label={`Quitar ${net.label}`}
-												class="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-muted-soft hover:text-error hover:bg-bone transition-colors cursor-pointer"
+												class="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-muted-soft hover:text-error hover:bg-ember/10 transition-colors cursor-pointer"
 											>
 												<i class="ri-close-line"></i>
 											</button>
@@ -1228,6 +1224,61 @@ async function duplicateProduct(p: Product) {
 									{/if}
 								</div>
 							{/each}
+						</div>
+					</div>
+
+					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-1">
+							<i class="ri-link-m text-ember"></i>
+							Enlaces y ubicación
+						</h2>
+						<p class="text-xs text-muted mb-5">Enlaces con título y tu ubicación, se muestran al pie de tu tienda.</p>
+						<div class="space-y-3">
+							{#each settings.extra_links as link, i}
+								<div class="flex flex-col sm:flex-row gap-2">
+									<input
+										type="text"
+										value={link.title}
+										oninput={(e) => (settings.extra_links[i].title = (e.target as HTMLInputElement).value)}
+										placeholder="Título (ej: Políticas de envío)"
+										class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									/>
+									<input
+										type="text"
+										value={link.url}
+										oninput={(e) => (settings.extra_links[i].url = (e.target as HTMLInputElement).value)}
+										placeholder="https://..."
+										class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									/>
+									<button
+										type="button"
+										onclick={() => settings.extra_links.splice(i, 1)}
+										aria-label="Quitar enlace"
+										class="flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-btn border border-hairline text-muted-soft hover:text-error hover:border-error/40 transition-colors cursor-pointer"
+									>
+										<i class="ri-delete-bin-line"></i>
+									</button>
+								</div>
+							{/each}
+							<button
+								type="button"
+								onclick={() => settings.extra_links.push({ title: '', url: '' })}
+								class="inline-flex items-center gap-2 text-sm font-medium text-ember hover:text-ember-active transition-colors cursor-pointer"
+							>
+								<i class="ri-add-line"></i>
+								Añadir enlace
+							</button>
+							<div class="pt-2 border-t border-hairline">
+								<label for="s-location" class="block text-sm font-medium text-body mb-1.5">Ubicación</label>
+								<input
+									id="s-location"
+									type="text"
+									bind:value={settings.location}
+									placeholder="Ej: Centro Habana, La Habana"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+								<p class="text-xs text-muted-soft mt-1.5">Opcional. Se mostrará un mapa en el pie de tu tienda.</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -1291,26 +1342,6 @@ async function duplicateProduct(p: Product) {
 								Cambiar logo
 								<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
 							</label>
-						</div>
-						<div class="mb-5">
-							<label class="block text-sm font-medium text-body mb-1.5">Banner del hero</label>
-							<div class="flex items-center gap-3">
-								<div class="h-16 flex-1 rounded-xl overflow-hidden bg-canvas border border-hairline">
-									{#if productImage({ image: store.banner })}
-										<img src={productImage({ image: store.banner })!} alt="Banner" class="w-full h-full object-cover" />
-									{:else}
-										<div class="w-full h-full flex items-center justify-center">
-											<i class="ri-image-add-line text-muted-soft text-xl"></i>
-										</div>
-									{/if}
-								</div>
-								<label class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-3.5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-									<i class="ri-upload-2-line"></i>
-									{store.banner ? 'Cambiar' : 'Subir'}
-									<input type="file" accept="image/*" class="hidden" onchange={handleStoreBanner} />
-								</label>
-							</div>
-							<p class="text-xs text-muted-soft mt-1.5">Recomendado 1600×400.</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
@@ -1485,7 +1516,7 @@ async function duplicateProduct(p: Product) {
 									/>
 									<button
 										onclick={cancelNewCategory}
-										class="px-3 py-2.5 border border-hairline text-body rounded-btn text-sm hover:bg-bone transition-colors cursor-pointer"
+										class="px-3 py-2.5 border border-hairline text-body rounded-btn text-sm hover:bg-ember/10 hover:text-ember hover:border-ember/50 transition-colors cursor-pointer"
 										aria-label="Cancelar nueva categoría"
 									>
 										<i class="ri-close-line"></i>
@@ -1579,7 +1610,7 @@ async function duplicateProduct(p: Product) {
 								pickerCurrencyOpen = false;
 							}}
 							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
-								formCurrency === c ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+								formCurrency === c ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'
 							}`}
 						>
 							<span>{c}</span>
@@ -1602,7 +1633,7 @@ async function duplicateProduct(p: Product) {
 								pickerCategoryOpen = false;
 							}}
 							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
-								formCategory === cat ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+								formCategory === cat ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'
 							}`}
 						>
 							<span>{cat}</span>
@@ -1655,7 +1686,7 @@ async function duplicateProduct(p: Product) {
 							href={`https://wa.me/?text=${encodeURIComponent(`Mira mi tienda en Tiendly: ${shareUrl}`)}`}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors no-underline"
+							class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-ember/10 hover:text-ember transition-colors no-underline"
 						>
 							<i class="ri-whatsapp-line text-ember"></i>
 							WhatsApp

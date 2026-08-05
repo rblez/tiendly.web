@@ -5,8 +5,6 @@
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters } from '$lib/stores/filters.svelte';
-	import { storeSocials } from '$lib/socials';
-	import { productImage } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
@@ -14,8 +12,6 @@
 	let loaded = $state(false);
 	let store = $state(data.store);
 	let products = $state<Product[]>(data.products);
-
-	const socials = $derived(storeSocials(store));
 
 	onMount(() => {
 		filters.resetFilters();
@@ -102,63 +98,9 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
-	{#if productImage({ image: store.banner })}
-		<div class="relative rounded-card overflow-hidden mb-8">
-			<img
-				src={productImage({ image: store.banner })!}
-				alt=""
-				class="w-full h-56 sm:h-80 lg:h-96 object-cover"
-			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-			<div class="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-				<div class="min-w-0 text-white">
-					<h1 class="text-2xl sm:text-3xl font-bold leading-tight">{store.name}</h1>
-					{#if store.description}
-						<p class="text-sm text-white/80 mt-1 max-w-xl">{store.description}</p>
-					{/if}
-					{#if socials.length > 0}
-						<div class="flex items-center gap-2.5 mt-3">
-							{#each socials as s}
-								<a
-									href={s.url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="h-8 w-8 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/25 transition-colors"
-									aria-label={s.label}
-									title={s.label}
-								>
-									<img src={s.icon} alt={s.label} class="h-3.5 w-3.5" />
-								</a>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	{:else}
-		<div class="mb-8">
-			<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-			{#if store.description}
-				<p class="text-sm text-muted mt-1 max-w-xl">{store.description}</p>
-			{/if}
-			{#if socials.length > 0}
-				<div class="flex items-center gap-2.5 mt-3">
-					{#each socials as s}
-						<a
-							href={s.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="h-8 w-8 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
-							aria-label={s.label}
-							title={s.label}
-						>
-							<img src={s.icon} alt={s.label} class="h-3.5 w-3.5" />
-						</a>
-					{/each}
-				</div>
-			{/if}
-		</div>
-	{/if}
+	<div class="mb-8">
+		<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
+	</div>
 
 	{#if categories.length > 1}
 		<div class="flex flex-wrap gap-2 mb-8">

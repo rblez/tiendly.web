@@ -151,7 +151,9 @@ export type Database = {
           banner: string | null
           created_at: string
           description: string | null
+          extra_links: Json
           id: string
+          location: string | null
           logo: string | null
           name: string
           owner_id: string
@@ -166,7 +168,9 @@ export type Database = {
           banner?: string | null
           created_at?: string
           description?: string | null
+          extra_links?: Json
           id?: string
+          location?: string | null
           logo?: string | null
           name: string
           owner_id: string
@@ -181,7 +185,9 @@ export type Database = {
           banner?: string | null
           created_at?: string
           description?: string | null
+          extra_links?: Json
           id?: string
+          location?: string | null
           logo?: string | null
           name?: string
           owner_id?: string
