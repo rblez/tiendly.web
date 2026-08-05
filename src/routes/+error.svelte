@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
+	import { storePagePath } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	type StoreRow = Pick<Store, 'id' | 'name' | 'slug' | 'logo'>;
@@ -9,8 +10,8 @@
 	const slugCandidate = $derived.by(() => {
 		const segs = pathname.split('/').filter(Boolean);
 		for (let i = 0; i < segs.length; i++) {
-			if (segs[i] === '@' && segs[i + 1]) return segs[i + 1];
-			if (segs[i].startsWith('@') && segs[i].length > 1) return segs[i].slice(1);
+			if (segs[i] === 's' && segs[i + 1]) return segs[i + 1];
+			if (segs[i] === 't' && segs[i + 1]) return segs[i + 1];
 		}
 		return null;
 	});
@@ -93,7 +94,7 @@
 					<p class="text-xs text-muted truncate">@{suggested.slug}</p>
 				</div>
 				<a
-					href={`/@${suggested.slug}`}
+					href={storePagePath(suggested.slug, "", $page.url.host)}
 					class="inline-flex items-center gap-1.5 bg-ember text-white px-4 py-2 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors no-underline flex-shrink-0"
 				>
 					Ir
@@ -115,7 +116,7 @@
 		{#if query.trim() && results.length > 0}
 			<div class="mt-2 bg-card border border-hairline rounded-card overflow-hidden text-left">
 				{#each results as r}
-					<a href={`/@${r.slug}`} class="flex items-center gap-3 px-4 py-3 no-underline hover:bg-bone transition-colors border-b border-hairline last:border-b-0">
+					<a href={storePagePath(r.slug, "", $page.url.host)} class="flex items-center gap-3 px-4 py-3 no-underline hover:bg-bone transition-colors border-b border-hairline last:border-b-0">
 						{#if r.logo}
 							<img src={r.logo} alt={r.name} class="h-9 w-9 object-cover rounded-lg bg-canvas" />
 						{:else}

@@ -1,11 +1,36 @@
-import { PUBLIC_APP_URL } from '$env/static/public';
 import { supabase } from '$lib/supabase/client';
 import type { Product, Variant } from '$lib/types';
 
+export const SITE_URL = 'https://tiendly.lat';
+export const DASH_URL = 'https://dash.tiendly.lat';
+export const STORE_HOST = 's.tiendly.lat';
+export const STORE_BASE = `https://${STORE_HOST}`;
+
+function isTiendlyHost(host: string): boolean {
+	return host === 'tiendly.lat' || host === 'www.tiendly.lat' || host.endsWith('.tiendly.lat');
+}
+
 export function appUrl(): string {
-	if (PUBLIC_APP_URL) return PUBLIC_APP_URL.replace(/\/+$/, '');
-	if (typeof window !== 'undefined') return window.location.origin;
-	return '';
+	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) return window.location.origin;
+	return DASH_URL;
+}
+
+export function storeUrl(slug: string): string {
+	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) {
+		return `${window.location.origin}/s/${slug}`;
+	}
+	return `${STORE_BASE}/${slug}`;
+}
+
+export function storePagePath(slug: string, path = '', host?: string): string {
+	const storeHost = host ?? (typeof window !== 'undefined' ? window.location.host : '');
+	const prefix = storeHost === STORE_HOST ? '' : '/s';
+	return `${prefix}/${slug}${path}`;
+}
+
+export function isStoreHost(host?: string): boolean {
+	const h = (host ?? (typeof window !== 'undefined' ? window.location.host : '')).split(':')[0].toLowerCase();
+	return h === STORE_HOST;
 }
 
 export function formatPrice(price: number, currency: string): string {
@@ -52,13 +77,6 @@ export async function uploadImage(file: File, uid: string): Promise<string> {
 
 export function themeStyle(store: { theme_color: string }): string {
 	return `--accent: ${store.theme_color}; --accent-active: color-mix(in srgb, ${store.theme_color} 82%, black);`;
-}
-
-export function storeUrl(slug: string): string {
-	const base = appUrl();
-	if (base) return `${base}/@${slug}`;
-	if (typeof window !== 'undefined') return `${window.location.origin}/@${slug}`;
-	return `/@${slug}`;
 }
 
 export type ProductLike = Pick<Product, 'name' | 'description' | 'category'>;

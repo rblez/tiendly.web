@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, waLink } from '$lib/utils';
+	import { formatPrice, productImage, storePagePath, waLink } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -96,7 +96,7 @@
 
 	$effect(() => {
 		if (cartEmpty && cacheReady) {
-			goto(`/@${data.store.slug}`);
+			goto(storePagePath(data.store.slug, "", $page.url.host));
 		}
 	});
 
@@ -181,7 +181,7 @@
 		setTimeout(() => {
 			cart.clear();
 			window.open(waLink(wa ?? '', msg), '_blank');
-			goto(`/@${data.store.slug}/gracias`);
+			goto(storePagePath(data.store.slug, "/gracias", $page.url.host));
 		}, 1200);
 	}
 </script>
@@ -203,7 +203,7 @@
 			<p class="text-lg text-muted mb-2">Tu carrito está vacío</p>
 			<p class="text-sm text-muted-soft mb-6">Agrega productos al carrito y vuelve aquí para completar tu pedido.</p>
 			<a
-				href={`/@${data.store.slug}`}
+				href={storePagePath(data.store.slug, "", $page.url.host)}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
 			>
 				Ver productos
@@ -215,7 +215,7 @@
 			<p class="text-lg text-muted mb-2">Esta tienda aún no configura cómo recibir pedidos</p>
 			<p class="text-sm text-muted-soft mb-6">Vuelve más tarde o contacta a la tienda por otro medio.</p>
 			<a
-				href={`/@${data.store.slug}`}
+				href={storePagePath(data.store.slug, "", $page.url.host)}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
 			>
 				Volver al catálogo

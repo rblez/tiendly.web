@@ -3,7 +3,7 @@
 	import StoreNavbar from '$lib/components/StoreNavbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { themeStyle } from '$lib/utils';
+	import { SITE_URL, themeStyle, storeUrl as buildStoreUrl } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { children, data }: { children: import('svelte').Snippet; data: { store: Store } } = $props();
@@ -37,11 +37,11 @@
 		};
 	});
 
-	const storeUrl = $derived(`https://www.tiendly.lat/@${store.slug}`);
+	const storeUrl = $derived(buildStoreUrl(store.slug));
 	const logoUrl = $derived.by(() => {
 		if (!store.logo) return null;
 		if (store.logo.startsWith('http')) return store.logo;
-		return `https://www.tiendly.lat/${store.logo.replace(/^\//, '')}`;
+		return `${SITE_URL}/${store.logo.replace(/^\//, '')}`;
 	});
 
 	const jsonLd = $derived(

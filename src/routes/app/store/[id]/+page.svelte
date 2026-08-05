@@ -127,7 +127,7 @@ import QRCode from 'qrcode';
 		qrGenerating = true;
 		try {
 			const dark = theme.resolved === 'dark';
-			qrDataUrl = await QRCode.toDataURL(`https://www.tiendly.lat/@${store.slug}`, {
+			qrDataUrl = await QRCode.toDataURL(storeUrl(store.slug), {
 				width: 512,
 				margin: 2,
 				color: { dark: dark ? '#ffffff' : '#111111', light: dark ? '#111111' : '#ffffff' },
@@ -175,6 +175,10 @@ import QRCode from 'qrcode';
 
 	let productQuery = $state('');
 	let categoryFilter = $state('all');
+	let scoreOpen = $state(true);
+	let openProductMenu = $state<string | null>(null);
+	let orderFilter = $state<'todos' | 'nuevo' | 'enviado' | 'completado' | 'cancelado'>('todos');
+	let orderQuery = $state('');
 	const plan = $derived(PLAN_MAP[auth.plan] ?? PLAN_MAP.free);
 	const productLimit = $derived(plan.limitProducts);
 	const filteredProducts = $derived(
@@ -202,6 +206,18 @@ import QRCode from 'qrcode';
 		{ label: 'Comparte tu tienda', doneLabel: '¡Ya recibes visitas!', done: (store?.visits ?? 0) > 0, action: 'compartir' },
 	]);
 	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
+
+	const GENERAL_SECTIONS = [
+		{ id: 'sec-info', label: 'Información', icon: 'ri-store-2-line' },
+		{ id: 'sec-socials', label: 'Redes sociales', icon: 'ri-share-box-line' },
+		{ id: 'sec-links', label: 'Enlaces y ubicación', icon: 'ri-link-m' },
+		{ id: 'sec-apariencia', label: 'Apariencia', icon: 'ri-palette-line' },
+		{ id: 'sec-visibilidad', label: 'Visibilidad', icon: 'ri-eye-off-line' },
+	];
+
+	function scrollToSection(id: string) {
+		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
 
 	function startNewCategory() {
 		formCreatingCategory = true;
@@ -536,6 +552,29 @@ import QRCode from 'qrcode';
 		return ORDER_STATUSES.find((s) => s.value === status) ?? ORDER_STATUSES[0];
 	}
 
+	const orderCounts = $derived(
+		ORDER_STATUSES.reduce(
+			(acc, s) => {
+				acc[s.value] = orders.filter((o) => o.status === s.value).length;
+				return acc;
+			},
+			{} as Record<string, number>,
+		),
+	);
+	const filteredOrders = $derived(
+		orders
+			.filter((o) => orderFilter === 'todos' || o.status === orderFilter)
+			.filter((o) => {
+				const q = orderQuery.trim().toLowerCase();
+				return (
+					!q ||
+					o.customer_name.toLowerCase().includes(q) ||
+					o.customer_phone.toLowerCase().includes(q)
+				);
+			})
+			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+	);
+
 	async function updateOrderStatus(order: Order, status: string) {
 		await supabase.from('orders').update({ status }).eq('id', order.id);
 		order.status = status;
@@ -661,7 +700,7 @@ async function duplicateProduct(p: Product) {
 			<div class="flex gap-2">
 				{#if store}
 					<a
-						href={`/@${store.slug}`}
+						href={storeUrl(store.slug)}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-xs font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors no-underline"
@@ -696,61 +735,82 @@ async function duplicateProduct(p: Product) {
 			{/each}
 		</div>
 	{:else}
-		<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-			<div class="flex items-center gap-4">
-				{#if productImage({ image: store.logo })}
-					<img src={productImage({ image: store.logo })!} alt={store.name} class="h-14 w-14 object-cover rounded-xl bg-canvas" />
-				{:else}
-					<span class="h-14 w-14 flex items-center justify-center rounded-xl bg-ember text-canvas font-black text-2xl select-none">
-						{store.name.charAt(0).toUpperCase()}
+		<header class="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-canvas/90 backdrop-blur-md border-b border-hairline">
+			<div class="flex items-center justify-between gap-3 py-3">
+				<div class="flex items-center gap-3 min-w-0">
+					{#if productImage({ image: store.logo })}
+						<img src={productImage({ image: store.logo })!} alt={store.name} class="h-10 w-10 object-cover rounded-lg bg-card border border-hairline flex-shrink-0" />
+					{:else}
+						<span class="h-10 w-10 flex items-center justify-center rounded-lg bg-ember text-canvas font-black text-lg select-none flex-shrink-0">
+							{store.name.charAt(0).toUpperCase()}
+						</span>
+					{/if}
+					<div class="min-w-0">
+						<a href="/app" class="text-[11px] text-muted hover:text-ember no-underline inline-flex items-center gap-0.5">
+							<i class="ri-arrow-left-s-line text-sm -ml-1"></i>
+							Mis tiendas
+						</a>
+						<h1 class="font-bold text-ink leading-tight truncate text-base sm:text-lg">{store.name}</h1>
+					</div>
+				</div>
+				<div class="flex items-center gap-2 flex-shrink-0">
+					<span
+						class={`hidden sm:inline-flex items-center gap-1.5 text-[10px] font-medium rounded-full px-2.5 py-1 border ${
+							settings.active ? 'bg-ember/10 text-ember border-ember/25' : 'bg-bone text-muted border-hairline'
+						}`}
+					>
+						<span class={`h-1.5 w-1.5 rounded-full ${settings.active ? 'bg-ember' : 'bg-muted-soft'}`}></span>
+						{settings.active ? 'Visible' : 'Oculta'}
 					</span>
-				{/if}
-				<div>
-					<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
-					<a href={`/@${store.slug}`} target="_blank" rel="noopener noreferrer" class="text-sm text-ember hover:text-ember-active no-underline inline-flex items-center gap-1">
-						tiendly.lat/@{store.slug}
-						<i class="ri-external-link-line text-xs"></i>
+					<a
+						href={storeUrl(store.slug)}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center justify-center gap-1.5 h-10 w-10 sm:w-auto sm:px-3.5 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors no-underline"
+						aria-label="Ver tienda"
+					>
+						<i class="ri-eye-line"></i>
+						<span class="hidden sm:inline">Ver tienda</span>
 					</a>
+					<button
+						onclick={() => (shareOpen = true)}
+						class="inline-flex items-center justify-center gap-1.5 h-10 w-10 sm:w-auto sm:px-3.5 rounded-btn text-sm font-medium bg-ember text-white hover:bg-ember-active transition-colors cursor-pointer"
+						aria-label="Compartir"
+					>
+						<i class="ri-share-line"></i>
+						<span class="hidden sm:inline">Compartir</span>
+					</button>
 				</div>
 			</div>
-<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-				<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 flex-1">
-					<a
-						href="?tab=productos"
-						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Productos
-					</a>
-					<a
-						href="?tab=pedidos"
-						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Pedidos
-						{#if unreadOrders > 0}
-							<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-ink rounded-full tabular-nums">
-								{unreadOrders}
-							</span>
-						{/if}
-					</a>
-					<a
-						href="?tab=general"
-						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						General
-					</a>
-				</div>
-				<button
-					onclick={() => (shareOpen = true)}
-					class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+			<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-3">
+				<a
+					href="?tab=productos"
+					class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+						{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 				>
-					<i class="ri-share-line"></i>
-					Compartir
-				</button>
+					Productos
+				</a>
+				<a
+					href="?tab=pedidos"
+					class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+						{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+				>
+					Pedidos
+					{#if unreadOrders > 0}
+						<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-ink rounded-full tabular-nums">
+							{unreadOrders}
+						</span>
+					{/if}
+				</a>
+				<a
+					href="?tab=general"
+					class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+						{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+				>
+					General
+				</a>
 			</div>
-		</div>
+		</header>
 
 		{#if tab === 'productos'}
 			{#if score === 100}
@@ -773,61 +833,72 @@ async function duplicateProduct(p: Product) {
 					</button>
 				</div>
 			{:else}
-				<div class="bg-card border border-hairline rounded-card p-5 sm:p-6 mb-6">
-					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-						<div>
-							<h2 class="font-bold text-ink flex items-center gap-2">
-								<i class="ri-rocket-2-line text-ember"></i>
-								Completa tu tienda
-							</h2>
-							<p class="text-xs text-muted mt-0.5">Faltan {tasks.length - tasks.filter((t) => t.done).length} pasos para estar lista.</p>
+				<div class="bg-card border border-hairline rounded-card mb-6">
+					<button
+						onclick={() => (scoreOpen = !scoreOpen)}
+						class="w-full flex items-center justify-between gap-4 p-4 sm:p-5 cursor-pointer text-left"
+						aria-expanded={scoreOpen}
+					>
+						<div class="flex items-center gap-3 min-w-0">
+							<span class="h-10 w-10 flex-shrink-0 rounded-full bg-ember/10 text-ember flex items-center justify-center">
+								<i class="ri-rocket-2-line text-lg"></i>
+							</span>
+							<div class="min-w-0">
+								<h2 class="font-bold text-ink text-sm sm:text-base">Completa tu tienda</h2>
+								<p class="text-xs text-muted truncate">
+									Faltan {tasks.length - tasks.filter((t) => t.done).length} paso{tasks.length - tasks.filter((t) => t.done).length === 1 ? '' : 's'} para estar lista.
+								</p>
+							</div>
 						</div>
 						<div class="flex items-center gap-3 flex-shrink-0">
-							<span class="text-2xl font-black text-ink tabular-nums">{score}%</span>
-							<div class="w-32 h-2 bg-bone rounded-full overflow-hidden">
+							<span class="text-lg font-black text-ink tabular-nums">{score}%</span>
+							<div class="w-24 sm:w-32 h-2 bg-bone rounded-full overflow-hidden hidden xs:block">
 								<div class="h-full bg-ember rounded-full transition-all duration-500" style="width:{score}%"></div>
 							</div>
+							<i class={`ri-arrow-down-s-line text-muted-soft transition-transform duration-300 ${scoreOpen ? 'rotate-180' : ''}`}></i>
 						</div>
-					</div>
-					<div class="grid gap-1.5 sm:grid-cols-2">
-						{#each tasks as t}
-							<div class={`flex items-center gap-2.5 rounded-btn px-3 py-2 ${t.done ? 'bg-canvas/60' : 'bg-bone/60'}`}>
-								{#if t.done}
-									<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-ember/15 text-ember">
-										<i class="ri-check-line text-xs"></i>
-									</span>
-									<span class="text-sm text-muted flex-1 min-w-0 truncate">{t.doneLabel}</span>
-								{:else}
-									<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-bone border border-hairline text-muted-soft">
-										<i class="ri-add-line text-xs"></i>
-									</span>
-									<span class="text-sm text-body flex-1 min-w-0 truncate">{t.label}</span>
-									{#if t.action === 'producto'}
-										<button
-											onclick={openNewProduct}
-											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
-										>
-											Agregar
-										</button>
-									{:else if t.action === 'compartir'}
-										<button
-											onclick={() => (shareOpen = true)}
-											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
-										>
-											Compartir
-										</button>
+					</button>
+					{#if scoreOpen}
+						<div class="px-4 sm:px-5 pb-5 grid gap-1.5 sm:grid-cols-2 border-t border-hairline pt-4">
+							{#each tasks as t}
+								<div class={`flex items-center gap-2.5 rounded-btn px-3 py-2 ${t.done ? 'bg-canvas/60' : 'bg-bone/60'}`}>
+									{#if t.done}
+										<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-ember/15 text-ember">
+											<i class="ri-check-line text-xs"></i>
+										</span>
+										<span class="text-sm text-muted flex-1 min-w-0 truncate">{t.doneLabel}</span>
 									{:else}
-										<a
-											href="?tab=general"
-											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 no-underline"
-										>
-											Completar
-										</a>
+										<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-bone border border-hairline text-muted-soft">
+											<i class="ri-add-line text-xs"></i>
+										</span>
+										<span class="text-sm text-body flex-1 min-w-0 truncate">{t.label}</span>
+										{#if t.action === 'producto'}
+											<button
+												onclick={openNewProduct}
+												class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
+											>
+												Agregar
+											</button>
+										{:else if t.action === 'compartir'}
+											<button
+												onclick={() => (shareOpen = true)}
+												class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
+											>
+												Compartir
+											</button>
+										{:else}
+											<a
+												href="?tab=general"
+												class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 no-underline"
+											>
+												Completar
+											</a>
+										{/if}
 									{/if}
-								{/if}
-							</div>
-						{/each}
-					</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			{/if}
 			<div class="grid grid-cols-3 gap-3 mb-6">
@@ -945,75 +1016,154 @@ async function duplicateProduct(p: Product) {
 					</button>
 				</div>
 			{:else}
-				<div class="space-y-3">
+				<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
 					{#each filteredProducts as product}
-						<div class="bg-card border border-hairline rounded-card p-4 flex items-center gap-4">
-							{#if productImage(product)}
-								<img src={productImage(product)!} alt={product.name} class="h-14 w-14 object-cover rounded-lg bg-canvas flex-shrink-0" />
-							{:else}
-								<div class="h-14 w-14 rounded-lg bg-canvas flex items-center justify-center flex-shrink-0">
-									<i class="ri-image-line text-xl text-muted-soft"></i>
-								</div>
-							{/if}
-							<div class="flex-1 min-w-0">
-								<h3 class="font-semibold text-ink truncate flex items-center gap-2">
-									{product.name}
-									{#if product.variants.length > 0}
-										<span class="text-[10px] text-muted-soft bg-bone rounded-full px-2 py-0.5">{product.variants.length} variantes</span>
+						<div class="bg-card border border-hairline rounded-card overflow-hidden group relative">
+							<div class="relative aspect-square bg-canvas">
+								{#if productImage(product)}
+									<img src={productImage(product)!} alt={product.name} class="w-full h-full object-cover" />
+								{:else}
+									<div class="w-full h-full flex items-center justify-center">
+										<i class="ri-image-line text-2xl text-muted-soft"></i>
+									</div>
+								{/if}
+								<div class="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
+									{#if !product.active}
+										<span class="text-[10px] font-medium bg-black/70 text-white rounded-full px-2 py-0.5 backdrop-blur-sm">Oculto</span>
+									{:else if product.agotado}
+										<span class="text-[10px] font-medium bg-black/70 text-white rounded-full px-2 py-0.5 backdrop-blur-sm">Agotado</span>
 									{/if}
-								</h3>
-								<p class="text-sm text-ember font-medium">${Number(product.price).toLocaleString('es-CU')} {product.currency}</p>
-								{#if !product.active}
-									<span class="text-[10px] text-muted-soft">Oculto</span>
-								{:else if product.agotado}
-									<span class="text-[10px] text-muted-soft">Agotado</span>
+									{#if product.bajo_pedido}
+										<span class="text-[10px] font-medium bg-warning text-white rounded-full px-2 py-0.5">Bajo pedido</span>
+									{/if}
+								</div>
+								<button
+									onclick={() => (openProductMenu = openProductMenu === product.id ? null : product.id)}
+									class="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors cursor-pointer backdrop-blur-sm"
+									aria-label="Acciones de {product.name}"
+								>
+									<i class="ri-more-2-fill"></i>
+								</button>
+								{#if openProductMenu === product.id}
+									<div class="absolute top-11 right-2 w-40 z-30 bg-card border border-hairline rounded-btn shadow-xl p-1.5">
+										<button
+											onclick={() => {
+												openEditProduct(product);
+												openProductMenu = null;
+											}}
+											class="w-full flex items-center gap-2 px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer"
+										>
+											<i class="ri-pencil-line"></i>
+											Editar
+										</button>
+										<button
+											onclick={() => {
+												duplicateProduct(product);
+												openProductMenu = null;
+											}}
+											class="w-full flex items-center gap-2 px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer"
+										>
+											<i class="ri-file-copy-2-line"></i>
+											Duplicar
+										</button>
+										<button
+											onclick={() => {
+												openProductMenu = null;
+												deleteProduct(product.id);
+											}}
+											class="w-full flex items-center gap-2 px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-error/10 hover:text-error transition-colors cursor-pointer"
+										>
+											<i class="ri-delete-bin-line"></i>
+											Eliminar
+										</button>
+									</div>
 								{/if}
 							</div>
-							<div class="flex items-center gap-1">
-								<button onclick={() => openEditProduct(product)} class="p-2.5 text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Editar">
-									<i class="ri-pencil-line"></i>
-								</button>
-								<button onclick={() => duplicateProduct(product)} class="p-2.5 text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Duplicar">
-									<i class="ri-file-copy-2-line"></i>
-								</button>
-								<button onclick={() => deleteProduct(product.id)} class="p-2.5 text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Eliminar">
-									<i class="ri-delete-bin-line"></i>
-								</button>
+							<div class="p-3">
+								<h3 class="font-semibold text-ink text-sm truncate leading-snug">{product.name}</h3>
+								<p class="text-sm text-ember font-semibold mt-1 tabular-nums">
+									${Number(product.price).toLocaleString('es-CU')} {product.currency}
+								</p>
+								<div class="flex items-center gap-1.5 mt-2">
+									<span class="text-[10px] text-muted-soft bg-bone rounded-full px-2 py-0.5">{product.category}</span>
+									{#if product.variants.length > 0}
+										<span class="text-[10px] text-muted-soft bg-bone rounded-full px-2 py-0.5">{product.variants.length} var.</span>
+									{/if}
+								</div>
 							</div>
 						</div>
 					{/each}
 				</div>
+				{#if openProductMenu !== null}
+					<div class="fixed inset-0 z-20" onclick={() => (openProductMenu = null)}></div>
+				{/if}
 			{/if}
 
 		{:else if tab === 'pedidos'}
-			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-				<div class="flex items-center gap-2.5">
-					<p class="text-sm text-muted">Pedidos recibidos</p>
-					<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5 tabular-nums">{orders.length}</span>
-					<span class="inline-flex items-center gap-1.5 text-[10px] text-muted-soft">
-						<span class="relative flex h-1.5 w-1.5">
-							<span class="absolute inline-flex h-full w-full rounded-full bg-ember opacity-60 animate-ping"></span>
-							<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ember"></span>
+			<div class="flex flex-col gap-3 mb-5">
+				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+					<div class="flex items-center gap-2.5">
+						<p class="text-sm text-muted">Pedidos recibidos</p>
+						<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5 tabular-nums">{orders.length}</span>
+						<span class="inline-flex items-center gap-1.5 text-[10px] text-muted-soft">
+							<span class="relative flex h-1.5 w-1.5">
+								<span class="absolute inline-flex h-full w-full rounded-full bg-ember opacity-60 animate-ping"></span>
+								<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ember"></span>
+							</span>
+							En vivo
 						</span>
-						En vivo
-					</span>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="relative flex-1 sm:flex-none">
+							<i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-muted-soft text-sm pointer-events-none"></i>
+							<input
+								type="search"
+								bind:value={orderQuery}
+								placeholder="Buscar cliente..."
+								class="w-full sm:w-52 pl-9 pr-3 py-2 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+							/>
+						</div>
+						<button
+							onclick={() => exportOrdersCSV()}
+							class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-3.5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+							title="Exportar CSV"
+						>
+							<i class="ri-file-download-line"></i>
+							<span class="hidden sm:inline">CSV</span>
+						</button>
+						<button
+							onclick={() => loadOrders()}
+							class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-3.5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+							title="Actualizar"
+						>
+							<i class="ri-refresh-line"></i>
+						</button>
+					</div>
 				</div>
-			<div class="flex items-center gap-2">
-				<button
-					onclick={() => exportOrdersCSV()}
-					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-				>
-					<i class="ri-file-download-line"></i>
-					Exportar CSV
-				</button>
-				<button
-					onclick={() => loadOrders()}
-					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-				>
-					<i class="ri-refresh-line"></i>
-					Actualizar
-				</button>
-			</div>
+				<div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+					<button
+						onclick={() => (orderFilter = 'todos')}
+						class={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${
+							orderFilter === 'todos' ? 'bg-ember text-white border-ember' : 'bg-card border-hairline text-body hover:border-ember/50'
+						}`}
+					>
+						Todos
+						<span class={`ml-1 font-bold tabular-nums ${orderFilter === 'todos' ? 'text-white/80' : 'text-muted-soft'}`}>{orders.length}</span>
+					</button>
+					{#each ORDER_STATUSES as s}
+						<button
+							onclick={() => (orderFilter = orderFilter === s.value ? 'todos' : s.value)}
+							class={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${
+								orderFilter === s.value ? 'bg-ember text-white border-ember' : 'bg-card border-hairline text-body hover:border-ember/50'
+							}`}
+						>
+							{s.label}
+							<span class={`ml-1 font-bold tabular-nums ${orderFilter === s.value ? 'text-white/80' : 'text-muted-soft'}`}>
+								{orderCounts[s.value] ?? 0}
+							</span>
+						</button>
+					{/each}
+				</div>
 			</div>
 
 			{#if ordersLoading}
@@ -1028,11 +1178,30 @@ async function duplicateProduct(p: Product) {
 					<p class="text-body mb-1">Aún no tienes pedidos</p>
 					<p class="text-xs text-muted-soft">Cuando un cliente envíe un pedido desde tu tienda, aparecerá aquí.</p>
 				</div>
+			{:else if filteredOrders.length === 0}
+				<div class="text-center py-16 bg-card border border-hairline rounded-card">
+					<div class="w-14 h-14 bg-bone rounded-full flex items-center justify-center mx-auto mb-4">
+						<i class="ri-search-line text-2xl text-muted-soft"></i>
+					</div>
+					<p class="text-body mb-1">Sin pedidos con este filtro</p>
+					<p class="text-xs text-muted-soft mb-5">Prueba con otra búsqueda o estado.</p>
+					<button
+						onclick={() => {
+							orderQuery = '';
+							orderFilter = 'todos';
+						}}
+						class="bg-bone border border-hairline text-ink px-6 py-3 rounded-btn text-sm font-medium hover:border-ember/50 transition-colors cursor-pointer"
+					>
+						Limpiar filtros
+					</button>
+				</div>
 			{:else}
 				<div class="space-y-3">
-					{#each orders as order}
+					{#each filteredOrders as order}
 						{@const status = statusInfo(order.status)}
-						<div class="bg-card border border-hairline rounded-card p-5 hover:border-ember/30 transition-colors">
+						<div
+							class="bg-card border border-hairline rounded-card p-5 hover:border-ember/30 transition-colors {order.status === 'nuevo' ? 'border-ember/40 bg-ember/[0.02]' : ''}"
+						>
 							<div class="flex items-start justify-between gap-3 mb-4">
 								<div class="flex items-center gap-3 min-w-0">
 									<div class={`h-10 w-10 flex items-center justify-center rounded-full font-bold flex-shrink-0 ${status.cls}`}>
@@ -1132,9 +1301,34 @@ async function duplicateProduct(p: Product) {
 		{/if}
 
 		{:else}
-			<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+			<div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-6 lg:hidden">
+				{#each GENERAL_SECTIONS as sec}
+					<button
+						onclick={() => scrollToSection(sec.id)}
+						class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-hairline bg-card text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+					>
+						<i class={`${sec.icon} text-ember`}></i>
+						{sec.label}
+					</button>
+				{/each}
+			</div>
+			<div class="grid gap-6 lg:grid-cols-[200px_minmax(0,1fr)_340px]">
+				<nav class="hidden lg:block">
+					<div class="sticky top-28 space-y-1">
+						<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wider px-3 mb-2">Configuración</p>
+						{#each GENERAL_SECTIONS as sec}
+							<button
+								onclick={() => scrollToSection(sec.id)}
+								class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer"
+							>
+								<i class={`${sec.icon} text-ember`}></i>
+								{sec.label}
+							</button>
+						{/each}
+					</div>
+				</nav>
 				<div class="space-y-6">
-					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+					<div id="sec-info" class="scroll-mt-28 bg-card border border-hairline rounded-card p-6 sm:p-8">
 						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
 							<i class="ri-store-2-line text-ember"></i>
 							Información general
@@ -1152,7 +1346,7 @@ async function duplicateProduct(p: Product) {
 							<div>
 								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 								<div class="relative">
-									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">tiendly.lat/@</span>
+									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">s.tiendly.lat/</span>
 									<input
 										id="s-slug"
 										type="text"
@@ -1186,7 +1380,7 @@ async function duplicateProduct(p: Product) {
 						</div>
 					</div>
 
-					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+					<div id="sec-socials" class="scroll-mt-28 bg-card border border-hairline rounded-card p-6 sm:p-8">
 						<h2 class="font-bold text-ink flex items-center gap-2 mb-1">
 							<i class="ri-share-box-line text-ember"></i>
 							Redes sociales
@@ -1236,7 +1430,7 @@ async function duplicateProduct(p: Product) {
 						</div>
 					</div>
 
-					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+					<div id="sec-links" class="scroll-mt-28 bg-card border border-hairline rounded-card p-6 sm:p-8">
 						<h2 class="font-bold text-ink flex items-center gap-2 mb-1">
 							<i class="ri-link-m text-ember"></i>
 							Enlaces y ubicación
@@ -1322,7 +1516,7 @@ async function duplicateProduct(p: Product) {
 										{/if}
 										<div class="min-w-0">
 											<p class="text-xs font-bold text-ink leading-tight truncate">{settings.name || 'Mi tienda'}</p>
-											<p class="text-[10px] text-muted-soft leading-tight truncate">tiendly.lat/@{settings.slug || 'username'}</p>
+											<p class="text-[10px] text-muted-soft leading-tight truncate">s.tiendly.lat/{settings.slug || 'tutienda'}</p>
 										</div>
 									</div>
 								</div>
@@ -1331,7 +1525,7 @@ async function duplicateProduct(p: Product) {
 								<p class="text-xs text-muted">Así se ve tu hero</p>
 								{#if store}
 									<a
-										href={`/@${store.slug}`}
+										href={storeUrl(store.slug)}
 										target="_blank"
 										rel="noopener noreferrer"
 										class="text-xs font-medium text-ember hover:text-ember-active no-underline inline-flex items-center gap-1"
@@ -1344,7 +1538,7 @@ async function duplicateProduct(p: Product) {
 						</div>
 					</div>
 
-					<div class="bg-card border border-hairline rounded-card p-6">
+					<div id="sec-apariencia" class="scroll-mt-28 bg-card border border-hairline rounded-card p-6">
 						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
 							<i class="ri-palette-line text-ember"></i>
 							Apariencia
@@ -1379,7 +1573,7 @@ async function duplicateProduct(p: Product) {
 						</div>
 					</div>
 
-					<div class="bg-card border border-hairline rounded-card p-6">
+					<div id="sec-visibilidad" class="scroll-mt-28 bg-card border border-hairline rounded-card p-6">
 						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
 							<i class="ri-eye-off-line text-ember"></i>
 							Visibilidad
@@ -1753,7 +1947,7 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</div>
 					<div class="text-center mb-5">
-						<p class="text-xs text-muted-soft break-all">https://www.tiendly.lat/@{store.slug}</p>
+						<p class="text-xs text-muted-soft break-all">{storeUrl(store.slug)}</p>
 					</div>
 					<a
 						href={qrDataUrl}

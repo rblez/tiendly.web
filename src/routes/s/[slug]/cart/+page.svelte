@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage } from '$lib/utils';
+	import { formatPrice, productImage, storePagePath } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import type { Product, Store } from '$lib/types';
 
@@ -59,7 +60,7 @@
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
 			<p class="text-lg text-muted mb-6">Tu carrito está vacío</p>
 			<a
-				href={`/@${data.store.slug}`}
+				href={storePagePath(data.store.slug, "", $page.url.host)}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
 				Ver productos
@@ -118,7 +119,7 @@
 			</div>
 
 			<a
-				href={`/@${data.store.slug}/checkout`}
+				href={storePagePath(data.store.slug, "/checkout", $page.url.host)}
 				class="mt-6 w-full flex items-center justify-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-base font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
 			>
 				Proceder al checkout

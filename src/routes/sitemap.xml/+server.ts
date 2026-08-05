@@ -1,15 +1,18 @@
 import { supabase } from '$lib/supabase/server';
+import { SITE_URL, STORE_BASE } from '$lib/utils';
 
 export const prerender = false;
 
 export const GET = async () => {
 	const { data: stores } = await supabase.from('stores').select('slug').eq('active', true);
 
-	const staticUrls = ['/', '/wizard', '/pricing', '/login', '/signup'];
+	const staticUrls = ['', '/wizard', '/pricing', '/precios', '/login', '/signup'];
 	const urls = [
-		...staticUrls.map((path) => `<url><loc>https://www.tiendly.lat${path}</loc><changefreq>monthly</changefreq></url>`),
+		...staticUrls.map((path) => `<url><loc>${SITE_URL}${path}</loc><changefreq>monthly</changefreq></url>`),
+		`<url><loc>https://dash.tiendly.lat/login</loc><changefreq>monthly</changefreq></url>`,
+		`<url><loc>https://dash.tiendly.lat/signup</loc><changefreq>monthly</changefreq></url>`,
 		...(stores ?? []).map(
-			(s) => `<url><loc>https://www.tiendly.lat/@${s.slug}</loc><changefreq>weekly</changefreq></url>`,
+			(s) => `<url><loc>${STORE_BASE}/${s.slug}</loc><changefreq>weekly</changefreq></url>`,
 		),
 	];
 

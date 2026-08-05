@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
+	import { storeUrl } from '$lib/utils';
 	import { PLAN_MAP, PLANS } from '$lib/plans';
 	import type { Order, Product, Store } from '$lib/types';
 
@@ -188,7 +189,7 @@
 							<i class="ri-settings-3-line"></i>
 							Gestionar
 						</span>
-						<button onclick={() => window.open(`/@${store.slug}`, '_blank', 'noopener,noreferrer')} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer">
+						<button onclick={() => window.open(storeUrl(store.slug), '_blank', 'noopener,noreferrer')} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer">
 							<i class="ri-external-link-line"></i>
 							Ver
 						</button>

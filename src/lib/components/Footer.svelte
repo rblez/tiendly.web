@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appUrl } from '$lib/utils';
 	import { socialIcon, storeSocials } from '$lib/socials';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
@@ -63,7 +64,7 @@
 					</p>
 				{/if}
 				<a
-					href="/wizard"
+					href={appUrl() + '/wizard'}
 					class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ember transition-colors no-underline mt-4"
 				>
 					<img src="/isotipo.png" alt="" class="h-4 w-4 rounded flex-shrink-0" />
@@ -160,7 +161,7 @@
 			</p>
 			<div class="flex items-center gap-4 text-xs">
 				<a href="/pricing" class="text-body hover:text-ember transition-colors no-underline">Planes y precios</a>
-				<a href="/wizard" class="text-body hover:text-ember transition-colors no-underline">Crear mi tienda</a>
+				<a href={appUrl() + '/wizard'} class="text-body hover:text-ember transition-colors no-underline">Crear mi tienda</a>
 			</div>
 			<p class="text-xs text-muted-soft">&copy; {new Date().getFullYear()} Tiendly. Todos los derechos reservados.</p>
 			<div class="mt-2">
