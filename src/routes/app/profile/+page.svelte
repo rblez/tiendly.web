@@ -11,7 +11,7 @@
 
 	const PREFS_KEY = 'tiendly-notif-prefs';
 
-	const TABS = ['perfil', 'preferencias', 'seguridad', 'privacidad'] as const;
+	const TABS = ['perfil', 'general', 'privacidad'] as const;
 	type ProfileTab = (typeof TABS)[number];
 
 	let prefs = $state<Prefs>({ sound: true, browser: true, badge: true });
@@ -203,28 +203,22 @@
 		<p class="text-sm text-muted mt-1">Tu cuenta y preferencias en Tiendly</p>
 	</div>
 
-	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-full sm:w-fit overflow-x-auto">
+	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-full">
 		<a
 			href="?tab=perfil"
-			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
 			Perfil
 		</a>
 		<a
-			href="?tab=preferencias"
-			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'preferencias' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+			href="?tab=general"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
-			Preferencias
-		</a>
-		<a
-			href="?tab=seguridad"
-			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'seguridad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
-		>
-			Seguridad
+			General
 		</a>
 		<a
 			href="?tab=privacidad"
-			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
 			Privacidad
 		</a>
@@ -348,7 +342,7 @@
 				</button>
 			</div>
 		</div>
-	{:else if tab === 'preferencias'}
+	{:else if tab === 'general'}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h2 class="font-bold text-ink mb-1">Notificaciones de pedidos</h2>
 			<p class="text-sm text-muted mb-5">Se aplican al panel de tu tienda cuando llega un pedido nuevo.</p>
@@ -358,8 +352,8 @@
 				{@render toggleRow('Contador en la pestaña', 'Mostrar el número de pedidos sin leer en el título de la pestaña', 'badge')}
 			</div>
 		</div>
-	{:else if tab === 'seguridad'}
-		<div class="space-y-6">
+
+		<div class="space-y-6 mt-6">
 			<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-ink mb-1">Cambiar contraseña</h2>
 				<p class="text-sm text-muted mb-5">Usa al menos 6 caracteres.</p>

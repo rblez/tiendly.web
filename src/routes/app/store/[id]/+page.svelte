@@ -12,8 +12,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 import { PLAN_MAP } from '$lib/plans';
 import QRCode from 'qrcode';
 
-	type Tab = 'productos' | 'pedidos' | 'ajustes';
-	const TAB_KEYS: Tab[] = ['productos', 'pedidos', 'ajustes'];
+	type Tab = 'productos' | 'pedidos' | 'general';
+	const TAB_KEYS: Tab[] = ['productos', 'pedidos', 'general'];
 
 	let store = $state<Store | null>(null);
 	let products = $state<Product[]>([]);
@@ -88,7 +88,7 @@ import QRCode from 'qrcode';
 		return TAB_KEYS.includes(t as Tab) ? (t as Tab) : fallback;
 	}
 
-	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'ajustes' : 'productos'));
+	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'general' : 'productos'));
 
 	$effect(() => {
 		if (tab === 'pedidos') markOrdersRead();
@@ -181,6 +181,24 @@ import QRCode from 'qrcode';
 				(!productQuery.trim() || p.name.toLowerCase().includes(productQuery.trim().toLowerCase())),
 		),
 	);
+
+	type StoreTask = { label: string; doneLabel: string; done: boolean; action: 'producto' | 'general' | 'compartir' };
+	const hasSocials = $derived(SOCIAL_NETWORKS.some((n) => ((social[n.key] ?? '') as string).trim() !== ''));
+	const tasks = $derived<StoreTask[]>([
+		{
+			label: 'Agrega tu primer producto',
+			doneLabel: `${products.length} producto${products.length === 1 ? '' : 's'} en tu catálogo`,
+			done: products.length > 0,
+			action: 'producto',
+		},
+		{ label: 'Sube el logo de tu tienda', doneLabel: 'Logo listo', done: !!store?.logo, action: 'general' },
+		{ label: 'Sube el banner del hero', doneLabel: 'Banner listo', done: !!store?.banner, action: 'general' },
+		{ label: 'Escribe la descripción', doneLabel: 'Descripción lista', done: !!settings.description.trim(), action: 'general' },
+		{ label: 'Configura el WhatsApp de pedidos', doneLabel: 'WhatsApp listo', done: !!settings.whatsapp.trim(), action: 'general' },
+		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'general' },
+		{ label: 'Comparte tu tienda', doneLabel: '¡Ya recibes visitas!', done: (store?.visits ?? 0) > 0, action: 'compartir' },
+	]);
+	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
 
 	function startNewCategory() {
 		formCreatingCategory = true;
@@ -690,40 +708,43 @@ async function duplicateProduct(p: Product) {
 					</a>
 				</div>
 			</div>
-			<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
 				<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 flex-1">
 					<a
 						href="?tab=productos"
-						class="flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
+						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
 							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 					>
-						<i class="ri-shopping-bag-line text-lg sm:text-base"></i>
-						<span>Productos</span>
+						Productos
 					</a>
 					<a
 						href="?tab=pedidos"
-						class="relative flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
+						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
 							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 					>
-						<span class="relative flex items-center justify-center">
-							<i class="ri-folder-line text-lg sm:text-base"></i>
-							{#if unreadOrders > 0}
-								<span class="absolute -top-2.5 -right-2.5 sm:static sm:ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-canvas rounded-full tabular-nums">
-									{unreadOrders}
-								</span>
-							{/if}
-						</span>
-						<span>Pedidos</span>
+						Pedidos
+						{#if unreadOrders > 0}
+							<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-ink rounded-full tabular-nums">
+								{unreadOrders}
+							</span>
+						{/if}
 					</a>
 					<a
-						href="?tab=ajustes"
-						class="flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
-							{tab === 'ajustes' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+						href="?tab=general"
+						class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 					>
-						<i class="ri-settings-3-line text-lg sm:text-base"></i>
-						<span>Ajustes</span>
+						General
 					</a>
 				</div>
+				<button
+					onclick={() => (shareOpen = true)}
+					class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+				>
+					<i class="ri-share-line"></i>
+					Compartir
+				</button>
+			</div>
 				<button
 					onclick={() => (shareOpen = true)}
 					class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
@@ -735,6 +756,83 @@ async function duplicateProduct(p: Product) {
 		</div>
 
 		{#if tab === 'productos'}
+			{#if score === 100}
+				<div class="bg-ember/10 border border-ember/25 rounded-card px-5 py-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+					<div class="flex items-center gap-3 flex-1">
+						<span class="h-10 w-10 flex-shrink-0 rounded-full bg-ember text-white flex items-center justify-center">
+							<i class="ri-check-line text-lg"></i>
+						</span>
+						<div>
+							<p class="font-bold text-ink">¡Tu tienda está lista para vender!</p>
+							<p class="text-sm text-muted">Completaste toda la configuración de tu tienda.</p>
+						</div>
+					</div>
+					<button
+						onclick={() => (shareOpen = true)}
+						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2 rounded-btn text-xs font-medium hover:bg-ember-active transition-colors cursor-pointer"
+					>
+						<i class="ri-share-line"></i>
+						Compartir
+					</button>
+				</div>
+			{:else}
+				<div class="bg-card border border-hairline rounded-card p-5 sm:p-6 mb-6">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+						<div>
+							<h2 class="font-bold text-ink flex items-center gap-2">
+								<i class="ri-rocket-2-line text-ember"></i>
+								Completa tu tienda
+							</h2>
+							<p class="text-xs text-muted mt-0.5">Faltan {tasks.length - tasks.filter((t) => t.done).length} pasos para estar lista.</p>
+						</div>
+						<div class="flex items-center gap-3 flex-shrink-0">
+							<span class="text-2xl font-black text-ink tabular-nums">{score}%</span>
+							<div class="w-32 h-2 bg-bone rounded-full overflow-hidden">
+								<div class="h-full bg-ember rounded-full transition-all duration-500" style="width:{score}%"></div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-1.5 sm:grid-cols-2">
+						{#each tasks as t}
+							<div class={`flex items-center gap-2.5 rounded-btn px-3 py-2 ${t.done ? 'bg-canvas/60' : 'bg-bone/60'}`}>
+								{#if t.done}
+									<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-ember/15 text-ember">
+										<i class="ri-check-line text-xs"></i>
+									</span>
+									<span class="text-sm text-muted flex-1 min-w-0 truncate">{t.doneLabel}</span>
+								{:else}
+									<span class="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded-full bg-bone border border-hairline text-muted-soft">
+										<i class="ri-add-line text-xs"></i>
+									</span>
+									<span class="text-sm text-body flex-1 min-w-0 truncate">{t.label}</span>
+									{#if t.action === 'producto'}
+										<button
+											onclick={openNewProduct}
+											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
+										>
+											Agregar
+										</button>
+									{:else if t.action === 'compartir'}
+										<button
+											onclick={() => (shareOpen = true)}
+											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
+										>
+											Compartir
+										</button>
+									{:else}
+										<a
+											href="?tab=general"
+											class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 no-underline"
+										>
+											Completar
+										</a>
+									{/if}
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
 			<div class="grid grid-cols-3 gap-3 mb-6">
 				<div class="bg-card border border-hairline rounded-card p-4">
 					<p class="text-[11px] text-muted flex items-center gap-1.5"><i class="ri-eye-line"></i> Visitas · 7 días</p>
@@ -1291,7 +1389,7 @@ async function duplicateProduct(p: Product) {
 			</div>
 		{/if}
 
-		{#if tab === 'ajustes' && dirty}
+		{#if tab === 'general' && dirty}
 			<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70]">
 				<button
 					onclick={saveAll}

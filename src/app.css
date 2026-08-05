@@ -11,6 +11,10 @@
 }
 
 /* ============ TOKENS ============ */
+html {
+	-webkit-tap-highlight-color: transparent;
+}
+
 :root {
 	color-scheme: light;
 
