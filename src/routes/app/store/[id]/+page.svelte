@@ -4,6 +4,7 @@ import { supabase } from '$lib/supabase/client';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
+	import { theme } from '$lib/stores/theme.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, socialDisplay, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
@@ -111,10 +112,11 @@ import QRCode from 'qrcode';
 		qrOpen = true;
 		qrGenerating = true;
 		try {
+			const dark = theme.resolved === 'dark';
 			qrDataUrl = await QRCode.toDataURL(`https://www.tiendly.lat/@${store.slug}`, {
 				width: 512,
 				margin: 2,
-				color: { dark: '#ffffff', light: '#111111' },
+				color: { dark: dark ? '#ffffff' : '#111111', light: dark ? '#111111' : '#ffffff' },
 			});
 		} catch {
 			qrDataUrl = '';

@@ -19,7 +19,7 @@
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
 	<div class="text-center mb-12">
-		<h1 class="text-3xl sm:text-4xl font-black text-ink mb-3">Planes para cada etapa</h1>
+		<h1 class="text-3xl sm:text-4xl font-extrabold text-ink mb-3">Planes para cada etapa</h1>
 		<p class="text-body max-w-xl mx-auto">
 			Empieza gratis y crece cuando quieras. Precios en USD, se pagan en cripto (USDT).
 		</p>

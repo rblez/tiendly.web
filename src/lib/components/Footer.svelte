@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { storeSocials } from '$lib/socials';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store = null }: { store?: Store | null } = $props();
@@ -27,7 +28,7 @@
 			{/if}
 		{:else}
 			<div class="flex items-center gap-2.5">
-				<span class="h-7 w-7 flex items-center justify-center rounded-md bg-ember text-canvas font-black text-xs select-none">T</span>
+				<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-md select-none" />
 				<span class="font-bold text-lg text-ink">Tiendly</span>
 			</div>
 			<p class="text-sm text-muted max-w-md">
@@ -39,5 +40,8 @@
 			</div>
 			<p class="text-xs text-muted-soft">&copy; {new Date().getFullYear()} Tiendly. Todos los derechos reservados.</p>
 		{/if}
+		<div class="mt-2">
+			<ThemeToggle />
+		</div>
 	</div>
 </footer>

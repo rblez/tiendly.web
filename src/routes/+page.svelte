@@ -41,7 +41,7 @@
 				<i class="ri-timer-line"></i>
 				Tu tienda lista en menos de 5 minutos
 			</div>
-			<h1 class="text-4xl sm:text-6xl font-black tracking-tight text-ink leading-tight">
+			<h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-ink leading-tight">
 				Crea tu tienda online
 				<span class="text-ember">
 					en 5 minutos

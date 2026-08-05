@@ -1,9 +1,22 @@
 <script lang="ts">
 	import '../app.css';
+	import { page } from '$app/stores';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import { theme } from '$lib/stores/theme.svelte';
 
 	let { children } = $props();
+
+	$effect(() => {
+		theme.init();
+		const tr = $page.url.searchParams.get('theme_refresh');
+		if (tr === '1' || tr === '2' || tr === 'auto') {
+			theme.set(tr === '1' ? 'dark' : tr === '2' ? 'light' : 'auto');
+			const url = new URL($page.url.href);
+			url.searchParams.delete('theme_refresh');
+			history.replaceState(history.state, '', url);
+		}
+	});
 </script>
 
 <svelte:head>
