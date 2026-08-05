@@ -7,12 +7,13 @@ import { supabase } from '$lib/supabase/client';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
-	import { SOCIAL_NETWORKS as NETWORKS, socialDisplay, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
+	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 import { PLAN_MAP } from '$lib/plans';
 import QRCode from 'qrcode';
 
 	type Tab = 'productos' | 'pedidos' | 'ajustes';
+	const TAB_KEYS: Tab[] = ['productos', 'pedidos', 'ajustes'];
 
 	let store = $state<Store | null>(null);
 	let products = $state<Product[]>([]);
@@ -20,7 +21,8 @@ import QRCode from 'qrcode';
 	let ordersLoading = $state(false);
 	let loading = $state(true);
 	let unreadOrders = $state(0);
-	let statusModalOrder = $state<Order | null>(null);
+	let openStatusMenu = $state<string | null>(null);
+	let shareOpen = $state(false);
 
 	type NotifPrefs = { sound: boolean; browser: boolean; badge: boolean };
 
@@ -80,7 +82,18 @@ import QRCode from 'qrcode';
 	$effect(() => {
 		document.title = documentTitle;
 	});
-	let tab = $state<Tab>($page.url.searchParams.get('created') ? 'ajustes' : 'productos');
+
+	function urlTab(fallback: Tab): Tab {
+		const t = $page.url.searchParams.get('tab');
+		return TAB_KEYS.includes(t as Tab) ? (t as Tab) : fallback;
+	}
+
+	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'ajustes' : 'productos'));
+
+	$effect(() => {
+		if (tab === 'pedidos') markOrdersRead();
+	});
+
 	let error = $state('');
 	let savedFlash = $state(false);
 	let savedMessage = $state('');
@@ -95,6 +108,7 @@ import QRCode from 'qrcode';
 	let formCurrency = $state('CUP');
 	let formCategory = $state('General');
 	let formAgotado = $state(false);
+	let formBajoPedido = $state(false);
 	let formActive = $state(true);
 	let formVariants = $state('');
 	let formImages = $state<string[]>([]);
@@ -155,6 +169,18 @@ import QRCode from 'qrcode';
 
 	let formCreatingCategory = $state(false);
 	let categories = $derived(Array.from(new Set(products.map((p) => p.category))).sort());
+
+	let productQuery = $state('');
+	let categoryFilter = $state('all');
+	const plan = $derived(PLAN_MAP[auth.plan] ?? PLAN_MAP.free);
+	const productLimit = $derived(plan.limitProducts);
+	const filteredProducts = $derived(
+		products.filter(
+			(p) =>
+				(categoryFilter === 'all' || p.category === categoryFilter) &&
+				(!productQuery.trim() || p.name.toLowerCase().includes(productQuery.trim().toLowerCase())),
+		),
+	);
 
 	function startNewCategory() {
 		formCreatingCategory = true;
@@ -219,6 +245,7 @@ import QRCode from 'qrcode';
 
 	let visitChart = $state<VisitDay[]>([]);
 	let visitMax = $state(1);
+	const visitTotal = $derived(visitChart.reduce((s, d) => s + d.visits, 0));
 
 	async function loadVisitChart() {
 		if (!editingStoreId) return;
@@ -250,8 +277,7 @@ import QRCode from 'qrcode';
 	}
 
 	function openNewProduct() {
-		const limit = PLAN_MAP[auth.plan]?.limitProducts ?? 10;
-		const atLimit = products.length >= limit;
+		const atLimit = products.length >= productLimit;
 		productModalOpen = true;
 		editingId = null;
 		formName = '';
@@ -261,11 +287,12 @@ import QRCode from 'qrcode';
 		formCategory = 'General';
 		formCreatingCategory = false;
 		formAgotado = false;
+		formBajoPedido = false;
 		formActive = true;
 		formVariants = '';
 		formImages = [];
 		productError = atLimit
-			? `Límite del plan ${PLAN_MAP[auth.plan].name}: máximo ${limit} productos. Mejora tu plan para agregar más.`
+			? `Límite del plan ${plan.name}: máximo ${productLimit} productos. Mejora tu plan para agregar más.`
 			: '';
 		atProductLimit = atLimit;
 	}
@@ -280,6 +307,7 @@ import QRCode from 'qrcode';
 		formCategory = p.category;
 		formCreatingCategory = false;
 		formAgotado = p.agotado;
+		formBajoPedido = p.bajo_pedido ?? false;
 		formActive = p.active;
 		formVariants = variantsToText(p.variants);
 		formImages = Array.isArray(p.images) ? p.images : [];
@@ -316,6 +344,7 @@ import QRCode from 'qrcode';
 			currency: formCurrency,
 			category: formCategory.trim() || 'General',
 			agotado: formAgotado,
+			bajo_pedido: formBajoPedido,
 			active: formActive,
 			variants,
 			images: formImages,
@@ -596,28 +625,34 @@ async function duplicateProduct(p: Product) {
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	{#if $page.url.searchParams.get('created')}
-		<div class="bg-ember/10 border border-ember/25 rounded-card p-5 mb-8 flex flex-col sm:flex-row sm:items-center gap-4">
-			<div class="flex-1">
-				<p class="font-bold text-ink flex items-center gap-2">
-					<i class="ri-checkbox-circle-line text-ember"></i>
-					¡Tu tienda está lista!
-				</p>
-				<p class="text-sm text-body mt-0.5">Compártela con tus clientes para empezar a recibir pedidos.</p>
+		<div class="bg-ember/10 border border-ember/25 rounded-card px-5 py-4 mb-8 flex flex-col sm:flex-row sm:items-center gap-3">
+			<div class="flex-1 flex items-center gap-3">
+				<span class="h-10 w-10 flex-shrink-0 rounded-full bg-ember text-white flex items-center justify-center">
+					<i class="ri-check-line text-lg"></i>
+				</span>
+				<div>
+					<p class="font-bold text-ink">¡Tu tienda está lista!</p>
+					<p class="text-sm text-muted">Compártela con tus clientes para empezar a recibir pedidos.</p>
+				</div>
 			</div>
-			<div class="flex items-center gap-2">
-				<input
-					readonly
-					value={shareUrl}
-					onclick={(e) => (e.target as HTMLInputElement).select()}
-					class="flex-1 sm:w-64 px-3 py-2 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember"
-				/>
-				<button onclick={copyLink} class="bg-ember text-white px-4 py-2 rounded-btn text-xs font-medium hover:bg-ember-active transition-colors cursor-pointer">
-					<i class="ri-link"></i>
-					Copiar
-				</button>
-				<button onclick={openQrModal} class="bg-card border border-hairline text-body px-4 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-					<i class="ri-qr-code-line"></i>
-					QR
+			<div class="flex gap-2">
+				{#if store}
+					<a
+						href={`/@${store.slug}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-xs font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors no-underline"
+					>
+						<i class="ri-eye-line"></i>
+						Ver tienda
+					</a>
+				{/if}
+				<button
+					onclick={() => (shareOpen = true)}
+					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2 rounded-btn text-xs font-medium hover:bg-ember-active transition-colors cursor-pointer"
+				>
+					<i class="ri-share-line"></i>
+					Compartir
 				</button>
 			</div>
 		</div>
@@ -655,47 +690,80 @@ async function duplicateProduct(p: Product) {
 					</a>
 				</div>
 			</div>
-			<div class="flex gap-2 bg-card border border-hairline rounded-btn p-1">
-				<button
-					onclick={() => { tab = 'productos'; $page.url.searchParams.delete('created'); }}
-					class="px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer
-						{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
-				>
-					<i class="ri-shopping-bag-line mr-1.5"></i>
-					Productos
-				</button>
-				<button
-					onclick={() => { tab = 'pedidos'; markOrdersRead(); $page.url.searchParams.delete('created'); }}
-					class="px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5
-						{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
-				>
-					<i class="ri-folder-line"></i>
-					Pedidos
-					{#if unreadOrders > 0}
-						<span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-canvas rounded-full tabular-nums">
-							{unreadOrders}
+			<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+				<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 flex-1">
+					<a
+						href="?tab=productos"
+						class="flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
+							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+					>
+						<i class="ri-shopping-bag-line text-lg sm:text-base"></i>
+						<span>Productos</span>
+					</a>
+					<a
+						href="?tab=pedidos"
+						class="relative flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
+							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+					>
+						<span class="relative flex items-center justify-center">
+							<i class="ri-folder-line text-lg sm:text-base"></i>
+							{#if unreadOrders > 0}
+								<span class="absolute -top-2.5 -right-2.5 sm:static sm:ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-canvas rounded-full tabular-nums">
+									{unreadOrders}
+								</span>
+							{/if}
 						</span>
-					{/if}
-				</button>
+						<span>Pedidos</span>
+					</a>
+					<a
+						href="?tab=ajustes"
+						class="flex-1 sm:flex-none flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-btn text-xs sm:text-sm font-medium transition-colors no-underline
+							{tab === 'ajustes' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+					>
+						<i class="ri-settings-3-line text-lg sm:text-base"></i>
+						<span>Ajustes</span>
+					</a>
+				</div>
 				<button
-					onclick={() => { tab = 'ajustes'; $page.url.searchParams.delete('created'); }}
-					class="px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer
-						{tab === 'ajustes' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+					onclick={() => (shareOpen = true)}
+					class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
 				>
-					<i class="ri-settings-3-line mr-1.5"></i>
-					Ajustes
+					<i class="ri-share-line"></i>
+					Compartir
 				</button>
 			</div>
 		</div>
 
 		{#if tab === 'productos'}
+			<div class="grid grid-cols-3 gap-3 mb-6">
+				<div class="bg-card border border-hairline rounded-card p-4">
+					<p class="text-[11px] text-muted flex items-center gap-1.5"><i class="ri-eye-line"></i> Visitas · 7 días</p>
+					<p class="text-xl sm:text-2xl font-black text-ink tabular-nums mt-1">{visitTotal}</p>
+				</div>
+				<div class="bg-card border border-hairline rounded-card p-4">
+					<p class="text-[11px] text-muted flex items-center gap-1.5"><i class="ri-folder-line"></i> Pedidos</p>
+					<p class="text-xl sm:text-2xl font-black text-ink tabular-nums mt-1">{orders.length}</p>
+				</div>
+				<div class="bg-card border border-hairline rounded-card p-4">
+					<p class="text-[11px] text-muted flex items-center gap-1.5"><i class="ri-shopping-bag-line"></i> Productos</p>
+					<p class="text-xl sm:text-2xl font-black text-ink tabular-nums mt-1">
+						{products.length}
+						{#if Number.isFinite(productLimit)}
+							<span class="text-sm font-semibold text-muted-soft">/ {productLimit}</span>
+						{/if}
+					</p>
+					{#if products.length >= productLimit}
+						<p class="text-[10px] text-warning mt-1 flex items-center gap-1"><i class="ri-error-warning-line"></i> Límite del plan alcanzado</p>
+					{/if}
+				</div>
+			</div>
+
 			<div class="bg-card border border-hairline rounded-card p-5 mb-6">
 				<div class="flex items-center justify-between mb-4">
 					<h2 class="text-sm font-semibold text-ink flex items-center gap-2">
 						<i class="ri-bar-chart-line text-ember"></i>
-						Visitas · últimos 7 días
+						Visitas por día
 					</h2>
-					<span class="text-2xl font-black text-ink tabular-nums">{visitChart.reduce((s, d) => s + d.visits, 0)}</span>
 				</div>
 				<div class="flex items-end gap-1.5 h-28">
 					{#each visitChart as day}
@@ -713,15 +781,47 @@ async function duplicateProduct(p: Product) {
 				</div>
 			</div>
 
-			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-				<p class="text-sm text-muted">Agrega y edita los productos de tu catálogo.</p>
-				<button
-					onclick={openNewProduct}
-					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
-				>
-					<i class="ri-add-line"></i>
-					Nuevo producto
-				</button>
+			<div class="flex flex-col gap-3 mb-5">
+				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+					<div class="relative flex-1 max-w-sm">
+						<i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-soft text-sm pointer-events-none"></i>
+						<input
+							type="search"
+							bind:value={productQuery}
+							placeholder="Buscar producto..."
+							class="w-full pl-9 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						/>
+					</div>
+					<button
+						onclick={openNewProduct}
+						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					>
+						<i class="ri-add-line"></i>
+						Nuevo producto
+					</button>
+				</div>
+				{#if categories.length > 0}
+					<div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+						<button
+							onclick={() => (categoryFilter = 'all')}
+							class={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${
+								categoryFilter === 'all' ? 'bg-ember text-white border-ember' : 'bg-card border-hairline text-body hover:border-ember/50'
+							}`}
+						>
+							Todas
+						</button>
+						{#each categories as cat}
+							<button
+								onclick={() => (categoryFilter = categoryFilter === cat ? 'all' : cat)}
+								class={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${
+									categoryFilter === cat ? 'bg-ember text-white border-ember' : 'bg-card border-hairline text-body hover:border-ember/50'
+								}`}
+							>
+								{cat}
+							</button>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
 			{#if products.length === 0}
@@ -735,9 +835,23 @@ async function duplicateProduct(p: Product) {
 						Agregar producto
 					</button>
 				</div>
+			{:else if filteredProducts.length === 0}
+				<div class="text-center py-16 bg-card border border-hairline rounded-card">
+					<div class="w-14 h-14 bg-bone rounded-full flex items-center justify-center mx-auto mb-4">
+						<i class="ri-search-line text-2xl text-muted-soft"></i>
+					</div>
+					<p class="text-body mb-1">Sin resultados</p>
+					<p class="text-xs text-muted-soft mb-5">Ningún producto coincide con tu búsqueda o filtro.</p>
+					<button
+						onclick={() => { productQuery = ''; categoryFilter = 'all'; }}
+						class="bg-bone border border-hairline text-ink px-6 py-3 rounded-btn text-sm font-medium hover:border-ember/50 transition-colors cursor-pointer"
+					>
+						Limpiar filtros
+					</button>
+				</div>
 			{:else}
 				<div class="space-y-3">
-					{#each products as product}
+					{#each filteredProducts as product}
 						<div class="bg-card border border-hairline rounded-card p-4 flex items-center gap-4">
 							{#if productImage(product)}
 								<img src={productImage(product)!} alt={product.name} class="h-14 w-14 object-cover rounded-lg bg-canvas flex-shrink-0" />
@@ -787,11 +901,6 @@ async function duplicateProduct(p: Product) {
 							<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ember"></span>
 						</span>
 						En vivo
-					</span>
-					<span class="text-[10px] font-medium text-muted flex items-center gap-1 ml-1">
-						<i class="ri-eye-line"></i>
-						<span class="tabular-nums">{store.visits ?? 0}</span>
-						visitas
 					</span>
 				</div>
 			<div class="flex items-center gap-2">
@@ -885,134 +994,240 @@ async function duplicateProduct(p: Product) {
 									<i class="ri-whatsapp-line"></i>
 									Contactar
 								</a>
-							<div class="ml-auto">
+							<div class="relative ml-auto">
 								<button
-									onclick={() => (statusModalOrder = order)}
+									onclick={() => (openStatusMenu = openStatusMenu === order.id ? null : order.id)}
 									class={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-btn border cursor-pointer transition-colors hover:brightness-110 ${status.selCls}`}
 									aria-label="Cambiar estado del pedido"
 								>
 									<i class="ri-arrow-down-s-line"></i>
 									{status.label}
 								</button>
+								{#if openStatusMenu === order.id}
+									<div class="absolute right-0 bottom-full mb-2 w-48 z-30 bg-card border border-hairline rounded-btn shadow-xl p-1.5">
+										{#each ORDER_STATUSES as s}
+											<button
+												onclick={() => {
+													updateOrderStatus(order, s.value);
+													openStatusMenu = null;
+												}}
+												class={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
+													order.status === s.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
+												}`}
+											>
+												<span class="flex items-center gap-2.5">
+													<span class={`w-2.5 h-2.5 rounded-full ${s.cls.split(' ')[0]}`}></span>
+													{s.label}
+												</span>
+												{#if order.status === s.value}
+													<i class="ri-check-line text-ember"></i>
+												{/if}
+											</button>
+										{/each}
+									</div>
+								{/if}
 							</div>
 							</div>
-						</div>
-					{/each}
-				</div>
+					</div>
+				{/each}
+			</div>
+			{#if openStatusMenu !== null}
+				<div class="fixed inset-0 z-20" onclick={() => (openStatusMenu = null)}></div>
 			{/if}
-
-			<OptionModal title="Cambiar estado" open={statusModalOrder !== null} onClose={() => (statusModalOrder = null)}>
-				<div class="space-y-1">
-					{#each ORDER_STATUSES as s}
-						<button
-							onclick={() => {
-								if (statusModalOrder) updateOrderStatus(statusModalOrder, s.value);
-								statusModalOrder = null;
-							}}
-							class={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
-								statusModalOrder?.status === s.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-bone'
-							}`}
-						>
-							<span class="flex items-center gap-2.5">
-								<span class={`w-2.5 h-2.5 rounded-full ${s.cls.split(' ')[0]}`}></span>
-								{s.label}
-							</span>
-							{#if statusModalOrder?.status === s.value}
-								<i class="ri-check-line text-ember"></i>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</OptionModal>
+		{/if}
 
 		{:else}
 			<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-				<div class="bg-card border border-hairline rounded-card p-6 sm:p-8 space-y-5">
-					<h2 class="font-bold text-ink">Información de la tienda</h2>
-
-					<div class="flex items-center gap-5">
-						<div class="h-16 w-16 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
-							{#if productImage({ image: store.logo })}
-								<img src={productImage({ image: store.logo })!} alt="Logo" class="w-full h-full object-cover" />
-							{:else}
-								<span class="text-2xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
-							{/if}
+				<div class="space-y-6">
+					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
+							<i class="ri-store-2-line text-ember"></i>
+							Información general
+						</h2>
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div>
+								<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
+								<input
+									id="s-name"
+									type="text"
+									bind:value={settings.name}
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+							<div>
+								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
+								<div class="relative">
+									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">tiendly.lat/@</span>
+									<input
+										id="s-slug"
+										type="text"
+										bind:value={settings.slug}
+										oninput={onSettingsSlugInput}
+										placeholder="username"
+										class="w-full pl-28 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									/>
+								</div>
+							</div>
 						</div>
-						<label class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-							<i class="ri-upload-2-line"></i>
-							Cambiar logo
-							<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
-						</label>
+						<div class="mt-4">
+							<label for="s-desc" class="block text-sm font-medium text-body mb-1.5">Descripción</label>
+							<textarea
+								id="s-desc"
+								bind:value={settings.description}
+								rows="2"
+								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+							></textarea>
+						</div>
+						<div class="mt-4">
+							<label for="s-wa" class="block text-sm font-medium text-body mb-1.5">WhatsApp para pedidos</label>
+							<input
+								id="s-wa"
+								type="tel"
+								bind:value={settings.whatsapp}
+								placeholder="Ej: +53 5 1234567"
+								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+							/>
+							<p class="text-xs text-muted-soft mt-1.5">Los pedidos de tu tienda llegan a este número por WhatsApp.</p>
+						</div>
 					</div>
 
-					<div>
-						<label class="block text-sm font-medium text-body mb-1.5">Banner del hero</label>
-						<div class="flex items-center gap-4">
-							<div class="h-20 flex-1 max-w-sm rounded-xl overflow-hidden bg-canvas border border-hairline">
-								{#if productImage({ image: store.banner })}
-									<img src={productImage({ image: store.banner })!} alt="Banner" class="w-full h-full object-cover" />
-								{:else}
-									<div class="w-full h-full flex items-center justify-center">
-										<i class="ri-image-add-line text-muted-soft text-2xl"></i>
+					<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-1">
+							<i class="ri-share-box-line text-ember"></i>
+							Redes sociales
+						</h2>
+						<p class="text-xs text-muted mb-5">Se muestran al pie de tu tienda. Deja vacío lo que no uses.</p>
+						<div class="space-y-3">
+							{#each SOCIAL_NETWORKS as net}
+								{@const handle = socialHandle(net.key, social[net.key] ?? '')}
+								<div>
+									<label for={`s-${net.key}`} class="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5">
+										<img src={socialIcon(net.key, theme.resolved === 'dark')} alt="" class="w-3.5 h-3.5" />
+										{net.label}
+									</label>
+									<div class="relative">
+										<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">
+											{net.prefix}
+										</span>
+										<input
+											id={`s-${net.key}`}
+											type="text"
+											value={handle}
+											oninput={(e) => (social[net.key] = (e.target as HTMLInputElement).value)}
+											placeholder={net.placeholder}
+											autocomplete="off"
+											spellcheck="false"
+											class="w-full pr-10 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors {net.key === 'fb' ? 'pl-24' : 'pl-8'}"
+										/>
+										{#if handle}
+											<button
+												type="button"
+												onclick={() => (social[net.key] = '')}
+												aria-label={`Quitar ${net.label}`}
+												class="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-muted-soft hover:text-error hover:bg-bone transition-colors cursor-pointer"
+											>
+												<i class="ri-close-line"></i>
+											</button>
+										{/if}
 									</div>
+									{#if handle}
+										<p class="text-[11px] text-muted-soft mt-1.5 flex items-center gap-1">
+											<i class="ri-link text-[10px]"></i>
+											<span class="truncate">{socialUrl(net.key, handle)}</span>
+										</p>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+
+				<div class="space-y-6">
+					<div class="bg-card border border-hairline rounded-card p-6">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
+							<i class="ri-eye-line text-ember"></i>
+							Vista previa
+						</h2>
+						<div class="rounded-card overflow-hidden border border-hairline">
+							<div class="relative h-24" style={`background: linear-gradient(135deg, ${settings.theme_color}, ${settings.theme_color}b3)`}>
+								<div class="absolute inset-0 flex items-end p-3">
+									<div class="flex items-center gap-2.5 bg-canvas/90 backdrop-blur-sm rounded-xl px-3 py-2 pr-4">
+										{#if productImage({ image: store.logo })}
+											<img src={productImage({ image: store.logo })!} alt="" class="h-8 w-8 rounded-lg object-cover" />
+										{:else}
+											<span class="h-8 w-8 flex items-center justify-center rounded-lg text-white font-black" style={`background:${settings.theme_color}`}>
+												{(settings.name || 'T').charAt(0).toUpperCase()}
+											</span>
+										{/if}
+										<div class="min-w-0">
+											<p class="text-xs font-bold text-ink leading-tight truncate">{settings.name || 'Mi tienda'}</p>
+											<p class="text-[10px] text-muted-soft leading-tight truncate">tiendly.lat/@{settings.slug || 'username'}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="p-4 flex items-center justify-between">
+								<p class="text-xs text-muted">Así se ve tu hero</p>
+								{#if store}
+									<a
+										href={`/@${store.slug}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-xs font-medium text-ember hover:text-ember-active no-underline inline-flex items-center gap-1"
+									>
+										Ver tienda
+										<i class="ri-external-link-line"></i>
+									</a>
+								{/if}
+							</div>
+						</div>
+					</div>
+
+					<div class="bg-card border border-hairline rounded-card p-6">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
+							<i class="ri-palette-line text-ember"></i>
+							Apariencia
+						</h2>
+						<div class="flex items-center gap-4 mb-5">
+							<div class="h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
+								{#if productImage({ image: store.logo })}
+									<img src={productImage({ image: store.logo })!} alt="Logo" class="w-full h-full object-cover" />
+								{:else}
+									<span class="text-xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
 								{/if}
 							</div>
 							<label class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
 								<i class="ri-upload-2-line"></i>
-								{store.banner ? 'Cambiar banner' : 'Subir banner'}
-								<input type="file" accept="image/*" class="hidden" onchange={handleStoreBanner} />
+								Cambiar logo
+								<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
 							</label>
 						</div>
-						<p class="text-xs text-muted-soft mt-1.5">Imagen panorámica del hero de tu tienda. Recomendado 1600×400.</p>
-					</div>
-
-					<div class="grid gap-3 sm:grid-cols-2">
-						<div>
-							<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
-							<input
-								id="s-name"
-								type="text"
-								bind:value={settings.name}
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-							/>
+						<div class="mb-5">
+							<label class="block text-sm font-medium text-body mb-1.5">Banner del hero</label>
+							<div class="flex items-center gap-3">
+								<div class="h-16 flex-1 rounded-xl overflow-hidden bg-canvas border border-hairline">
+									{#if productImage({ image: store.banner })}
+										<img src={productImage({ image: store.banner })!} alt="Banner" class="w-full h-full object-cover" />
+									{:else}
+										<div class="w-full h-full flex items-center justify-center">
+											<i class="ri-image-add-line text-muted-soft text-xl"></i>
+										</div>
+									{/if}
+								</div>
+								<label class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-3.5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+									<i class="ri-upload-2-line"></i>
+									{store.banner ? 'Cambiar' : 'Subir'}
+									<input type="file" accept="image/*" class="hidden" onchange={handleStoreBanner} />
+								</label>
+							</div>
+							<p class="text-xs text-muted-soft mt-1.5">Recomendado 1600×400.</p>
 						</div>
 						<div>
-						<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
-						<input
-							id="s-slug"
-							type="text"
-							bind:value={settings.slug}
-							oninput={onSettingsSlugInput}
-							placeholder="tiendly.lat/@username"
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-						/>
-						</div>
-					</div>
-					<div>
-						<label for="s-desc" class="block text-sm font-medium text-body mb-1.5">Descripción</label>
-						<textarea
-							id="s-desc"
-							bind:value={settings.description}
-							rows="2"
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-						></textarea>
-					</div>
-					<div>
-						<label for="s-wa" class="block text-sm font-medium text-body mb-1.5">WhatsApp para pedidos</label>
-						<input
-							id="s-wa"
-							type="tel"
-							bind:value={settings.whatsapp}
-							placeholder="Ej: +53 5 1234567"
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-						/>
-					</div>
-					<div>
-						<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
-						<div class="flex flex-wrap items-center gap-3">
+							<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
+							<div class="flex flex-wrap items-center gap-3">
 								{#each PRESET_COLORS as color}
 									<button
-										onclick={() => settings.theme_color = color}
+										onclick={() => (settings.theme_color = color)}
 										class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
 											{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
 										style={`background-color: ${color}`}
@@ -1020,82 +1235,58 @@ async function duplicateProduct(p: Product) {
 									></button>
 								{/each}
 							</div>
-					</div>
-					<div class="flex items-center justify-between bg-bone rounded-btn px-4 py-3">
-						<div>
-							<p class="text-sm font-medium text-ink">Tienda visible</p>
-							<p class="text-xs text-muted">Si la ocultas, nadie podrá ver tu tienda.</p>
 						</div>
-						<button
-							onclick={() => settings.active = !settings.active}
-							class="relative w-11 h-6 rounded-full transition-colors cursor-pointer
-								{settings.active ? 'bg-ember' : 'bg-bone border border-hairline'}"
-							aria-label="Alternar visibilidad"
-						>
-							<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {settings.active ? 'left-[22px]' : 'left-0.5'}"></span>
-						</button>
+					</div>
+
+					<div class="bg-card border border-hairline rounded-card p-6">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-5">
+							<i class="ri-eye-off-line text-ember"></i>
+							Visibilidad
+						</h2>
+						<div class="flex items-center justify-between bg-bone rounded-btn px-4 py-3">
+							<div>
+								<p class="text-sm font-medium text-ink">Tienda visible</p>
+								<p class="text-xs text-muted">Si la ocultas, nadie podrá ver tu tienda.</p>
+							</div>
+							<button
+								onclick={() => (settings.active = !settings.active)}
+								class="relative w-11 h-6 rounded-full transition-colors cursor-pointer
+									{settings.active ? 'bg-ember' : 'bg-bone border border-hairline'}"
+								aria-label="Alternar visibilidad"
+							>
+								<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {settings.active ? 'left-[22px]' : 'left-0.5'}"></span>
+							</button>
+						</div>
+					</div>
+
+					<div class="bg-card border border-hairline rounded-card p-6">
+						<h2 class="font-bold text-ink flex items-center gap-2 mb-2">
+							<i class="ri-share-forward-line text-ember"></i>
+							Compartir
+						</h2>
+						<p class="text-xs text-muted mb-4">Envía el enlace de tu tienda a tus clientes.</p>
+						<div class="flex items-center gap-2">
+							<input
+								readonly
+								value={shareUrl}
+								onclick={(e) => (e.target as HTMLInputElement).select()}
+								class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember"
+							/>
+							<button
+								onclick={() => (shareOpen = true)}
+								class="inline-flex items-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer"
+							>
+								<i class="ri-share-line"></i>
+							</button>
+						</div>
+						{#if savedFlash}
+							<p class="text-xs text-ember mt-3 flex items-center gap-1.5"><i class="ri-check-line"></i> {savedMessage}</p>
+						{/if}
 					</div>
 
 					{#if settingsError}
 						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5">{settingsError}</p>
 					{/if}
-				</div>
-
-				<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-					<h2 class="font-bold text-ink mb-1.5">Comparte tu tienda</h2>
-					<p class="text-sm text-muted mb-4">Envía este enlace a tus clientes para que vean tu catálogo y hagan pedidos.</p>
-					<div class="space-y-2">
-						<input
-							readonly
-							value={shareUrl}
-							onclick={(e) => (e.target as HTMLInputElement).select()}
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember"
-						/>
-						<div class="flex gap-2">
-							<button
-								onclick={copyLink}
-								class="flex-1 inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer"
-							>
-								<i class="ri-link"></i>
-								Copiar
-							</button>
-							<a
-								href={`https://wa.me/?text=${encodeURIComponent(`Mira mi tienda en Tiendly: ${shareUrl}`)}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors no-underline"
-							>
-								<i class="ri-whatsapp-line text-ember"></i>
-							</a>
-						</div>
-					</div>
-					{#if savedFlash}
-						<p class="text-xs text-ember mt-3 flex items-center gap-1.5"><i class="ri-check-line"></i> {savedMessage}</p>
-					{/if}
-
-					<div class="border-t border-hairline mt-5 pt-5">
-						<h3 class="font-bold text-ink mb-1">Redes sociales</h3>
-						<p class="text-xs text-muted mb-4">Deja vacío lo que no uses.</p>
-						<div class="space-y-3">
-							{#each SOCIAL_NETWORKS as net}
-								<div>
-									<label for={`s-${net.key}`} class="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5">
-										<img src={net.icon} alt="" class="w-3.5 h-3.5" />
-										{net.label}
-									</label>
-									<input
-										id={`s-${net.key}`}
-										type="text"
-										inputmode="url"
-										value={socialDisplay(net.key, social[net.key] ?? '')}
-										oninput={(e) => social[net.key] = (e.target as HTMLInputElement).value}
-										placeholder={net.placeholder}
-										class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-									/>
-								</div>
-							{/each}
-						</div>
-					</div>
 				</div>
 			</div>
 		{/if}
@@ -1264,6 +1455,10 @@ async function duplicateProduct(p: Product) {
 								Agotado
 							</label>
 							<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
+								<input type="checkbox" bind:checked={formBajoPedido} class="w-4 h-4 accent-ember cursor-pointer" />
+								Bajo pedido
+							</label>
+							<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
 								<input type="checkbox" bind:checked={formActive} class="w-4 h-4 accent-ember cursor-pointer" />
 								Visible
 							</label>
@@ -1338,6 +1533,62 @@ async function duplicateProduct(p: Product) {
 					</button>
 				</div>
 			</OptionModal>
+		{/if}
+
+		{#if shareOpen}
+			<div class="fixed inset-0 z-[90] flex items-center justify-center p-4" role="presentation">
+				<button type="button" class="fixed inset-0 bg-black/60 cursor-default" onclick={() => (shareOpen = false)} aria-label="Cerrar"></button>
+				<div class="relative w-full max-w-sm bg-card border border-hairline shadow-2xl rounded-card p-6">
+					<button onclick={() => (shareOpen = false)} class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
+						<i class="ri-close-line text-xl"></i>
+					</button>
+					<h3 class="font-bold text-ink mb-1">Comparte tu tienda</h3>
+					<p class="text-xs text-muted mb-5">Envía el enlace a tus clientes para que vean tu catálogo y hagan pedidos.</p>
+					<input
+						readonly
+						value={shareUrl}
+						onclick={(e) => (e.target as HTMLInputElement).select()}
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember mb-3"
+					/>
+					{#if savedFlash}
+						<p class="text-xs text-ember mb-3 flex items-center gap-1.5"><i class="ri-check-line"></i> {savedMessage}</p>
+					{/if}
+					<div class="grid grid-cols-2 gap-2">
+						<button
+							onclick={copyLink}
+							class="inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer"
+						>
+							<i class="ri-link"></i>
+							Copiar
+						</button>
+						<a
+							href={`https://wa.me/?text=${encodeURIComponent(`Mira mi tienda en Tiendly: ${shareUrl}`)}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors no-underline"
+						>
+							<i class="ri-whatsapp-line text-ember"></i>
+							WhatsApp
+						</a>
+						<button
+							onclick={() => {
+								shareOpen = false;
+								openQrModal();
+							}}
+							class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors cursor-pointer"
+						>
+							<i class="ri-qr-code-line text-ember"></i>
+							Código QR
+						</button>
+						<button
+							onclick={() => (shareOpen = false)}
+							class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors cursor-pointer"
+						>
+							Cerrar
+						</button>
+					</div>
+				</div>
+			</div>
 		{/if}
 
 		{#if qrOpen}

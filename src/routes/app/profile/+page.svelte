@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
@@ -10,7 +11,13 @@
 
 	const PREFS_KEY = 'tiendly-notif-prefs';
 
+	const TABS = ['perfil', 'preferencias', 'seguridad', 'privacidad'] as const;
+	type ProfileTab = (typeof TABS)[number];
+
 	let prefs = $state<Prefs>({ sound: true, browser: true, badge: true });
+
+	let storesCount = $state(0);
+	let productsCount = $state(0);
 
 	onMount(() => {
 		try {
@@ -19,7 +26,19 @@
 		} catch {
 			/* prefs por defecto */
 		}
+		loadUsage();
 	});
+
+	async function loadUsage() {
+		if (!auth.session) return;
+		const { data: st } = await supabase.from('stores').select('id').eq('owner_id', auth.session.user.id);
+		storesCount = st?.length ?? 0;
+		const ids = (st ?? []).map((r) => r.id);
+		if (ids.length > 0) {
+			const { data: pr } = await supabase.from('products').select('store_id').in('store_id', ids);
+			productsCount = pr?.length ?? 0;
+		}
+	}
 
 	function savePrefs() {
 		try {
@@ -29,8 +48,14 @@
 		}
 	}
 
+	function urlTab(fallback: ProfileTab): ProfileTab {
+		const t = $page.url.searchParams.get('tab');
+		return typeof t === 'string' && (TABS as readonly string[]).includes(t) ? (t as ProfileTab) : fallback;
+	}
+
+	let tab = $derived(urlTab('perfil'));
+
 	// ---------- Pestaña Perfil ----------
-	let tab = $state('perfil');
 	let name = $state('');
 	let phone = $state('');
 	let uploading = $state(false);
@@ -178,25 +203,31 @@
 		<p class="text-sm text-muted mt-1">Tu cuenta y preferencias en Tiendly</p>
 	</div>
 
-	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-fit">
-		<button
-			onclick={() => (tab = 'perfil')}
-			class={`px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ink'}`}
+	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-full sm:w-fit overflow-x-auto">
+		<a
+			href="?tab=perfil"
+			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
 			Perfil
-		</button>
-		<button
-			onclick={() => (tab = 'ajustes')}
-			class={`px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer ${tab === 'ajustes' ? 'bg-ember text-white' : 'text-body hover:text-ink'}`}
+		</a>
+		<a
+			href="?tab=preferencias"
+			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'preferencias' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
-			Ajustes
-		</button>
-		<button
-			onclick={() => (tab = 'privacidad')}
-			class={`px-4 py-2 rounded-btn text-sm font-medium transition-colors cursor-pointer ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}`}
+			Preferencias
+		</a>
+		<a
+			href="?tab=seguridad"
+			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'seguridad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
+		>
+			Seguridad
+		</a>
+		<a
+			href="?tab=privacidad"
+			class="flex-1 sm:flex-none px-4 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ink'}"
 		>
 			Privacidad
-		</button>
+		</a>
 	</div>
 
 	{#if tab === 'perfil'}
@@ -259,17 +290,45 @@
 					disabled
 					class="w-full px-3.5 py-2.5 bg-bone border border-hairline rounded-btn text-sm text-muted cursor-not-allowed"
 				/>
-				<p class="text-xs text-muted-soft mt-1.5">El correo es tu identificador de cuenta. Para cambiarlo usa la pestaña Ajustes.</p>
+				<p class="text-xs text-muted-soft mt-1.5">El correo es tu identificador de cuenta. Para cambiarlo usa la pestaña Seguridad.</p>
 			</div>
 
-			<div class="flex items-center justify-between bg-canvas border border-hairline rounded-card px-4 py-3">
-				<div>
-					<p class="text-sm font-semibold text-ink">Plan {plan.name}</p>
-					<p class="text-xs text-muted mt-0.5">
-						Miembro desde {auth.profile?.created_at ? new Date(auth.profile.created_at).toLocaleDateString('es-CU', { year: 'numeric', month: 'long' }) : '—'}
-					</p>
+			<div class="bg-canvas border border-hairline rounded-card p-5">
+				<div class="flex items-center justify-between gap-3 mb-4">
+					<div>
+						<p class="text-sm font-semibold text-ink">Plan {plan.name}</p>
+						<p class="text-xs text-muted mt-0.5">
+							Miembro desde {auth.profile?.created_at ? new Date(auth.profile.created_at).toLocaleDateString('es-CU', { year: 'numeric', month: 'long' }) : '—'}
+						</p>
+					</div>
+					<a href="/pricing" class="text-sm font-medium text-ember hover:text-ember-active no-underline whitespace-nowrap">
+						{plan.price > 0 ? 'Cambiar plan' : 'Mejorar plan'}
+					</a>
 				</div>
-				<a href="/pricing" class="text-sm font-medium text-ember hover:text-ember-active no-underline">Ver planes</a>
+				<div class="space-y-3">
+					<div>
+						<div class="flex items-center justify-between text-xs mb-1">
+							<span class="text-muted">Tiendas</span>
+							<span class="font-semibold text-ink tabular-nums">{storesCount} de {plan.limitStores}</span>
+						</div>
+						<div class="h-1.5 bg-bone rounded-full overflow-hidden">
+							<div class="h-full bg-ember rounded-full transition-all" style="width:{Math.min(100, (storesCount / plan.limitStores) * 100)}%"></div>
+						</div>
+					</div>
+					<div>
+						<div class="flex items-center justify-between text-xs mb-1">
+							<span class="text-muted">Productos</span>
+							{#if Number.isFinite(plan.limitProducts)}
+								<span class="font-semibold text-ink tabular-nums">{productsCount} de {plan.limitProducts * plan.limitStores}</span>
+							{:else}
+								<span class="font-semibold text-ink">Ilimitados</span>
+							{/if}
+						</div>
+						<div class="h-1.5 bg-bone rounded-full overflow-hidden">
+							<div class="h-full bg-ember rounded-full transition-all" style="width:{Math.min(100, (productsCount / (Number.isFinite(plan.limitProducts) ? plan.limitProducts * plan.limitStores : 1)) * 100)}%"></div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			{#if profileError}
@@ -289,7 +348,17 @@
 				</button>
 			</div>
 		</div>
-	{:else if tab === 'ajustes'}
+	{:else if tab === 'preferencias'}
+		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+			<h2 class="font-bold text-ink mb-1">Notificaciones de pedidos</h2>
+			<p class="text-sm text-muted mb-5">Se aplican al panel de tu tienda cuando llega un pedido nuevo.</p>
+			<div class="space-y-5">
+				{@render toggleRow('Sonido', 'Reproducir un aviso sonoro con cada pedido', 'sound')}
+				{@render toggleRow('Notificación del navegador', 'Mostrar una notificación del sistema con el pedido', 'browser')}
+				{@render toggleRow('Contador en la pestaña', 'Mostrar el número de pedidos sin leer en el título de la pestaña', 'badge')}
+			</div>
+		</div>
+	{:else if tab === 'seguridad'}
 		<div class="space-y-6">
 			<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-ink mb-1">Cambiar contraseña</h2>
@@ -357,16 +426,6 @@
 		</div>
 	{:else}
 		<div class="space-y-6">
-			<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-				<h2 class="font-bold text-ink mb-1">Notificaciones de pedidos</h2>
-				<p class="text-sm text-muted mb-5">Se aplican al panel de tu tienda cuando llega un pedido nuevo.</p>
-				<div class="space-y-5">
-					{@render toggleRow('Sonido', 'Reproducir un aviso sonoro con cada pedido', 'sound')}
-					{@render toggleRow('Notificación del navegador', 'Mostrar una notificación del sistema con el pedido', 'browser')}
-					{@render toggleRow('Contador en la pestaña', 'Mostrar el número de pedidos sin leer en el título de la pestaña', 'badge')}
-				</div>
-			</div>
-
 			<div class="bg-card border border-error/30 rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-error mb-1">Eliminar cuenta</h2>
 				<p class="text-sm text-body mb-4">
