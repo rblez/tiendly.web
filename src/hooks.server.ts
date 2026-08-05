@@ -2,12 +2,15 @@ import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit';
 import { SITE_URL, DASH_URL, STORE_BASE } from '$lib/utils';
 
+const STATIC_PATH = /^\/(?:_app\/|favicon|robots\.txt|manifest\.json|isotipo|.*\.(?:png|jpe?g|gif|svg|webp|ico|woff2?|ttf|css|js|xml|map)$)/i;
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const host = (event.request.headers.get('host') ?? '').split(':')[0].toLowerCase();
 	const path = event.url.pathname;
 	const query = event.url.search;
 
 	if (host === 's.tiendly.lat') {
+		if (STATIC_PATH.test(path)) return resolve(event);
 		if (path.startsWith('/s/')) throw redirect(301, `${STORE_BASE}/${path.slice(3)}${query}`);
 		if (path.startsWith('/t/')) throw redirect(301, `${STORE_BASE}/${path.slice(3)}${query}`);
 		if (path !== '/' && !path.startsWith('/api/')) {
