@@ -1,10 +1,7 @@
 import { supabase } from '$lib/supabase/client';
 import type { Product, Variant } from '$lib/types';
 
-export const SITE_URL = 'https://tiendly.lat';
-export const DASH_URL = 'https://dash.tiendly.lat';
-export const STORE_HOST = 's.tiendly.lat';
-export const STORE_BASE = `https://${STORE_HOST}`;
+export const SITE_URL = 'https://www.tiendly.lat';
 
 function isTiendlyHost(host: string): boolean {
 	return host === 'tiendly.lat' || host === 'www.tiendly.lat' || host.endsWith('.tiendly.lat');
@@ -12,25 +9,31 @@ function isTiendlyHost(host: string): boolean {
 
 export function appUrl(): string {
 	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) return window.location.origin;
-	return DASH_URL;
+	return SITE_URL;
+}
+
+export function storeHost(slug: string): string {
+	return `${slug}.tiendly.lat`;
 }
 
 export function storeUrl(slug: string): string {
 	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) {
 		return `${window.location.origin}/s/${slug}`;
 	}
-	return `${STORE_BASE}/${slug}`;
+	return `https://${storeHost(slug)}`;
 }
 
 export function storePagePath(slug: string, path = '', host?: string): string {
-	const storeHost = host ?? (typeof window !== 'undefined' ? window.location.host : '');
-	const prefix = storeHost === STORE_HOST ? '' : '/s';
+	const h = (host ?? (typeof window !== 'undefined' ? window.location.host : '')).split(':')[0].toLowerCase();
+	const prefix = h === storeHost(slug) ? '' : '/s';
 	return `${prefix}/${slug}${path}`;
 }
 
-export function isStoreHost(host?: string): boolean {
-	const h = (host ?? (typeof window !== 'undefined' ? window.location.host : '')).split(':')[0].toLowerCase();
-	return h === STORE_HOST;
+export function storeSlugFromHost(host: string): string | null {
+	const h = host.split(':')[0].toLowerCase();
+	const m = h.match(/^([a-z0-9-]+)\.tiendly\.lat$/);
+	if (!m || h === 'www.tiendly.lat' || h === 'tiendly.lat') return null;
+	return m[1];
 }
 
 export function formatPrice(price: number, currency: string): string {

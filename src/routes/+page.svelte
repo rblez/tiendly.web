@@ -17,15 +17,15 @@
 		<div class="flex items-center justify-between h-16">
 			<Logo size="h-10" />
 			{#if auth.session}
-				<a href="https://dash.tiendly.lat/app" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
+				<a href="/app" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
 					Mi cuenta
 				</a>
 			{:else}
 				<div class="flex items-center gap-4">
-					<a href="https://dash.tiendly.lat/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline">
+					<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline">
 						Iniciar sesión
 					</a>
-					<a href="https://dash.tiendly.lat/wizard" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
+					<a href="/wizard" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
 						Comenzar gratis
 					</a>
 				</div>
@@ -52,7 +52,7 @@
 				Gratis, sin tarjetas y sin comisiones por venta.
 			</p>
 			<div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mt-8">
-				<a href="https://dash.tiendly.lat/wizard" class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
+				<a href="/wizard" class="w-full sm:w-auto bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline">
 					Crear mi tienda gratis
 				</a>
 				<a href={'/pricing'} class="w-full sm:w-auto px-8 py-3.5 border border-hairline text-body rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
