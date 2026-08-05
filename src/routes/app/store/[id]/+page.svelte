@@ -745,14 +745,6 @@ async function duplicateProduct(p: Product) {
 					Compartir
 				</button>
 			</div>
-				<button
-					onclick={() => (shareOpen = true)}
-					class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn text-sm font-medium bg-card border border-hairline text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-				>
-					<i class="ri-share-line"></i>
-					Compartir
-				</button>
-			</div>
 		</div>
 
 		{#if tab === 'productos'}
