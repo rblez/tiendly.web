@@ -59,6 +59,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          bajo_pedido: boolean
           agotado: boolean
           category: string
           created_at: string
@@ -75,6 +76,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          bajo_pedido?: boolean
           agotado?: boolean
           category?: string
           created_at?: string
@@ -91,6 +93,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          bajo_pedido?: boolean
           agotado?: boolean
           category?: string
           created_at?: string

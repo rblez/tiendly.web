@@ -164,8 +164,18 @@
 				</div>
 			{:else}
 				<div class="bg-bone rounded-btn p-3 sm:p-4">
-					<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
-					<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(currentPrice, product.currency)}</p>
+					<div class="flex items-center justify-between gap-3">
+						<div>
+							<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
+							<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(currentPrice, product.currency)}</p>
+						</div>
+						{#if product.bajo_pedido}
+							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning text-xs font-semibold flex-shrink-0">
+								<i class="ri-time-line"></i>
+								Bajo pedido
+							</span>
+						{/if}
+					</div>
 				</div>
 			{/if}
 

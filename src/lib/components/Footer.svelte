@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { storeSocials } from '$lib/socials';
+	import { socialIcon, storeSocials } from '$lib/socials';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { theme } from '$lib/stores/theme.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store = null }: { store?: Store | null } = $props();
@@ -21,11 +22,20 @@
 							class="h-9 w-9 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
 							aria-label={s.label}
 						>
-							<img src={s.icon} alt={s.label} class="h-4 w-4" />
+							<img src={socialIcon(s.key, theme.resolved === 'dark')} alt={s.label} class="h-4 w-4" />
 						</a>
 					{/each}
 				</div>
 			{/if}
+			<a
+				href="/wizard"
+				class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ember transition-colors no-underline mt-1"
+			>
+				<span class="inline-flex items-center gap-1.5">
+					<img src="/isotipo.png" alt="" class="h-4 w-4 rounded flex-shrink-0" />
+					Creado con <span class="font-semibold">Tiendly</span> · crea la tuya gratis
+				</span>
+			</a>
 		{:else}
 			<div class="flex items-center gap-2.5">
 				<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-md select-none" />

@@ -17,6 +17,7 @@ export interface Product {
 	category: string;
 	variants: Variant[];
 	agotado: boolean;
+	bajo_pedido: boolean;
 	active: boolean;
 	position: number;
 }

@@ -42,15 +42,21 @@
 			<p class="text-xs sm:text-sm text-body leading-relaxed line-clamp-2">{product.description}</p>
 		{/if}
 
-		<p class="text-base sm:text-xl font-bold text-ember">
-			{#if isAgotado}
-				<span class="text-muted-soft">Agotado</span>
-			{:else if product.variants.length > 0}
-				Desde {formatPrice(minPrice, product.currency)}
-			{:else}
-				{formatPrice(product.price, product.currency)}
-			{/if}
-		</p>
+	<p class="text-base sm:text-xl font-bold text-ember">
+		{#if isAgotado}
+			<span class="text-muted-soft">Agotado</span>
+		{:else if product.variants.length > 0}
+			Desde {formatPrice(minPrice, product.currency)}
+		{:else}
+			{formatPrice(product.price, product.currency)}
+		{/if}
+		{#if !isAgotado && product.bajo_pedido}
+			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-[10px] font-semibold">
+				<i class="ri-time-line"></i>
+				Bajo pedido
+			</span>
+		{/if}
+	</p>
 
 		<span
 			class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
