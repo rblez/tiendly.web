@@ -76,7 +76,7 @@
 		uploading = true;
 		profileError = '';
 		try {
-			const url = await uploadImage(file, auth.session.user.id);
+			const url = await uploadImage(file, "logo");
 			await auth.updateProfile({ avatar_url: url });
 		} catch {
 			profileError = 'No se pudo subir la foto. Intenta con otra imagen.';

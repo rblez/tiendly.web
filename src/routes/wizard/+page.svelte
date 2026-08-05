@@ -83,7 +83,7 @@
 		error = '';
 		try {
 			if (auth.session) {
-				logoUrl = await uploadImage(file, auth.session.user.id);
+				logoUrl = await uploadImage(file, "logo");
 			} else {
 				logoUrl = await fileToDataUrl(file);
 			}
@@ -118,7 +118,7 @@
 		try {
 			for (const file of files) {
 				if (auth.session) {
-					const url = await uploadImage(file, auth.session.user.id);
+					const url = await uploadImage(file, "product");
 					products[index].images.push(url);
 				} else {
 					const dataUrl = await fileToDataUrl(file);

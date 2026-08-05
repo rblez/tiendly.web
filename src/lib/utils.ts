@@ -67,12 +67,19 @@ export function productImages(p: { image: string | null; images?: string[] }): s
 	return raw.map((src) => (src.startsWith('http') ? src : `/images/${src}`));
 }
 
-export async function uploadImage(file: File, uid: string): Promise<string> {
-	const ext = file.name.split('.').pop() || 'png';
-	const path = `${uid}/img-${Date.now()}.${ext}`;
-	const { error } = await supabase.storage.from('media').upload(path, file, { upsert: false });
-	if (error) throw error;
-	return supabase.storage.from('media').getPublicUrl(path).data.publicUrl;
+export type UploadKind = 'logo' | 'product';
+
+export async function uploadImage(file: File, kind: UploadKind = 'product'): Promise<string> {
+	const form = new FormData();
+	form.append('file', file);
+	form.append('kind', kind);
+	const headers: Record<string, string> = {};
+	const { data } = await supabase.auth.getSession();
+	if (data.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`;
+	const res = await fetch('/api/upload-image', { method: 'POST', headers, body: form });
+	const json = await res.json();
+	if (!res.ok) throw new Error(json.error || 'Error al subir la imagen');
+	return json.url as string;
 }
 
 export function themeStyle(store: { theme_color: string }): string {

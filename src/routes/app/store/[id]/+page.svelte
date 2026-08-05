@@ -366,7 +366,7 @@ import QRCode from 'qrcode';
 		productError = '';
 		try {
 			for (const file of files) {
-				formImages.push(await uploadImage(file, auth.session.user.id));
+				formImages.push(await uploadImage(file, "product"));
 			}
 		} catch {
 			productError = 'No se pudieron subir las imágenes.';
@@ -595,13 +595,24 @@ import QRCode from 'qrcode';
 		if (!file || !auth.session || !store) return;
 		settingsError = '';
 		try {
-			const url = await uploadImage(file, auth.session.user.id);
+			const url = await uploadImage(file, 'logo');
 			await supabase.from('stores').update({ logo: url }).eq('id', store.id);
 			store = { ...store, logo: url };
 		} catch {
 			settingsError = 'No se pudo subir el logo.';
 		}
-			input.value = '';
+		input.value = '';
+	}
+
+	async function handleRemoveLogo() {
+		if (!store?.logo) return;
+		settingsError = '';
+		const path = store.logo.split('/media/')[1];
+		if (path) {
+			await supabase.storage.from('media').remove([path]);
+		}
+		await supabase.from('stores').update({ logo: null }).eq('id', store.id);
+		store = { ...store, logo: null };
 	}
 
 	function onSettingsSlugInput() {
@@ -1556,6 +1567,15 @@ async function duplicateProduct(p: Product) {
 								Cambiar logo
 								<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
 							</label>
+							{#if productImage({ image: store.logo })}
+								<button
+									onclick={handleRemoveLogo}
+									class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-4 py-2 rounded-btn text-sm font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
+								>
+									<i class="ri-delete-bin-line"></i>
+									Quitar logo
+								</button>
+							{/if}
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>

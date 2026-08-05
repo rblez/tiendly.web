@@ -43,12 +43,12 @@ export function clearDraft() {
 	localStorage.removeItem(DRAFT_KEY);
 }
 
-async function resolveImage(src: string, uid: string): Promise<string | null> {
+async function resolveImage(src: string): Promise<string | null> {
 	if (!src) return null;
 	if (src.startsWith('data:')) {
 		try {
 			const file = await dataUrlToFile(src);
-			return await uploadImage(file, uid);
+			return await uploadImage(file, 'product');
 		} catch {
 			return null;
 		}
@@ -66,7 +66,7 @@ export async function createStoreFromDraft(draft: StoreDraft, ownerId: string): 
 		candidate = `${base}-${suffix++}`;
 	}
 
-	const logo = draft.logo ? await resolveImage(draft.logo, ownerId) : null;
+	const logo = draft.logo ? await resolveImage(draft.logo) : null;
 
 	const { data: store, error } = await supabase
 		.from('stores')
@@ -87,7 +87,7 @@ export async function createStoreFromDraft(draft: StoreDraft, ownerId: string): 
 	for (const p of draft.products.filter((p) => p.name.trim() && p.price.trim())) {
 		const images = [];
 		for (const img of p.images) {
-			const resolved = await resolveImage(img, ownerId);
+			const resolved = await resolveImage(img);
 			if (resolved) images.push(resolved);
 		}
 		validProducts.push({
