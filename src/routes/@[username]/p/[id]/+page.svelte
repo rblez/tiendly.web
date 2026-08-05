@@ -31,8 +31,6 @@
 
 	let selectedVariant = $state(product.variants[0] ?? null);
 	let imgError = $state(false);
-	let showShare = $state(false);
-	let copied = $state(false);
 	let activeIndex = $state(0);
 
 	const photos = $derived(productImages(product));
@@ -48,38 +46,10 @@
 
 	const img = $derived(productImage(product));
 	const shareUrl = $derived(`${appUrl() || window.location.origin}/@${data.store.slug}/p/${product.id}`);
-	const shareText = $derived(`Mira esto: ${product.name}${selectedVariant ? ` — ${selectedVariant.label}` : ''} — ${formatPrice(currentPrice, product.currency)}`);
 
 	function buyNow() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
 		goto(`/@${data.store.slug}/checkout`);
-	}
-
-	function shareWhatsApp() {
-		window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
-		showShare = false;
-	}
-
-	function shareTelegram() {
-		window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
-		showShare = false;
-	}
-
-	function shareFacebook() {
-		window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
-		showShare = false;
-	}
-
-	function shareX() {
-		window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-		showShare = false;
-	}
-
-	async function copyLink() {
-		await navigator.clipboard.writeText(shareUrl);
-		copied = true;
-		showShare = false;
-		setTimeout(() => (copied = false), 2000);
 	}
 </script>
 
@@ -204,41 +174,6 @@
 						</button>
 					</div>
 				{/if}
-
-				<div class="relative">
-					<button
-						onclick={() => showShare = !showShare}
-						class="w-full flex items-center justify-center gap-2 px-5 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium transition-all duration-200 hover:bg-bone cursor-pointer"
-					>
-						<i class="ri-share-line"></i>
-						{copied ? '¡Enlace copiado!' : 'Compartir'}
-					</button>
-
-					{#if showShare}
-						<div class="absolute bottom-full left-0 right-0 mb-2 bg-card border border-hairline rounded-card p-3 space-y-1 shadow-xl">
-							<button onclick={shareWhatsApp} class="w-full flex items-center gap-3 px-3 py-2 text-sm text-body hover:bg-bone rounded-btn transition-colors cursor-pointer text-left">
-								<img src="https://cdn.simpleicons.org/WhatsApp/FFFFFF" class="w-5 h-5" alt="WhatsApp" />
-								WhatsApp
-							</button>
-							<button onclick={shareTelegram} class="w-full flex items-center gap-3 px-3 py-2 text-sm text-body hover:bg-bone rounded-btn transition-colors cursor-pointer text-left">
-								<img src="https://cdn.simpleicons.org/Telegram/FFFFFF" class="w-5 h-5" alt="Telegram" />
-								Telegram
-							</button>
-							<button onclick={shareFacebook} class="w-full flex items-center gap-3 px-3 py-2 text-sm text-body hover:bg-bone rounded-btn transition-colors cursor-pointer text-left">
-								<img src="https://cdn.simpleicons.org/Facebook/FFFFFF" class="w-5 h-5" alt="Facebook" />
-								Facebook
-							</button>
-							<button onclick={shareX} class="w-full flex items-center gap-3 px-3 py-2 text-sm text-body hover:bg-bone rounded-btn transition-colors cursor-pointer text-left">
-								<img src="https://cdn.simpleicons.org/X/FFFFFF" class="w-5 h-5" alt="X" />
-								X
-							</button>
-							<button onclick={copyLink} class="w-full flex items-center gap-3 px-3 py-2 text-sm text-body hover:bg-bone rounded-btn transition-colors cursor-pointer text-left">
-								<i class="ri-link text-lg"></i>
-								Copiar enlace
-							</button>
-						</div>
-					{/if}
-				</div>
 			</div>
 		</div>
 	</div>
