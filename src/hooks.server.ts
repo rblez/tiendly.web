@@ -12,10 +12,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const host = (event.request.headers.get('host') ?? '').split(':')[0].toLowerCase();
 	const path = event.url.pathname;
 	const query = event.url.search;
+
+	if (STATIC_PATH.test(path)) return resolve(event);
+
+	const forwarded = event.request.headers.get('x-tiendly-store');
+	if (forwarded && /^[a-z0-9-]{1,40}$/.test(forwarded)) {
+		const rest = path.startsWith(`/s/${forwarded}`) ? path.slice(3 + forwarded.length) : path;
+		event.url = new URL(`/s/${forwarded}${rest}${query}`, `https://${forwarded}.tiendly.lat`);
+		return resolve(event);
+	}
+
 	const storeSlug = storeSlugFromHost(host);
 
 	if (storeSlug) {
-		if (STATIC_PATH.test(path)) return resolve(event);
 		if (path.startsWith('/s/')) {
 			const rest = path.slice(3);
 			const other = rest.split('/')[0];

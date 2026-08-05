@@ -29,6 +29,10 @@ export function storePagePath(slug: string, path = '', host?: string): string {
 	return `${prefix}/${slug}${path}`;
 }
 
+export function storePath(slug: string, path = ''): string {
+	return `/s/${slug}${path}`;
+}
+
 export function storeSlugFromHost(host: string): string | null {
 	const h = host.split(':')[0].toLowerCase();
 	const m = h.match(/^([a-z0-9-]+)\.tiendly\.lat$/);
