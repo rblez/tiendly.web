@@ -4,7 +4,7 @@
 	import ProductCard from '$lib/components/ProductCard.svelte';
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { filters } from '$lib/stores/filters.svelte';
+	import { filters, type SortOrder } from '$lib/stores/filters.svelte';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
@@ -13,8 +13,28 @@
 	let store = $state(data.store);
 	let products = $state<Product[]>(data.products);
 
+	function syncFiltersFromUrl() {
+		const p = new URLSearchParams(window.location.search);
+		filters.setSearchQuery(p.get('q') ?? '');
+		filters.setCategory(p.get('cat'));
+		const o = p.get('orden');
+		filters.setSortOrder(o === 'precio-asc' || o === 'precio-desc' || o === 'nuevos' ? o : 'relevancia');
+	}
+
+	$effect(() => {
+		filters.searchQuery;
+		filters.selectedCategory;
+		filters.sortOrder;
+		const p = new URLSearchParams();
+		if (filters.searchQuery) p.set('q', filters.searchQuery);
+		if (filters.selectedCategory) p.set('cat', filters.selectedCategory);
+		if (filters.sortOrder !== 'relevancia') p.set('orden', filters.sortOrder);
+		const qs = p.toString();
+		history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
+	});
+
 	onMount(() => {
-		filters.resetFilters();
+		syncFiltersFromUrl();
 		const storeId = data.store.id;
 		const channel = supabase
 			.channel(`store-catalog-${storeId}`)
@@ -59,15 +79,28 @@
 	);
 
 	let filtered = $derived(
-		products.filter((p) => {
-			const q = filters.searchQuery.toLowerCase();
-			const matchesSearch =
-				!q ||
-				p.name.toLowerCase().includes(q) ||
-				(p.description ?? '').toLowerCase().includes(q);
-			const matchesCategory = !filters.selectedCategory || p.category === filters.selectedCategory;
-			return matchesSearch && matchesCategory;
-		})
+		products
+			.filter((p) => {
+				const q = filters.searchQuery.toLowerCase();
+				const matchesSearch =
+					!q ||
+					p.name.toLowerCase().includes(q) ||
+					(p.description ?? '').toLowerCase().includes(q);
+				const matchesCategory = !filters.selectedCategory || p.category === filters.selectedCategory;
+				return matchesSearch && matchesCategory;
+			})
+			.sort((a, b) => {
+				switch (filters.sortOrder) {
+					case 'precio-asc':
+						return a.price - b.price;
+					case 'precio-desc':
+						return b.price - a.price;
+					case 'nuevos':
+						return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+					default:
+						return 0;
+				}
+			}),
 	);
 
 	let groupedByCategory = $derived(
@@ -140,25 +173,43 @@
 				Limpiar filtros
 			</button>
 		</div>
-	{:else if filters.selectedCategory || filters.searchQuery}
-		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-			{#each filtered as product}
-				<ProductCard {product} store={store} />
-			{/each}
-		</div>
 	{:else}
-		{#each groupedByCategory as group}
-			<div class="mb-10">
-				<h2 class="text-xl sm:text-2xl font-bold text-ink mb-4 flex items-center gap-2">
-					{group.name}
-					<span class="text-sm font-normal text-muted-soft">({group.products.length})</span>
-				</h2>
-				<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-					{#each group.products as product}
-						<ProductCard {product} store={store} />
-					{/each}
-				</div>
+		<div class="flex items-center justify-between gap-3 mb-6">
+			<p class="text-sm text-muted">
+				{filtered.length} producto{filtered.length === 1 ? '' : 's'}
+			</p>
+			<select
+				class="select-pill cursor-pointer"
+				value={filters.sortOrder}
+				onchange={(e) => filters.setSortOrder((e.target as HTMLSelectElement).value as SortOrder)}
+				aria-label="Ordenar productos"
+			>
+				<option value="relevancia">Más relevantes</option>
+				<option value="nuevos">Más recientes</option>
+				<option value="precio-asc">Precio: menor a mayor</option>
+				<option value="precio-desc">Precio: mayor a menor</option>
+			</select>
+		</div>
+		{#if filters.selectedCategory || filters.searchQuery || filters.sortOrder !== 'relevancia'}
+			<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+				{#each filtered as product}
+					<ProductCard {product} store={store} />
+				{/each}
 			</div>
-		{/each}
+		{:else}
+			{#each groupedByCategory as group}
+				<div class="mb-10">
+					<h2 class="text-xl sm:text-2xl font-bold text-ink mb-4 flex items-center gap-2">
+						{group.name}
+						<span class="text-sm font-normal text-muted-soft">({group.products.length})</span>
+					</h2>
+					<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+						{#each group.products as product}
+							<ProductCard {product} store={store} />
+						{/each}
+					</div>
+				</div>
+			{/each}
+		{/if}
 	{/if}
 </section>

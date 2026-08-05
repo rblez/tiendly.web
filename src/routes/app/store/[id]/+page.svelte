@@ -148,6 +148,7 @@ import QRCode from 'qrcode';
 		active: true,
 		extra_links: [] as { title: string; url: string }[],
 		location: '',
+		schedule: '',
 	});
 	let settingsSaving = $state(false);
 	let settingsError = $state('');
@@ -237,6 +238,7 @@ import QRCode from 'qrcode';
 				active: storeData.active,
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
+				schedule: storeData.schedule ?? '',
 			};
 			const rawSocial = (storeData as { social?: Record<string, unknown> | null }).social;
 			social = {};
@@ -252,11 +254,16 @@ import QRCode from 'qrcode';
 				.select('*')
 				.eq('store_id', storeId)
 				.order('position', { ascending: true });
-		products = (productsData as Product[] | null)?.map((p) => ({
+			products = (productsData as Product[] | null)?.map((p) => ({
 			...p,
 			variants: Array.isArray(p.variants) ? p.variants : [],
 			images: Array.isArray(p.images) ? p.images : [],
 		})) ?? [];
+			const openPid = $page.url.searchParams.get('producto');
+			if (openPid) {
+				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
+				if (target) openEditProduct(target as Product);
+			}
 		await loadOrders();
 		await loadVisitChart();
 		loading = false;
@@ -509,6 +516,7 @@ import QRCode from 'qrcode';
 					if (row.active !== undefined) settings.active = row.active;
 					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
 					if (row.location !== undefined) settings.location = row.location ?? '';
+					if (row.schedule !== undefined) settings.schedule = row.schedule ?? '';
 				},
 			)
 			.subscribe();
@@ -585,6 +593,7 @@ import QRCode from 'qrcode';
 				social: clean,
 				extra_links: cleanLinks,
 				location: settings.location.trim() || null,
+				schedule: settings.schedule.trim() || null,
 			})
 			.eq('id', editingStoreId);
 		settingsSaving = false;
@@ -1278,6 +1287,17 @@ async function duplicateProduct(p: Product) {
 									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 								/>
 								<p class="text-xs text-muted-soft mt-1.5">Opcional. Se mostrará un mapa en el pie de tu tienda.</p>
+							</div>
+							<div class="pt-2 border-t border-hairline">
+								<label for="s-schedule" class="block text-sm font-medium text-body mb-1.5">Horario de atención</label>
+								<input
+									id="s-schedule"
+									type="text"
+									bind:value={settings.schedule}
+									placeholder="Ej: Lun a Vie 9:00 – 18:00"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+								<p class="text-xs text-muted-soft mt-1.5">Opcional. Se muestra en el pie de tu tienda.</p>
 							</div>
 						</div>
 					</div>

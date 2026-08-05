@@ -20,6 +20,7 @@ export interface Product {
 	bajo_pedido: boolean;
 	active: boolean;
 	position: number;
+	created_at: string;
 }
 
 export interface OrderItem {
@@ -74,6 +75,7 @@ export interface Store {
 	description: string | null;
 	extra_links?: { title: string; url: string }[];
 	location?: string | null;
+	schedule?: string | null;
 	active: boolean;
 	created_at: string;
 	visits?: number;

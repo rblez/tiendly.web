@@ -56,6 +56,12 @@
 				{#if store.description}
 					<p class="text-sm text-muted mt-2 leading-relaxed">{store.description}</p>
 				{/if}
+				{#if store.schedule}
+					<p class="text-sm text-muted mt-2 flex items-center gap-1.5">
+						<i class="ri-time-line text-ember"></i>
+						{store.schedule}
+					</p>
+				{/if}
 				<a
 					href="/wizard"
 					class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ember transition-colors no-underline mt-4"

@@ -157,6 +157,7 @@ export type Database = {
           logo: string | null
           name: string
           owner_id: string
+          schedule: string | null
           slug: string
           social: Json
           theme_color: string
@@ -174,6 +175,7 @@ export type Database = {
           logo?: string | null
           name: string
           owner_id: string
+          schedule?: string | null
           slug: string
           social?: Json
           theme_color?: string
@@ -191,6 +193,7 @@ export type Database = {
           logo?: string | null
           name?: string
           owner_id?: string
+          schedule?: string | null
           slug?: string
           social?: Json
           theme_color?: string
