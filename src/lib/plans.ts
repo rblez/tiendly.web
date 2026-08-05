@@ -1,4 +1,4 @@
-export type PlanId = 'free' | 'pro' | 'premium';
+export type PlanId = 'free' | 'creator' | 'business';
 
 export interface Plan {
 	id: PlanId;
@@ -18,29 +18,29 @@ export const PLANS: Plan[] = [
 		price: 0,
 		priceLabel: 'Gratis',
 		tagline: 'Para probar tu primera tienda',
-		features: ['1 tienda', 'Hasta 10 productos', 'Catálogo público', 'Pedidos por WhatsApp', 'Marca Tiendly'],
+		features: ['1 tienda', 'Hasta 20 productos', 'Catálogo público', 'Pedidos por WhatsApp', 'Marca Tiendly'],
 		limitStores: 1,
-		limitProducts: 10,
+		limitProducts: 20,
 	},
 	{
-		id: 'pro',
-		name: 'Pro',
+		id: 'creator',
+		name: 'Creator',
 		price: 4.99,
 		priceLabel: '$4.99 USD/mes',
 		tagline: 'Para vender en serio',
-		features: ['Hasta 5 tiendas', 'Hasta 100 productos', 'Estadísticas de visitas', 'Tu propio logo en el catálogo', 'Soporte prioritario'],
+		features: ['Hasta 5 tiendas', 'Hasta 100 productos por tienda', 'Personalización avanzada', 'Estadísticas de visitas', 'Soporte prioritario'],
 		limitStores: 5,
 		limitProducts: 100,
 	},
 	{
-		id: 'premium',
-		name: 'Premium',
+		id: 'business',
+		name: 'Business',
 		price: 12.99,
 		priceLabel: '$12.99 USD/mes',
 		tagline: 'Para crecer sin frenos',
-		features: ['Hasta 15 tiendas', 'Hasta 500 productos', 'Todo lo de Pro', 'Sin marca Tiendly en tu tienda', 'Acceso anticipado a novedades'],
-		limitStores: 15,
-		limitProducts: 500,
+		features: ['Hasta 5 tiendas', 'Productos ilimitados', 'Todo lo de Creator', 'Sin marca Tiendly en tu tienda', 'Acceso anticipado a novedades'],
+		limitStores: 5,
+		limitProducts: Infinity,
 	},
 ];
 

@@ -6,7 +6,7 @@
 
 <svelte:head>
 	<title>Planes y precios | Tiendly</title>
-	<meta name="description" content="Crea tu tienda gratis. Planes Pro y Premium con más tiendas y productos. Precios en USD, pago en cripto (USDT)." />
+	<meta name="description" content="Crea tu tienda gratis. Planes Free, Creator y Business con más tiendas y productos. Precios en USD, pago en cripto (USDT)." />
 </svelte:head>
 
 <header class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
@@ -27,10 +27,10 @@
 
 	<div class="grid gap-5 md:grid-cols-3 max-w-4xl mx-auto">
 		{#each PLANS as p}
-			<div class={`bg-card border rounded-card p-6 flex flex-col ${p.id === 'premium' ? 'border-ember border-2' : 'border-hairline'}`}>
+			<div class={`bg-card border rounded-card p-6 flex flex-col ${p.id === 'business' ? 'border-ember border-2' : 'border-hairline'}`}>
 				<div class="flex items-center justify-between mb-2">
 					<h2 class="text-lg font-bold text-ink">{p.name}</h2>
-					{#if p.id === 'premium'}
+					{#if p.id === 'business'}
 						<span class="text-[10px] font-bold bg-ember text-white rounded-full px-2 py-0.5">Más popular</span>
 					{/if}
 				</div>
@@ -50,7 +50,7 @@
 						p.id === 'free' ? 'bg-bone border border-hairline text-ink hover:border-ember/50' : 'bg-ember text-white hover:bg-ember-active'
 					}`}
 				>
-					{p.id === 'free' ? 'Empezar gratis' : p.id === 'pro' ? 'Elegir Pro' : 'Elegir Premium'}
+					{p.id === 'free' ? 'Empezar gratis' : `Elegir ${p.name}`}
 				</a>
 				{#if p.id !== 'free'}
 					<p class="text-[10px] text-muted-soft text-center mt-2">Próximamente · pago en USDT</p>

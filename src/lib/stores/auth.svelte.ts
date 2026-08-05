@@ -13,7 +13,8 @@ import type { Profile } from '$lib/types';
 		const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
 		if (data) {
 			profile = data as Profile;
-			if (data.plan === 'free' || data.plan === 'pro' || data.plan === 'premium') plan = data.plan;
+			const map: Record<string, PlanId> = { free: 'free', pro: 'creator', premium: 'business' };
+			plan = map[data.plan] ?? 'free';
 		}
 	}
 

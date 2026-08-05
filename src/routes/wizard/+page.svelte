@@ -99,7 +99,7 @@
 	}
 
 	function addProduct() {
-		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 10) : 10;
+		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 20) : 20;
 		if (products.length < limit) {
 			products = [...products, { name: '', price: '', category: 'General', description: '', currency: 'CUP', variants: '', agotado: false, images: [] }];
 		}
@@ -235,7 +235,7 @@
 			</div>
 			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Free</h1>
 			<p class="text-body mb-2">El plan Free incluye 1 tienda. Ya tienes una en Tiendly.</p>
-			<p class="text-xs text-muted-soft mb-8">Actualiza a Pro para crear tiendas ilimitadas cuando esté disponible.</p>
+			<p class="text-xs text-muted-soft mb-8">Actualiza a Creator o Business para crear más tiendas cuando esté disponible.</p>
 			<a
 				href="/app"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"

@@ -108,7 +108,7 @@
 				</span>
 				<div class="text-left">
 					<p class="font-bold text-ink">Estás en el plan Free</p>
-					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Pro o Premium para más tiendas y productos.</p>
+					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Creator o Business para más tiendas y productos.</p>
 				</div>
 			</div>
 			<span class="inline-flex items-center gap-1.5 text-sm font-medium text-ember flex-shrink-0 mt-1">
@@ -261,7 +261,7 @@
 								<h3 class="font-bold text-ink">{p.name}</h3>
 								{#if p.id === plan.id}
 									<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5">Actual</span>
-								{:else if p.id === 'premium'}
+								{:else if p.id === 'business'}
 									<span class="text-[10px] font-bold bg-ember text-white rounded-full px-2 py-0.5">Top</span>
 								{/if}
 							</div>
