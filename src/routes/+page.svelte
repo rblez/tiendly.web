@@ -30,39 +30,41 @@
 	</div>
 </nav>
 
-<header class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-20 sm:pb-28">
-	<p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-soft mb-8">
-		Tiendly — Plataforma de venta directa
-	</p>
-	<h1 class="text-5xl sm:text-7xl lg:text-[5.5rem] font-black tracking-tight text-ink leading-[1.02] max-w-4xl">
-		Tu tienda online,
-		<span class="italic font-black">sin intermediarios.</span>
-	</h1>
-	<p class="mt-8 max-w-2xl text-base sm:text-lg text-body leading-relaxed">
-		Crea tu catálogo, comparte tu link y recibe pedidos directo en tu WhatsApp.
-		Sin plataformas de pago ajenas, sin comisiones por venta, sin tarjetas.
-	</p>
-	<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-10">
-		<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
-			Crear mi tienda gratis
-		</a>
-		<a href="/pricing" class="inline-flex items-center justify-center px-8 py-3.5 border border-hairline text-ink rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
-			Ver los planes
-		</a>
-	</div>
+<header class="bg-[#0d2818] text-canvas">
+	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-20 sm:pb-28">
+		<p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-canvas/50 mb-8">
+			Tiendly — Plataforma de venta directa
+		</p>
+		<h1 class="text-5xl sm:text-7xl lg:text-[5.5rem] font-black tracking-tight leading-[1.02] max-w-4xl">
+			Tu tienda online,
+			<span class="italic font-black text-ember">sin intermediarios.</span>
+		</h1>
+		<p class="mt-8 max-w-2xl text-base sm:text-lg text-canvas/70 leading-relaxed">
+			Crea tu catálogo, comparte tu link y recibe pedidos directo en tu WhatsApp.
+			Sin plataformas de pago ajenas, sin comisiones por venta, sin tarjetas.
+		</p>
+		<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-10">
+			<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
+				Crear mi tienda gratis
+			</a>
+			<a href="/pricing" class="inline-flex items-center justify-center px-8 py-3.5 border border-canvas/30 text-canvas rounded-btn text-base font-medium transition-colors hover:bg-white/10 no-underline">
+				Ver los planes
+			</a>
+		</div>
 
-	<div class="grid sm:grid-cols-3 gap-6 sm:gap-0 mt-20 sm:mt-24 border-t border-hairline">
-		<div class="pt-8 sm:pl-8 sm:border-l border-hairline sm:first:border-l-0 sm:first:pl-0">
-			<p class="text-3xl font-black text-ink tabular-nums">5 min</p>
-			<p class="mt-1 text-sm text-muted">de catálogo a tienda publicada</p>
-		</div>
-		<div class="pt-8 sm:pl-8 sm:border-l border-hairline sm:first:border-l-0 sm:first:pl-0">
-			<p class="text-3xl font-black text-ink tabular-nums">0%</p>
-			<p class="mt-1 text-sm text-muted">comisión por venta</p>
-		</div>
-		<div class="pt-8 sm:pl-8 sm:border-l border-hairline sm:first:border-l-0 sm:first:pl-0">
-			<p class="text-3xl font-black text-ink tabular-nums">1 link</p>
-			<p class="mt-1 text-sm text-muted">para todo tu catálogo</p>
+		<div class="grid sm:grid-cols-3 gap-6 sm:gap-0 mt-20 sm:mt-24 border-t border-canvas/15">
+			<div class="pt-8 sm:pl-8 sm:border-l border-canvas/15 sm:first:border-l-0 sm:first:pl-0">
+				<p class="text-3xl font-black tabular-nums">5 min</p>
+				<p class="mt-1 text-sm text-canvas/60">de catálogo a tienda publicada</p>
+			</div>
+			<div class="pt-8 sm:pl-8 sm:border-l border-canvas/15 sm:first:border-l-0 sm:first:pl-0">
+				<p class="text-3xl font-black tabular-nums">0%</p>
+				<p class="mt-1 text-sm text-canvas/60">comisión por venta</p>
+			</div>
+			<div class="pt-8 sm:pl-8 sm:border-l border-canvas/15 sm:first:border-l-0 sm:first:pl-0">
+				<p class="text-3xl font-black tabular-nums">1 link</p>
+				<p class="mt-1 text-sm text-canvas/60">para todo tu catálogo</p>
+			</div>
 		</div>
 	</div>
 </header>
@@ -173,20 +175,22 @@
 	</div>
 </section>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28 sm:py-36 text-center">
-	<h2 class="text-4xl sm:text-6xl font-black tracking-tight text-ink leading-tight max-w-3xl mx-auto">
-		Tu tienda está a cinco minutos.
-	</h2>
-	<p class="mt-6 text-base text-body max-w-xl mx-auto leading-relaxed">
-		Gratis para empezar. Sin tarjetas, sin comisiones por venta y sin letra chica.
-	</p>
-	<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
-		<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-10 py-4 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
-			Crear mi tienda gratis
-		</a>
-		<a href="/pricing" class="inline-flex items-center justify-center px-8 py-4 border border-hairline text-ink rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
-			Ver los planes
-		</a>
+<section class="bg-[#0d2818] text-canvas">
+	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28 sm:py-36 text-center">
+		<h2 class="text-4xl sm:text-6xl font-black tracking-tight leading-tight max-w-3xl mx-auto">
+			Tu tienda está a cinco minutos.
+		</h2>
+		<p class="mt-6 text-base text-canvas/70 max-w-xl mx-auto leading-relaxed">
+			Gratis para empezar. Sin tarjetas, sin comisiones por venta y sin letra chica.
+		</p>
+		<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
+			<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-10 py-4 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
+				Crear mi tienda gratis
+			</a>
+			<a href="/pricing" class="inline-flex items-center justify-center px-8 py-4 border border-canvas/30 text-canvas rounded-btn text-base font-medium transition-colors hover:bg-white/10 no-underline">
+				Ver los planes
+			</a>
+		</div>
 	</div>
 </section>
 
