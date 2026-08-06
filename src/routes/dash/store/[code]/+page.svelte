@@ -1592,16 +1592,22 @@ async function duplicateProduct(p: Product) {
 									<span class="text-xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
 								{/if}
 							</div>
-							<label class="inline-flex items-center bg-bone border border-hairline text-body px-5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-								Cambiar logo
+							<label
+								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+								title="Cambiar logo"
+							>
+								<i class="ri-image-edit-line"></i>
+								Cambiar
 								<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
 							</label>
 							{#if productImage({ image: store.logo })}
 								<button
 									onclick={handleRemoveLogo}
-									class="inline-flex items-center bg-bone border border-hairline text-body px-5 py-3 rounded-btn text-sm font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
+									class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
+									title="Quitar logo"
 								>
-									Quitar logo
+									<i class="ri-delete-bin-6-line"></i>
+									Quitar
 								</button>
 							{/if}
 						</div>
@@ -1823,8 +1829,12 @@ async function duplicateProduct(p: Product) {
 									{/each}
 								</div>
 							{/if}
-							<label class="inline-flex items-center bg-bone border border-hairline text-body px-5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-								{formImages.length > 0 ? 'Agregar fotos' : 'Subir fotos'}
+							<label
+								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+								title="Subir fotos"
+							>
+								<i class="ri-image-add-line"></i>
+								{formImages.length > 0 ? 'Agregar' : 'Subir'}
 								<input type="file" accept="image/*" multiple class="hidden" onchange={handleProductImages} />
 							</label>
 							<p class="text-xs text-muted-soft mt-2">La primera foto es la portada. Puedes subir varias a la vez.</p>

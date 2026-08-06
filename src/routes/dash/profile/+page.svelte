@@ -242,12 +242,21 @@
 				</div>
 				<div class="space-y-2">
 					<div class="flex items-center gap-2">
-						<label class="inline-flex items-center bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active cursor-pointer">
-							{uploading ? 'Subiendo...' : auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
+						<label
+							class="inline-flex items-center gap-1.5 bg-ember text-white px-3 py-2 rounded-btn text-xs font-semibold transition-all duration-200 hover:bg-ember-active cursor-pointer"
+							title={auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
+						>
+							{#if uploading}
+								<i class="ri-loader-4-line animate-spin"></i>
+							{:else}
+								<i class="ri-camera-line"></i>
+							{/if}
+							{uploading ? 'Subiendo...' : auth.profile?.avatar_url ? 'Cambiar' : 'Subir'}
 							<input type="file" accept="image/*" class="hidden" onchange={handleAvatar} />
 						</label>
 						{#if auth.profile?.avatar_url}
-							<button onclick={removeAvatar} class="text-sm text-muted-soft hover:text-error transition-colors cursor-pointer">
+							<button onclick={removeAvatar} class="inline-flex items-center gap-1 text-xs text-muted-soft hover:text-error transition-colors cursor-pointer" title="Quitar foto">
+								<i class="ri-delete-bin-6-line"></i>
 								Quitar
 							</button>
 						{/if}
