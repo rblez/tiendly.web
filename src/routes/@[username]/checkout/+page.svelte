@@ -316,7 +316,11 @@
 					disabled={sending}
 					class="w-full flex items-center justify-center gap-2 bg-ember text-white px-6 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
 				>
-					<i class="ri-whatsapp-line text-lg"></i>
+					{#if sending}
+						<i class="ri-loader-4-line animate-spin"></i>
+					{:else}
+						<i class="ri-whatsapp-line text-lg"></i>
+					{/if}
 					{sending ? 'Preparando pedido...' : 'Enviar pedido por WhatsApp'}
 				</button>
 			</form>

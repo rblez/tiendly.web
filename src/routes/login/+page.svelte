@@ -146,8 +146,11 @@
 				<button
 					type="submit"
 					disabled={loading}
-					class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 				>
+					{#if loading}
+						<i class="ri-loader-4-line animate-spin"></i>
+					{/if}
 					{loading ? 'Entrando...' : 'Entrar'}
 				</button>
 			</form>

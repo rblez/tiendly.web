@@ -60,6 +60,7 @@
 	let phone = $state('');
 	let uploading = $state(false);
 	let profileMsg = $state('');
+	let saving = $state(false);
 	let profileError = $state('');
 
 	$effect(() => {
@@ -90,14 +91,17 @@
 	}
 
 	async function saveProfile() {
+		if (saving) return;
 		profileError = '';
 		profileMsg = '';
+		saving = true;
 		try {
 			await auth.updateProfile({ name: name.trim(), phone: phone.trim() || null });
 			profileMsg = 'Perfil actualizado.';
 		} catch {
 			profileError = 'No se pudo guardar el perfil.';
 		}
+		saving = false;
 	}
 
 	// ---------- Pestaña Ajustes ----------
@@ -334,8 +338,12 @@
 			<div class="flex justify-end">
 				<button
 					onclick={saveProfile}
-					class="inline-flex items-center bg-ember text-white px-7 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					disabled={saving}
+					class="inline-flex items-center gap-2 bg-ember text-white px-7 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
 				>
+					{#if saving}
+						<i class="ri-loader-4-line animate-spin"></i>
+					{/if}
 					Guardar cambios
 				</button>
 			</div>

@@ -2,17 +2,12 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, parseVariants, slugify, uploadImage } from '$lib/utils';
+	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, slugify, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 
 	type WizardProduct = {
 		name: string;
 		price: string;
-		category: string;
-		description: string;
-		currency: string;
-		variants: string;
-		agotado: boolean;
 		images: string[];
 	};
 
@@ -20,14 +15,8 @@
 
 	let name = $state('');
 	let slug = $state('');
-	let description = $state('');
-	let logoUrl = $state('');
-	let uploadingLogo = $state(false);
 	let whatsapp = $state('');
-	let themeColor = $state('#22c55e');
-	let products = $state<WizardProduct[]>([
-		{ name: '', price: '', category: 'General', description: '', currency: 'CUP', variants: '', agotado: false, images: [] },
-	]);
+	let products = $state<WizardProduct[]>([{ name: '', price: '', images: [] }]);
 	let uploadingImages = $state(0);
 
 	let error = $state('');
@@ -36,14 +25,10 @@
 	let atLimit = $state(false);
 	let limitLoading = $state(true);
 
-	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
-	const CURRENCIES = ['CUP', 'USD', 'MXN', 'ARS', 'EUR'];
-
 	const STEP_META = [
-		{ title: '¿Cómo se llama tu tienda?', icon: 'ri-store-2-line', desc: 'Elige un nombre y tu username' },
-		{ title: 'Agrega tu logo', icon: 'ri-image-line', desc: 'Opcional, pero ayuda a que te reconozcan' },
-		{ title: 'Contacto y estilo', icon: 'ri-whatsapp-line', desc: 'Dónde recibes pedidos y el color de tu tienda' },
-		{ title: 'Agrega tus productos', icon: 'ri-shopping-bag-line', desc: 'Con foto, precio y variantes' },
+		{ title: '¿Cómo se llama tu tienda?', icon: 'ri-store-2-line', desc: 'Solo el nombre y tu link. Lo demás se configura después.' },
+		{ title: '¿Dónde te escriben?', icon: 'ri-whatsapp-line', desc: 'Los pedidos llegarán directo a tu WhatsApp.' },
+		{ title: 'Agrega tus primeros productos', icon: 'ri-shopping-bag-line', desc: 'Nombre y precio. Foto opcional, detalles después.' },
 	];
 
 	$effect(() => {
@@ -74,33 +59,10 @@
 		slug = slugify(slug);
 	}
 
-	async function handleLogoChange(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-		uploadingLogo = true;
-		error = '';
-		try {
-			if (auth.session) {
-				logoUrl = await uploadImage(file, "logo");
-			} else {
-				logoUrl = await fileToDataUrl(file);
-			}
-		} catch {
-			error = 'No se pudo subir el logo. Intenta con otra imagen.';
-		}
-		uploadingLogo = false;
-		input.value = '';
-	}
-
-	function removeLogo() {
-		logoUrl = '';
-	}
-
 	function addProduct() {
 		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 20) : 20;
 		if (products.length < limit) {
-			products = [...products, { name: '', price: '', category: 'General', description: '', currency: 'CUP', variants: '', agotado: false, images: [] }];
+			products = [...products, { name: '', price: '', images: [] }];
 		}
 	}
 
@@ -152,12 +114,14 @@
 					.map((p, i) => ({
 						store_id: storeId,
 						name: p.name.trim(),
-						description: p.description.trim() || null,
+						description: null,
 						price: parsePrice(p.price),
-						currency: p.currency,
-						category: p.category.trim() || 'General',
-						agotado: p.agotado,
-						variants: parseVariants(p.variants) as unknown as import('$lib/database.types').Database['public']['Tables']['products']['Row']['variants'],
+						currency: 'CUP',
+						category: 'General',
+						agotado: false,
+						bajo_pedido: false,
+						active: true,
+						variants: [],
 						images: p.images.filter((img) => !img.startsWith('data:')),
 						image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
 						position: i,
@@ -171,10 +135,8 @@
 						name: name.trim(),
 						slug: uniqueSlug,
 						code: generateStoreCode(),
-						logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
 						whatsapp: whatsapp.trim() || null,
-						theme_color: themeColor,
-						description: description.trim() || null,
+						theme_color: '#22c55e',
 					})
 					.select('id, code')
 					.single();
@@ -199,10 +161,8 @@
 					name: name.trim(),
 					slug: uniqueSlug,
 					code: generateStoreCode(),
-					logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
 					whatsapp: whatsapp.trim() || null,
-					theme_color: themeColor,
-					description: description.trim() || null,
+					theme_color: '#22c55e',
 					preview_token: token,
 					preview_expires_at: expiresAt,
 				});
@@ -225,7 +185,7 @@
 
 	function next() {
 		error = '';
-		if (step < 4) step += 1;
+		if (step < 3) step += 1;
 	}
 </script>
 
@@ -261,7 +221,7 @@
 				<i class={`${STEP_META[step - 1].icon} text-lg`}></i>
 			</span>
 			<div>
-				<p class="text-xs font-semibold text-ember uppercase tracking-wide">Paso {step} de 4</p>
+				<p class="text-xs font-semibold text-ember uppercase tracking-wide">Paso {step} de 3</p>
 				<h1 class="text-xl sm:text-2xl font-bold text-ink leading-tight">{STEP_META[step - 1].title}</h1>
 			</div>
 		</div>
@@ -277,7 +237,7 @@
 
 	<!-- Progress -->
 	<div class="flex items-center gap-2 mb-8">
-		{#each Array(4) as _, i}
+		{#each Array(3) as _, i}
 			<button
 				onclick={() => { if (i < step) { step = i + 1; error = ''; } }}
 				class="flex-1 flex flex-col items-center gap-1 group"
@@ -300,11 +260,12 @@
 						bind:value={name}
 						oninput={onNameInput}
 						placeholder="Ej: Dulces de Ana"
+						autofocus
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 				</div>
 				<div>
-					<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
+					<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Tu link</label>
 					<input
 						id="store-slug"
 						type="text"
@@ -313,88 +274,22 @@
 						placeholder="tiendly.lat/@username"
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
-					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones. Sin espacios ni símbolos.</p>
-				</div>
-				<div>
-					<label for="store-desc" class="block text-sm font-medium text-body mb-1.5">Descripción <span class="text-muted-soft">(opcional)</span></label>
-					<textarea
-						id="store-desc"
-						bind:value={description}
-						rows="2"
-						placeholder="Ej: Dulces caseros, pasteles y más. Pedidos por WhatsApp."
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-					></textarea>
+					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones.</p>
 				</div>
 			</div>
 		</div>
 	{:else if step === 2}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-			<h2 class="text-lg font-bold text-ink mb-1">Agrega tu logo</h2>
-			<p class="text-sm text-muted mb-6">Opcional. Si no agregas uno, usaremos la inicial de tu tienda.</p>
-			<div class="flex items-center gap-5">
-				<div class="h-20 w-20 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
-					{#if logoUrl}
-						<img src={logoUrl} alt="Logo" class="w-full h-full object-cover" />
-					{:else}
-						<span class="text-3xl font-black text-ember">{name ? name.charAt(0).toUpperCase() : 'T'}</span>
-					{/if}
-				</div>
-				<div class="space-y-2">
-					<label class="inline-flex items-center gap-2 bg-ember text-white px-4 py-2 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active cursor-pointer">
-						<i class="ri-upload-2-line"></i>
-						{logoUrl ? 'Cambiar logo' : 'Subir logo'}
-						<input type="file" accept="image/*" class="hidden" onchange={handleLogoChange} />
-					</label>
-					{#if logoUrl}
-						<button onclick={removeLogo} class="block text-xs text-muted-soft hover:text-error transition-colors cursor-pointer">
-							Quitar logo
-						</button>
-					{/if}
-					{#if uploadingLogo}
-						<p class="text-xs text-muted flex items-center gap-1.5">
-							<i class="ri-loader-4-line animate-spin"></i> Subiendo...
-						</p>
-					{/if}
-				</div>
-			</div>
-		</div>
-	{:else if step === 3}
-		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8 space-y-6">
-			<div>
-				<h2 class="text-lg font-bold text-ink mb-1">¿Dónde te contactan?</h2>
-				<p class="text-sm text-muted">Los pedidos llegarán directo a tu WhatsApp.</p>
-			</div>
-
-			<div>
-				<label for="store-wa" class="block text-sm font-medium text-body mb-1.5">Número de WhatsApp</label>
-				<input
-					id="store-wa"
-					type="tel"
-					bind:value={whatsapp}
-					placeholder="Ej: +53 5 1234567"
-					class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-				/>
-				<p class="text-xs text-muted-soft mt-1.5">Los clientes enviarán sus pedidos a este número.</p>
-			</div>
-
-			<div>
-				<label class="block text-sm font-medium text-body mb-1.5">Color de tu tienda</label>
-				<div class="flex flex-wrap items-center gap-3">
-					{#each PRESET_COLORS as color}
-						<button
-							onclick={() => themeColor = color}
-							class="h-9 w-9 rounded-full border-2 transition-all cursor-pointer
-								{themeColor === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
-							style={`background-color: ${color}`}
-							aria-label={`Color ${color}`}
-						></button>
-					{/each}
-					<label class="relative h-9 w-9 rounded-full border border-hairline overflow-hidden cursor-pointer flex items-center justify-center" title="Color personalizado">
-						<i class="ri-palette-line text-muted"></i>
-						<input type="color" bind:value={themeColor} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-					</label>
-				</div>
-			</div>
+			<label for="store-wa" class="block text-sm font-medium text-body mb-1.5">Número de WhatsApp</label>
+			<input
+				id="store-wa"
+				type="tel"
+				bind:value={whatsapp}
+				placeholder="Ej: +53 5 1234567"
+				autofocus
+				class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+			/>
+			<p class="text-xs text-muted-soft mt-1.5">Cada pedido llega directo a este número. Puedes cambiarlo después.</p>
 		</div>
 	{:else}
 		<div class="space-y-4">
@@ -445,49 +340,8 @@
 								placeholder="Precio (Ej: 500)"
 								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 							/>
-							<select
-								value={product.currency}
-								onchange={(e) => updateProduct(i, 'currency', (e.target as HTMLSelectElement).value)}
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-							>
-								{#each CURRENCIES as c}
-									<option value={c}>{c}</option>
-								{/each}
-							</select>
-							<div class="sm:col-span-2">
-								<input
-									type="text"
-									value={product.category}
-									oninput={(e) => updateProduct(i, 'category', (e.target as HTMLInputElement).value)}
-									placeholder="Categoría (Ej: Postres)"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-								/>
-							</div>
-							<div class="sm:col-span-2">
-								<textarea
-									value={product.description}
-									oninput={(e) => updateProduct(i, 'description', (e.target as HTMLTextAreaElement).value)}
-									rows="2"
-									placeholder="Descripción (opcional)"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-								></textarea>
-							</div>
-							<div class="sm:col-span-2">
-								<textarea
-									value={product.variants}
-									oninput={(e) => updateProduct(i, 'variants', (e.target as HTMLTextAreaElement).value)}
-									rows="2"
-									placeholder="Variantes (opcional, una por línea: etiqueta=precio) Ej: 1 unidad=500"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-								></textarea>
-							</div>
 						</div>
 					</div>
-
-					<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
-						<input type="checkbox" checked={product.agotado} onchange={(e) => updateProduct(i, 'agotado', (e.target as HTMLInputElement).checked)} class="w-4 h-4 accent-ember cursor-pointer" />
-						Agotado
-					</label>
 				</div>
 			{/each}
 		</div>
@@ -515,7 +369,7 @@
 				Atrás
 			</button>
 		{/if}
-		{#if step < 4}
+		{#if step < 3}
 			<button
 				onclick={next}
 				disabled={!canContinue}
@@ -528,17 +382,16 @@
 			<button
 				onclick={createStore}
 				disabled={creating}
-				class="flex-1 inline-flex items-center justify-center gap-1.5 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="flex-1 inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
-			{creating
-				? 'Creando tu tienda...'
-				: auth.session
-					? 'Crear mi tienda'
-					: 'Crear mi tienda'}
-			{#if !creating}
-				<i class="ri-check-double-line"></i>
-			{/if}
-		</button>
+				{#if creating}
+					<i class="ri-loader-4-line animate-spin"></i>
+					Creando tu tienda...
+				{:else}
+					<i class="ri-check-double-line"></i>
+					Crear mi tienda
+				{/if}
+			</button>
 		{/if}
 	</div>
 	{/if}

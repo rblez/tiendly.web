@@ -1203,9 +1203,13 @@ async function duplicateProduct(p: Product) {
 						</button>
 						<button
 							onclick={() => loadOrders()}
-							class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+							disabled={ordersLoading}
+							class="inline-flex items-center justify-center gap-1.5 bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
 							title="Actualizar"
 						>
+							{#if ordersLoading}
+								<i class="ri-loader-4-line animate-spin"></i>
+							{/if}
 							Actualizar
 						</button>
 					</div>
@@ -1676,13 +1680,15 @@ async function duplicateProduct(p: Product) {
 					disabled={settingsSaving}
 					class="inline-flex items-center gap-2 bg-ember text-white pl-6 pr-8 py-3 rounded-full text-sm font-semibold shadow-xl shadow-black/40 hover:bg-ember-active transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:opacity-50"
 				>
-					{#if justSaved}
-						Guardado
-					{:else if settingsSaving}
-						Guardando...
-					{:else}
-						Guardar cambios
-					{/if}
+				{#if justSaved}
+					<i class="ri-check-line"></i>
+					Guardado
+				{:else if settingsSaving}
+					<i class="ri-loader-4-line animate-spin"></i>
+					Guardando...
+				{:else}
+					Guardar cambios
+				{/if}
 				</button>
 			</div>
 		{/if}
@@ -1843,8 +1849,11 @@ async function duplicateProduct(p: Product) {
 						<button
 							onclick={saveProduct}
 							disabled={formSaving}
-							class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
+							class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
 						>
+							{#if formSaving}
+								<i class="ri-loader-4-line animate-spin"></i>
+							{/if}
 							{formSaving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Agregar producto'}
 						</button>
 						{/if}

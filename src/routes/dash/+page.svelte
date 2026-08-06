@@ -232,8 +232,11 @@
 					<button
 						onclick={confirmDelete}
 						disabled={deleting}
-						class="flex-1 inline-flex items-center justify-center bg-error text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+						class="flex-1 inline-flex items-center justify-center gap-2 bg-error text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
 					>
+						{#if deleting}
+							<i class="ri-loader-4-line animate-spin"></i>
+						{/if}
 						{deleting ? 'Eliminando...' : 'Eliminar'}
 					</button>
 				</div>
