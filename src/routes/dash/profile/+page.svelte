@@ -206,19 +206,19 @@
 	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-full">
 		<a
 			href="?tab=perfil"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 		>
 			Perfil
 		</a>
 		<a
 			href="?tab=general"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'general' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 		>
 			General
 		</a>
 		<a
 			href="?tab=privacidad"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 		>
 			Privacidad
 		</a>
