@@ -33,6 +33,7 @@
 	let selectedVariant = $state(product.variants[0] ?? null);
 	let imgError = $state(false);
 	let activeIndex = $state(0);
+	let added = $state(false);
 
 	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
@@ -51,6 +52,12 @@
 	function buyNow() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
 		goto(`/@${data.store.slug}/checkout`);
+	}
+
+	function addToCart() {
+		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
+		added = true;
+		setTimeout(() => (added = false), 1500);
 	}
 </script>
 
@@ -162,13 +169,13 @@
 					<div class="flex gap-3">
 						<button
 							onclick={buyNow}
-							class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+							class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
 						>
-							Comprar
+							Comprar ahora
 						</button>
 						<button
-							onclick={() => cart.addItem(data.store.slug, product.id, selectedVariant?.id)}
-							class="flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer flex items-center justify-center gap-2"
+							onclick={addToCart}
+							class="hidden sm:flex flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer items-center justify-center gap-2"
 						>
 							<i class="ri-add-line"></i>
 							Añadir al carrito
@@ -178,4 +185,31 @@
 			</div>
 		</div>
 	</div>
+	<div class="h-24 lg:hidden"></div>
 </section>
+
+{#if !isAgotado}
+	<div class="fixed bottom-0 inset-x-0 z-40 lg:hidden">
+		<div class="bg-card/95 backdrop-blur border-t border-hairline px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+			<div class="max-w-3xl mx-auto flex items-center gap-4">
+				<div class="flex-shrink-0">
+					<p class="text-[10px] text-muted uppercase tracking-wide mb-0.5">Total</p>
+					<p class="text-lg font-black text-ember tabular-nums leading-none">{formatPrice(currentPrice, product.currency)}</p>
+				</div>
+				<button
+					onclick={addToCart}
+					class="flex-1 inline-flex items-center justify-center gap-2 rounded-btn px-5 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] cursor-pointer
+						{added ? 'bg-success text-white' : 'bg-ember text-white hover:bg-ember-active'}"
+				>
+					{#if added}
+						<i class="ri-check-line text-base"></i>
+						Añadido
+					{:else}
+						<i class="ri-shopping-cart-line text-base"></i>
+						Añadir al carrito
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
