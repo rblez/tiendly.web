@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import Logo from '$lib/components/Logo.svelte';
-	import { loadDraft, clearDraft, createStoreFromDraft } from '$lib/storeDraft';
+	import { ensureUniqueSlug } from '$lib/utils';
 
-	let name = $state('');
+	let params = $derived(new URLSearchParams($page.url.search));
+	let fromWizard = $derived(params.get('from') === 'wizard');
+	let subtitle = $derived(
+		fromWizard
+			? `Tu tienda «${params.get('name') || 'sin nombre'}» se publicará al crear tu cuenta.`
+			: 'Gratis, sin tarjeta. Tu tienda lista en 5 minutos.'
+	);
+	let name = $state(params.get('name') ?? '');
 	let email = $state('');
 	let password = $state('');
 	let showPassword = $state(false);
@@ -13,15 +21,28 @@
 	let loading = $state(false);
 
 	async function afterAuth(userId: string) {
-		const draft = loadDraft();
-		if (draft) {
-			clearDraft();
+		if (fromWizard) {
 			try {
-				const storeId = await createStoreFromDraft(draft, userId);
-				goto(`/app/store/${storeId}?created=1`);
-				return;
+				const uniqueSlug = await ensureUniqueSlug(params.get('slug') || 'tienda');
+				const { data: store, error: storeError } = await supabase
+					.from('stores')
+					.insert({
+						owner_id: userId,
+						name: params.get('name')?.trim() || 'Mi tienda',
+						slug: uniqueSlug,
+						whatsapp: params.get('whatsapp')?.trim() || null,
+						theme_color: params.get('theme') || '#e11d48',
+						description: params.get('description')?.trim() || null,
+					})
+					.select('id')
+					.single();
+
+				if (!storeError && store) {
+					goto(`/app/store/${store.id}?created=1`);
+					return;
+				}
 			} catch (e) {
-				console.error('No se pudo crear la tienda desde el borrador', e);
+				console.error('No se pudo crear la tienda', e);
 			}
 		}
 		goto('/app');
@@ -61,7 +82,7 @@
 		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
-			<p class="text-sm text-muted mb-6">Gratis, sin tarjeta. Tu tienda lista en 5 minutos.</p>
+			<p class="text-sm text-muted mb-6">{subtitle}</p>
 
 			<form onsubmit={handleSubmit} class="space-y-4">
 				<div>

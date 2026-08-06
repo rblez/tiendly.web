@@ -2,8 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { fileToDataUrl, parseVariants, slugify, uploadImage } from '$lib/utils';
-	import { saveDraft } from '$lib/storeDraft';
+	import { ensureUniqueSlug, fileToDataUrl, parseVariants, slugify, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 
 	type WizardProduct = {
@@ -188,33 +187,20 @@
 				createdStoreId = store.id;
 				goto(`/app/store/${store.id}?created=1`);
 			} else {
-				saveDraft({
+				const params = new URLSearchParams({
+					from: 'wizard',
 					name: name.trim(),
 					slug,
 					description: description.trim(),
 					whatsapp: whatsapp.trim(),
-					themeColor,
-					logo: logoUrl || undefined,
-					products,
-					createdAt: Date.now(),
+					theme: themeColor,
 				});
-				goto('/signup?from=wizard');
+				goto(`/register?${params.toString()}`);
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Ocurrió un error al crear la tienda.';
 			creating = false;
 		}
-	}
-
-	async function ensureUniqueSlug(base: string): Promise<string> {
-		let candidate = base || 'tienda';
-		let suffix = 2;
-		for (let i = 0; i < 20; i++) {
-			const { data } = await supabase.from('stores').select('id').eq('slug', candidate).maybeSingle();
-			if (!data) return candidate;
-			candidate = `${base}-${suffix++}`;
-		}
-		return `${base}-${Date.now() % 10000}`;
 	}
 
 	function next() {
@@ -265,7 +251,7 @@
 	{#if !auth.session}
 		<div class="flex items-center gap-2.5 bg-ember/10 border border-ember/20 rounded-card px-4 py-3 mb-6 text-sm text-body">
 			<i class="ri-save-3-line text-ember"></i>
-			<span>Tu tienda se guardará aquí en tu dispositivo y al final te pediremos crear tu cuenta gratis para publicarla.</span>
+			<span>Al terminar te pediremos crear tu cuenta gratis para publicarla.</span>
 		</div>
 	{/if}
 
@@ -528,7 +514,7 @@
 				? 'Creando tu tienda...'
 				: auth.session
 					? 'Crear mi tienda'
-					: 'Guardar y crear mi cuenta'}
+					: 'Crear cuenta y publicar'}
 			{#if !creating}
 				<i class="ri-check-double-line"></i>
 			{/if}

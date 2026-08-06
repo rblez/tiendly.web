@@ -100,3 +100,14 @@ export async function dataUrlToFile(dataUrl: string): Promise<File> {
 	const blob = await res.blob();
 	return new File([blob], `img-${Date.now()}.png`, { type: blob.type });
 }
+
+export async function ensureUniqueSlug(base: string): Promise<string> {
+	let candidate = base || 'tienda';
+	let suffix = 2;
+	for (let i = 0; i < 20; i++) {
+		const { data } = await supabase.from('stores').select('id').eq('slug', candidate).maybeSingle();
+		if (!data) return candidate;
+		candidate = `${base}-${suffix++}`;
+	}
+	return `${base}-${Date.now() % 10000}`;
+}

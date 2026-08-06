@@ -3,7 +3,6 @@
 	import { goto } from '$app/navigation';
 	import Logo from '$lib/components/Logo.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { loadDraft, clearDraft, createStoreFromDraft } from '$lib/storeDraft';
 
 	let email = $state('');
 	let password = $state('');
@@ -17,18 +16,7 @@
 
 	$effect(() => { auth.init(); });
 
-	async function afterAuth(userId: string) {
-		const draft = loadDraft();
-		if (draft) {
-			clearDraft();
-			try {
-				const storeId = await createStoreFromDraft(draft, userId);
-				goto(`/app/store/${storeId}?created=1`);
-				return;
-			} catch (e) {
-				console.error('No se pudo crear la tienda desde el borrador', e);
-			}
-		}
+	async function afterAuth(_userId: string) {
 		goto('/app');
 	}
 

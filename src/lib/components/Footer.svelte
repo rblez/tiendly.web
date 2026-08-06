@@ -63,13 +63,10 @@
 						{store.schedule}
 					</p>
 				{/if}
-				<a
-					href={appUrl() + '/wizard'}
-					class="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ember transition-colors no-underline mt-4"
-				>
+				<div class="inline-flex items-center gap-1.5 text-xs text-muted mt-4">
 					<img src="/isotipo.png" alt="" class="h-4 w-4 rounded flex-shrink-0" />
-					Creado con <span class="font-semibold">Tiendly</span> · crea la tuya gratis
-				</a>
+					Creado con <span class="font-semibold">Tiendly</span>
+				</div>
 			</div>
 
 			{#if socials.length > 0 || extraLinks.length > 0}
@@ -161,7 +158,6 @@
 			</p>
 			<div class="flex items-center gap-4 text-xs">
 				<a href="/pricing" class="text-body hover:text-ember transition-colors no-underline">Planes y precios</a>
-				<a href={appUrl() + '/wizard'} class="text-body hover:text-ember transition-colors no-underline">Crear mi tienda</a>
 			</div>
 			<p class="text-xs text-muted-soft">&copy; {new Date().getFullYear()} Tiendly. Todos los derechos reservados.</p>
 			<div class="mt-2">
