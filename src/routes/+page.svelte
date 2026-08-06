@@ -22,7 +22,7 @@
 				<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline">
 					Iniciar sesión
 				</a>
-				<a href="/wizard" class="bg-ink text-canvas px-4 py-2 rounded-btn text-sm font-semibold transition-opacity hover:opacity-85 no-underline">
+				<a href="/wizard" class="bg-ember text-white px-4 py-2 rounded-btn text-sm font-semibold transition-colors hover:bg-ember-active no-underline">
 					Comenzar gratis
 				</a>
 			{/if}
@@ -43,7 +43,7 @@
 		Sin plataformas de pago ajenas, sin comisiones por venta, sin tarjetas.
 	</p>
 	<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-10">
-		<a href="/wizard" class="inline-flex items-center justify-center bg-ink text-canvas px-8 py-3.5 rounded-btn text-base font-semibold transition-opacity hover:opacity-85 active:scale-[0.98] no-underline">
+		<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-8 py-3.5 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
 			Crear mi tienda gratis
 		</a>
 		<a href="/pricing" class="inline-flex items-center justify-center px-8 py-3.5 border border-hairline text-ink rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
@@ -181,7 +181,7 @@
 		Gratis para empezar. Sin tarjetas, sin comisiones por venta y sin letra chica.
 	</p>
 	<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
-		<a href="/wizard" class="inline-flex items-center justify-center bg-ink text-canvas px-10 py-4 rounded-btn text-base font-semibold transition-opacity hover:opacity-85 active:scale-[0.98] no-underline">
+		<a href="/wizard" class="inline-flex items-center justify-center bg-ember text-white px-10 py-4 rounded-btn text-base font-semibold transition-colors hover:bg-ember-active active:scale-[0.98] no-underline">
 			Crear mi tienda gratis
 		</a>
 		<a href="/pricing" class="inline-flex items-center justify-center px-8 py-4 border border-hairline text-ink rounded-btn text-base font-medium transition-colors hover:bg-bone no-underline">
