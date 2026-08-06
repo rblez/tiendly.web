@@ -2,7 +2,7 @@
 
 ## Project
 
-SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/t/[slug]`, authenticated owner dashboard at `/app`, auth at `/login` and `/signup`. UI text is in Spanish.
+SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/t/[slug]`, authenticated owner dashboard at `/dash` (store panel at `/dash/store/[code]`, 8-char store code), auth at `/login` and `/signup`. UI text is in Spanish.
 
 ## Commands
 
