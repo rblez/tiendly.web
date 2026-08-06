@@ -26,9 +26,9 @@
 	let limitLoading = $state(true);
 
 	const STEP_META = [
-		{ title: '¿Cómo se llama tu tienda?', icon: 'ri-store-2-line', desc: 'Solo el nombre y tu link. Lo demás se configura después.' },
-		{ title: '¿Dónde te escriben?', icon: 'ri-whatsapp-line', desc: 'Los pedidos llegarán directo a tu WhatsApp.' },
-		{ title: 'Agrega tus primeros productos', icon: 'ri-shopping-bag-line', desc: 'Nombre y precio. Foto opcional, detalles después.' },
+		{ title: '¿Cómo se llama tu tienda?', desc: 'Solo el nombre y tu link. Lo demás se configura después.' },
+		{ title: '¿Dónde te escriben?', desc: 'Los pedidos llegarán directo a tu WhatsApp.' },
+		{ title: 'Agrega tus primeros productos', desc: 'Nombre y precio. Foto opcional, detalles después.' },
 	];
 
 	$effect(() => {
@@ -193,7 +193,7 @@
 	<title>Nueva tienda | Tiendly</title>
 </svelte:head>
 
-<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<section class="max-w-lg mx-auto px-4 sm:px-6 py-12 sm:py-16">
 	{#if atLimit}
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
 			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -216,16 +216,9 @@
 		</div>
 	{:else}
 	<div class="mb-8">
-		<div class="flex items-center gap-3 mb-3">
-			<span class="h-10 w-10 flex items-center justify-center rounded-xl bg-ember/10 text-ember flex-shrink-0">
-				<i class={`${STEP_META[step - 1].icon} text-lg`}></i>
-			</span>
-			<div>
-				<p class="text-xs font-semibold text-ember uppercase tracking-wide">Paso {step} de 3</p>
-				<h1 class="text-xl sm:text-2xl font-bold text-ink leading-tight">{STEP_META[step - 1].title}</h1>
-			</div>
-		</div>
-		<p class="text-sm text-muted">{STEP_META[step - 1].desc}</p>
+		<p class="text-xs font-semibold text-ember uppercase tracking-wide mb-2">Paso {step} de 3</p>
+		<h1 class="text-2xl sm:text-3xl font-bold text-ink leading-tight">{STEP_META[step - 1].title}</h1>
+		<p class="text-sm text-muted mt-2">{STEP_META[step - 1].desc}</p>
 	</div>
 
 	{#if !auth.session}
@@ -237,15 +230,8 @@
 
 	<!-- Progress -->
 	<div class="flex items-center gap-2 mb-8">
-		{#each Array(3) as _, i}
-			<button
-				onclick={() => { if (i < step) { step = i + 1; error = ''; } }}
-				class="flex-1 flex flex-col items-center gap-1 group"
-				aria-label={`Paso ${i + 1}`}
-			>
-				<div class={`w-full h-1.5 rounded-full transition-colors ${i < step ? 'bg-ember' : 'bg-bone group-hover:bg-hairline'}`}></div>
-				<i class={`${STEP_META[i].icon} text-sm ${i < step ? 'text-ember' : 'text-muted-soft'}`}></i>
-			</button>
+		{#each STEP_META as _, i}
+			<div class={`flex-1 h-1.5 rounded-full transition-colors ${i < step ? 'bg-ember' : 'bg-bone'}`}></div>
 		{/each}
 	</div>
 
@@ -261,7 +247,7 @@
 						oninput={onNameInput}
 						placeholder="Ej: Dulces de Ana"
 						autofocus
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 					/>
 				</div>
 				<div>
@@ -272,7 +258,7 @@
 						bind:value={slug}
 						oninput={onSlugInput}
 						placeholder="tiendly.lat/@username"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 					/>
 					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones.</p>
 				</div>
@@ -287,7 +273,7 @@
 				bind:value={whatsapp}
 				placeholder="Ej: +53 5 1234567"
 				autofocus
-				class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+				class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 			/>
 			<p class="text-xs text-muted-soft mt-1.5">Cada pedido llega directo a este número. Puedes cambiarlo después.</p>
 		</div>
@@ -309,7 +295,7 @@
 
 					<div class="flex items-start gap-4">
 						<div class="flex-shrink-0">
-							<div class="h-20 w-20 rounded-xl overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
+							<div class="h-20 w-20 rounded-btn overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
 								{#if product.images.length > 0}
 									<img src={product.images[0]} alt={`Foto de ${product.name || `producto ${i + 1}`}`} class="w-full h-full object-cover" />
 								{:else}
@@ -330,7 +316,7 @@
 									value={product.name}
 									oninput={(e) => updateProduct(i, 'name', (e.target as HTMLInputElement).value)}
 									placeholder="Nombre (Ej: Pastel de chocolate)"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 								/>
 							</div>
 							<input
@@ -338,7 +324,7 @@
 								value={product.price}
 								oninput={(e) => updateProduct(i, 'price', (e.target as HTMLInputElement).value)}
 								placeholder="Precio (Ej: 500)"
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 							/>
 						</div>
 					</div>
