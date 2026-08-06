@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Footer from '$lib/components/Footer.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
+	import { SITE_URL } from '$lib/utils';
 
 	$effect(() => { auth.init(); });
 </script>
@@ -8,6 +9,25 @@
 <svelte:head>
 	<title>Tiendly | Tu tienda online, sin intermediarios</title>
 	<meta name="description" content="Crea tu catálogo, comparte tu link y recibe pedidos directo en tu WhatsApp. Sin plataformas de pago ajenas, sin comisiones por venta." />
+	<script type="application/ld+json">
+		{JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name: 'Tiendly',
+			url: SITE_URL,
+			logo: `${SITE_URL}/tiendly-social.png`,
+			sameAs: ['https://www.instagram.com/tiendly'],
+		})}
+	</script>
+	<script type="application/ld+json">
+		{JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: 'Tiendly',
+			url: SITE_URL,
+			inLanguage: 'es',
+		})}
+	</script>
 </svelte:head>
 
 <nav class="sticky top-0 z-50 bg-canvas/85 backdrop-blur-md border-b border-hairline">

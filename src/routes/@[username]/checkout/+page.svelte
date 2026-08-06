@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { clearUtm, formatPrice, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
+	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -143,6 +144,12 @@
 		const msg = buildWhatsAppMessage();
 		const wa = data.store.whatsapp;
 
+		track('begin_checkout', {
+			value: total,
+			currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+			num_items: cartLines.length,
+		});
+
 		const items = cartLines.map((cp) => ({
 			productId: cp.productId,
 			variantId: cp.variantId ?? undefined,
@@ -154,6 +161,7 @@
 		}));
 
 		let saved = true;
+		let orderId: string | null = null;
 		const utm = loadUtm();
 		try {
 			const { supabase } = await import('$lib/supabase/client');
@@ -174,6 +182,7 @@
 				.select('id')
 				.single();
 			if (orderError2) saved = false;
+			if (orderRow) orderId = orderRow.id;
 			try {
 				sessionStorage.setItem(
 					`tiendly-order-${data.store.slug}`,
@@ -208,6 +217,12 @@
 
 		setTimeout(() => {
 			orderPlaced = true;
+			track('purchase', {
+				value: total,
+				currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+				transaction_id: orderId ?? undefined,
+				content_ids: items.map((i) => i.productId),
+			});
 			cart.clear();
 			const qs = utmQuery(loadUtm());
 			clearUtm();

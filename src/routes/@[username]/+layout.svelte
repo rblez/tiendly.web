@@ -74,6 +74,16 @@
 	});
 
 	const storeUrl = $derived(buildStoreUrl(store.slug));
+	const breadcrumbLd = $derived(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: [
+				{ '@type': 'ListItem', position: 1, name: 'Tiendly', item: SITE_URL },
+				{ '@type': 'ListItem', position: 2, name: store.name, item: storeUrl },
+			],
+		}),
+	);
 	const logoUrl = $derived.by(() => {
 		if (!store.logo) return null;
 		if (store.logo.startsWith('http')) return store.logo;
@@ -153,7 +163,9 @@
 	<meta property="og:title" content={`${store.name} | Tiendly`} />
 	<meta property="og:description" content={store.description ?? `Compra en ${store.name} con Tiendly.`} />
 	<meta property="og:url" content={storeUrl} />
+	<link rel="canonical" href={storeUrl} />
 	<meta property="og:site_name" content="Tiendly" />
+	<meta property="og:locale" content="es_ES" />
 	{#if logoUrl}
 		<meta property="og:image" content={logoUrl} />
 	{/if}
@@ -164,6 +176,7 @@
 		<meta name="twitter:image" content={logoUrl} />
 	{/if}
 	<script type="application/ld+json">{jsonLd}</script>
+	<script type="application/ld+json">{breadcrumbLd}</script>
 </svelte:head>
 
 <div style={themeStyle(store)}>

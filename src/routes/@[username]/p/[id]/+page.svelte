@@ -4,7 +4,8 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, waLink } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, waLink, SITE_URL } from '$lib/utils';
+	import { track } from '$lib/analytics';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
@@ -12,6 +13,12 @@
 	let product = $state(data.product);
 
 	onMount(() => {
+		track('view_item', {
+			value: currentPrice,
+			currency: product.currency ?? 'CUP',
+			content_ids: [product.id],
+			content_name: product.name,
+		});
 		const channel = supabase
 			.channel(`store-product-${product.id}`)
 			.on(
@@ -48,14 +55,56 @@
 
 	const img = $derived(productImage(product));
 	const shareUrl = $derived(`${storeUrl(data.store.slug)}/p/${product.id}`);
+	const productLd = $derived(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Product',
+			name: product.name,
+			description: product.description ?? undefined,
+			image: img ? [img] : undefined,
+			brand: { '@type': 'Brand', name: data.store.name },
+			offers: {
+				'@type': 'Offer',
+				price: String(currentPrice),
+				priceCurrency: product.currency ?? 'CUP',
+				availability: isAgotado ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+				url: shareUrl,
+			},
+		}),
+	);
+	const breadcrumbLd = $derived(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			itemListElement: [
+				{ '@type': 'ListItem', position: 1, name: 'Tiendly', item: SITE_URL },
+				{ '@type': 'ListItem', position: 2, name: data.store.name, item: storeUrl(data.store.slug) },
+				{ '@type': 'ListItem', position: 3, name: product.name, item: shareUrl },
+			],
+		}),
+	);
 
 	function buyNow() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
+		track('add_to_cart', {
+			value: currentPrice,
+			currency: product.currency ?? 'CUP',
+			content_ids: [product.id],
+			content_name: product.name,
+			num_items: 1,
+		});
 		goto(`/@${data.store.slug}/checkout`);
 	}
 
 	function addToCart() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
+		track('add_to_cart', {
+			value: currentPrice,
+			currency: product.currency ?? 'CUP',
+			content_ids: [product.id],
+			content_name: product.name,
+			num_items: 1,
+		});
 		added = true;
 		setTimeout(() => (added = false), 1500);
 	}
@@ -64,13 +113,24 @@
 <svelte:head>
 	<title>{product.name} | {data.store.name}</title>
 	<meta name="description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
+	<link rel="canonical" href={shareUrl} />
 	<meta property="og:type" content="product" />
 	<meta property="og:title" content={`${product.name} | ${data.store.name}`} />
 	<meta property="og:description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
 	<meta property="og:url" content={shareUrl} />
+	<meta property="og:site_name" content={data.store.name} />
+	<meta property="og:locale" content="es_ES" />
 	{#if img}
 		<meta property="og:image" content={img} />
 	{/if}
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content={`${product.name} | ${data.store.name}`} />
+	<meta name="twitter:description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
+	{#if img}
+		<meta name="twitter:image" content={img} />
+	{/if}
+	<script type="application/ld+json">{productLd}</script>
+	<script type="application/ld+json">{breadcrumbLd}</script>
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
