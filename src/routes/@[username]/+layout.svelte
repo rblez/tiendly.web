@@ -10,7 +10,7 @@
 
 	let { children, data }: {
 		children: import('svelte').Snippet;
-		data: { store: Store; preview: { token: string; expiresAt: string | null } | null };
+		data: { store: Store; ownerPlan: string | null; preview: { token: string; expiresAt: string | null } | null };
 	} = $props();
 
 	let store = $state(data.store);
@@ -199,7 +199,7 @@
 		{@render children()}
 	</main>
 	<Footer {store} />
-	{#if !previewToken}
+	{#if !previewToken && (data.ownerPlan === 'free' || data.ownerPlan === 'creator')}
 		<CreateStoreToast />
 	{/if}
 </div>

@@ -63,9 +63,6 @@
 						{store.schedule}
 					</p>
 				{/if}
-				<div class="inline-flex items-center gap-1.5 text-xs text-muted mt-4">
-					Creado con <span class="font-semibold">Tiendly</span>
-				</div>
 			</div>
 
 			{#if socials.length > 0 || extraLinks.length > 0}

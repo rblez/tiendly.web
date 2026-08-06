@@ -36,7 +36,6 @@
 	<div class="border-t border-hairline">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
 			<p class="text-xs text-muted-soft">&copy; {year} Tiendly. Todos los derechos reservados.</p>
-			<p class="text-xs text-muted-soft">Hecho con Tiendly</p>
 		</div>
 	</div>
 </footer>

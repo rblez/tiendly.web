@@ -29,8 +29,10 @@ export const load = async ({ params, url }) => {
 			await createAdminClient().from('stores').delete().eq('id', store.id);
 			throw error(404, 'La vista previa expiró');
 		}
-		return { store, preview: { token: token ?? '', expiresAt: store.preview_expires_at } };
+		return { store, ownerPlan: null, preview: { token: token ?? '', expiresAt: store.preview_expires_at } };
 	}
 
-	return { store, preview: null };
+	const { data: owner } = await supabase.from('profiles').select('plan').eq('id', store.owner_id).maybeSingle();
+
+	return { store, ownerPlan: owner?.plan ?? 'free', preview: null };
 };
