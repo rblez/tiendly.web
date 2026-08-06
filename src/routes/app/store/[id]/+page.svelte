@@ -1357,15 +1357,15 @@ async function duplicateProduct(p: Product) {
 							<div>
 								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 								<div class="relative">
+									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">tiendly.lat/@</span>
 									<input
 										id="s-slug"
 										type="text"
 										bind:value={settings.slug}
 										oninput={onSettingsSlugInput}
-										placeholder="tutienda"
-										class="w-full px-3.5 py-2.5 pr-32 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+										placeholder="username"
+										class="w-full pl-28 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 									/>
-									<span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">.tiendly.lat</span>
 								</div>
 							</div>
 						</div>
@@ -1527,7 +1527,7 @@ async function duplicateProduct(p: Product) {
 										{/if}
 										<div class="min-w-0">
 											<p class="text-xs font-bold text-ink leading-tight truncate">{settings.name || 'Mi tienda'}</p>
-											<p class="text-[10px] text-muted-soft leading-tight truncate">{(settings.slug || 'tutienda') + '.tiendly.lat'}</p>
+											<p class="text-[10px] text-muted-soft leading-tight truncate">tiendly.lat/@{settings.slug || 'tutienda'}</p>
 										</div>
 									</div>
 								</div>

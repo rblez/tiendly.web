@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import type { Product, Store } from '$lib/types';
-	import { formatPrice, productImage, storePagePath } from '$lib/utils';
+	import { formatPrice, productImage } from '$lib/utils';
 
 	let { product, store }: { product: Product; store: Store } = $props();
 
@@ -19,7 +18,7 @@
 	);
 
 	const img = $derived(productImage(product));
-	const productUrl = $derived(storePagePath(store.slug, `/p/${product.id}`, page.url.host));
+	const productUrl = $derived(`/@${store.slug}/p/${product.id}`);
 </script>
 
 <a

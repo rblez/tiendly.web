@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { formatPrice, storePagePath } from '$lib/utils';
+	import { formatPrice } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -51,7 +51,7 @@
 			<i class="ri-store-2-line text-3xl text-muted-soft mb-4 block"></i>
 			<p class="text-lg text-muted mb-6">No encontramos ningún pedido reciente de esta tienda.</p>
 			<a
-				href={storePagePath(data.store.slug, "", $page.url.host)}
+				href={`/@${data.store.slug}`}
 				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
 			>
 				Ver productos
@@ -99,14 +99,14 @@
 
 		<div class="flex flex-col sm:flex-row justify-center gap-3">
 			<a
-				href={storePagePath(data.store.slug, "", $page.url.host)}
+				href={`/@${data.store.slug}`}
 				class="inline-flex items-center justify-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
 				<i class="ri-shopping-bag-line"></i>
 				Seguir comprando
 			</a>
 			<a
-				href={data.store.whatsapp ? `https://wa.me/${data.store.whatsapp}` : storePagePath(data.store.slug, "", $page.url.host)}
+				href={data.store.whatsapp ? `https://wa.me/${data.store.whatsapp}` : `/@${data.store.slug}`}
 				target="_blank"
 				rel="noopener noreferrer"
 				class="inline-flex items-center justify-center gap-2 bg-card border border-hairline text-ink px-6 py-3 rounded-btn text-sm font-medium transition-colors no-underline"

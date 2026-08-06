@@ -6,7 +6,7 @@
 	const progress = ['store-2-line', 'image-line', 'whatsapp-line', 'shopping-bag-line'];
 </script>
 
-<MockFrame url="www.tiendly.lat/wizard" className={className}>
+<MockFrame url="tiendly.lat/wizard" className={className}>
 	<div class="px-4 pt-4 pb-4 bg-canvas/70">
 		<div class="flex items-center gap-2.5 mb-2">
 			<span class="h-8 w-8 flex items-center justify-center rounded-lg bg-ember/10 text-ember flex-shrink-0">

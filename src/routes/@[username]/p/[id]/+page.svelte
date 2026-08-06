@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storePagePath, storeUrl, waLink } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, waLink } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
@@ -50,7 +50,7 @@
 
 	function buyNow() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
-		goto(storePagePath(data.store.slug, '/checkout', $page.url.host));
+		goto(`/@${data.store.slug}/checkout`);
 	}
 </script>
 
@@ -67,7 +67,7 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-	<a href={storePagePath(data.store.slug, '', $page.url.host)} class="inline-flex items-center gap-1.5 text-sm text-body hover:text-ember transition-colors no-underline mb-6">
+	<a href={`/@${data.store.slug}`} class="inline-flex items-center gap-1.5 text-sm text-body hover:text-ember transition-colors no-underline mb-6">
 		<i class="ri-arrow-left-line"></i>
 		Volver al catálogo
 	</a>

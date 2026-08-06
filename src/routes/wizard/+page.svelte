@@ -304,7 +304,7 @@
 						type="text"
 						bind:value={slug}
 						oninput={onSlugInput}
-						placeholder="tutienda.tiendly.lat"
+						placeholder="tiendly.lat/@username"
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 					<p class="text-xs text-muted-soft mt-1.5">Solo minúsculas, números y guiones. Sin espacios ni símbolos.</p>

@@ -3,41 +3,13 @@ import type { Product, Variant } from '$lib/types';
 
 export const SITE_URL = 'https://www.tiendly.lat';
 
-function isTiendlyHost(host: string): boolean {
-	return host === 'tiendly.lat' || host === 'www.tiendly.lat' || host.endsWith('.tiendly.lat');
-}
-
 export function appUrl(): string {
-	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) return window.location.origin;
+	if (typeof window !== 'undefined') return window.location.origin;
 	return SITE_URL;
 }
 
-export function storeHost(slug: string): string {
-	return `${slug}.tiendly.lat`;
-}
-
 export function storeUrl(slug: string): string {
-	if (typeof window !== 'undefined' && !isTiendlyHost(window.location.host)) {
-		return `${window.location.origin}/s/${slug}`;
-	}
-	return `https://${storeHost(slug)}`;
-}
-
-export function storePagePath(slug: string, path = '', host?: string): string {
-	const h = (host ?? (typeof window !== 'undefined' ? window.location.host : '')).split(':')[0].toLowerCase();
-	const prefix = h === storeHost(slug) ? '' : '/s';
-	return `${prefix}/${slug}${path}`;
-}
-
-export function storePath(slug: string, path = ''): string {
-	return `/s/${slug}${path}`;
-}
-
-export function storeSlugFromHost(host: string): string | null {
-	const h = host.split(':')[0].toLowerCase();
-	const m = h.match(/^([a-z0-9-]+)\.tiendly\.lat$/);
-	if (!m || h === 'www.tiendly.lat' || h === 'tiendly.lat') return null;
-	return m[1];
+	return `${appUrl()}/@${slug}`;
 }
 
 export function formatPrice(price: number, currency: string): string {

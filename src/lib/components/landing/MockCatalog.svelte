@@ -15,7 +15,7 @@
 	}
 </script>
 
-<MockFrame url="tutienda.tiendly.lat" className={className}>
+<MockFrame url="tiendly.lat/@tutienda" className={className}>
 	<div class="flex items-center justify-between px-4 py-2.5 border-b border-hairline bg-card">
 		<div class="flex items-center gap-2 min-w-0">
 			<span class="h-6 w-6 rounded-md bg-ember flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">T</span>

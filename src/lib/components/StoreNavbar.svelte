@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { filters } from '$lib/stores/filters.svelte';
-	import { productImage, storePagePath, storePath, storeUrl } from '$lib/utils';
+	import { productImage } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { store }: { store: Store } = $props();
@@ -10,9 +10,8 @@
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
 
-	const homePath = $derived(storePath(store.slug));
-	const cartPath = $derived(storePath(store.slug, '/cart'));
-	const cartHref = $derived(storePagePath(store.slug, '/cart', $page.url.host));
+	const homePath = $derived(`/@${store.slug}`);
+	const cartPath = $derived(`/@${store.slug}/cart`);
 
 	function handleSearch(e: Event) {
 		filters.setSearchQuery((e.target as HTMLInputElement).value);
@@ -33,7 +32,7 @@
 <nav class="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-hairline">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16 gap-4">
-			<a href={storeUrl(store.slug)} class="flex items-center gap-2.5 text-ink no-underline shrink-0 min-w-0">
+			<a href={homePath} class="flex items-center gap-2.5 text-ink no-underline shrink-0 min-w-0">
 				{#if logo}
 					<img src={logo} alt={store.name} class="h-9 w-9 object-cover rounded-lg bg-canvas" />
 				{:else}
@@ -62,12 +61,12 @@
 
 			<div class="flex items-center gap-4 sm:gap-5">
 				{#if $page.url.pathname !== cartPath}
-				<a
-					href={cartHref}
-					class="relative flex items-center transition-colors duration-200 no-underline
-						{$page.url.pathname === cartPath ? 'text-ember' : 'text-body hover:text-ink'}"
-				>
-					<i class="{$page.url.pathname === cartPath ? 'ri-shopping-bag-fill' : 'ri-shopping-bag-line'} text-xl sm:text-lg"></i>
+					<a
+						href={cartPath}
+						class="relative flex items-center transition-colors duration-200 no-underline
+							{$page.url.pathname === cartPath ? 'text-ember' : 'text-body hover:text-ink'}"
+					>
+						<i class="{$page.url.pathname === cartPath ? 'ri-shopping-bag-fill' : 'ri-shopping-bag-line'} text-xl sm:text-lg"></i>
 						<span class="hidden sm:inline text-sm font-medium ml-1.5">Carrito</span>
 						{#if totalItems > 0}
 							<span class="absolute -top-2 -right-3 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-ember text-white rounded-full">
