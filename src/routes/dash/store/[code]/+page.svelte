@@ -1039,7 +1039,7 @@ async function duplicateProduct(p: Product) {
 				</button>
 			</div>
 			{#if categories.length > 0}
-				<div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 mb-3">
+				<div class="flex flex-wrap gap-1.5 mb-3">
 					<button
 						onclick={() => (categoryFilter = 'all')}
 						class={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer border ${
@@ -1210,7 +1210,7 @@ async function duplicateProduct(p: Product) {
 						</button>
 					</div>
 				</div>
-				<div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+				<div class="flex flex-wrap gap-1.5">
 					<button
 						onclick={() => (orderFilter = 'todos')}
 						class={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors cursor-pointer border ${
@@ -1366,7 +1366,7 @@ async function duplicateProduct(p: Product) {
 		{/if}
 
 		{:else}
-			<div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 mb-3 lg:hidden">
+			<div class="flex flex-wrap gap-1.5 mb-3 lg:hidden">
 				{#each GENERAL_SECTIONS as sec}
 					<button
 						onclick={() => scrollToSection(sec.id)}
