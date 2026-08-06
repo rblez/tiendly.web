@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import MockCatalog from '$lib/components/landing/MockCatalog.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
@@ -14,10 +13,9 @@
 
 <nav class="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-hairline">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-		<div class="flex items-center justify-between h-16">
-			<Logo size="h-10" showText={false} src="/isotipo.png" />
+		<div class="flex items-center justify-end h-16">
 			{#if auth.session}
-				<a href="/app" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
+				<a href="/dash" class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium transition-all hover:bg-ember-active no-underline">
 					Mi cuenta
 				</a>
 			{:else}

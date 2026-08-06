@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import StoreNavbar from '$lib/components/StoreNavbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import CreateStoreToast from '$lib/components/CreateStoreToast.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { SITE_URL, themeStyle, storeUrl as buildStoreUrl } from '$lib/utils';
+	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { children, data }: {
@@ -44,7 +45,10 @@
 			const key = `tiendly-visited-${store.slug}`;
 			if (sessionStorage.getItem(key)) return;
 			sessionStorage.setItem(key, '1');
-			fetch(`/api/track-visit/${store.slug}`, { method: 'POST' }).catch(() => {});
+			const utm = getUtmFromUrl($page.url);
+			saveUtm(utm);
+			const qs = utmQuery(utm);
+			fetch(`/api/track-visit/${store.slug}${qs ? `?${qs}` : ''}`, { method: 'POST' }).catch(() => {});
 		} catch {
 			// privado: no se registra la visita
 		}
@@ -73,6 +77,17 @@
 		return `${SITE_URL}/${store.logo.replace(/^\//, '')}`;
 	});
 
+	const jsonLd = $derived(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Store',
+			name: store.name,
+			description: store.description ?? undefined,
+			url: storeUrl,
+			...(store.logo ? { logo: logoUrl } : {}),
+		}),
+	);
+
 	let favicon = $state<string | null>(null);
 
 	async function buildFavicon(logo: string | null, name: string, accent: string): Promise<string> {
@@ -80,7 +95,7 @@
 		canvas.width = 64;
 		canvas.height = 64;
 		const ctx = canvas.getContext('2d');
-		if (!ctx) return '/isotipo.png';
+		if (!ctx) return '';
 		ctx.fillStyle = accent;
 		const r = 14;
 		ctx.beginPath();
@@ -123,13 +138,13 @@
 		const logo = store.logo ? (store.logo.startsWith('http') ? store.logo : `${SITE_URL}/${store.logo.replace(/^\//, '')}`) : null;
 		buildFavicon(logo, store.name, store.theme_color)
 			.then((url) => (favicon = url))
-			.catch(() => (favicon = '/isotipo.png'));
+			.catch(() => (favicon = ''));
 	});
 </script>
 
 <svelte:head>
 	<title>{store.name} | Tiendly</title>
-	<link rel="icon" type="image/png" href={favicon ?? '/isotipo.png'} />
+	<link rel="icon" type="image/png" href={favicon ?? ''} />
 	<meta name="description" content={store.description ?? `Compra en ${store.name} con Tiendly.`} />
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content={`${store.name} | Tiendly`} />
@@ -179,7 +194,7 @@
 			{/if}
 		</div>
 	{/if}
-	<StoreNavbar store={store} />
+	<StoreNavbar store={store} previewMode={!!previewToken} />
 	<main class="min-h-[calc(100vh-4rem)]">
 		{@render children()}
 	</main>

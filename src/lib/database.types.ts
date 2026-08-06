@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   public: {
     Tables: {
       orders: {
@@ -21,6 +26,9 @@ export type Database = {
           status: string
           store_id: string
           total: number
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
           created_at?: string
@@ -33,6 +41,9 @@ export type Database = {
           status?: string
           store_id: string
           total?: number
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
           created_at?: string
@@ -45,6 +56,9 @@ export type Database = {
           status?: string
           store_id?: string
           total?: number
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: [
           {
@@ -149,18 +163,27 @@ export type Database = {
         Row: {
           id: string
           store_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
           visit_date: string
           visits: number
         }
         Insert: {
           id?: string
           store_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           visit_date?: string
           visits?: number
         }
         Update: {
           id?: string
           store_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           visit_date?: string
           visits?: number
         }
@@ -178,6 +201,7 @@ export type Database = {
         Row: {
           active: boolean
           banner: string | null
+          code: string
           created_at: string
           description: string | null
           extra_links: Json
@@ -198,6 +222,7 @@ export type Database = {
         Insert: {
           active?: boolean
           banner?: string | null
+          code: string
           created_at?: string
           description?: string | null
           extra_links?: Json
@@ -218,6 +243,7 @@ export type Database = {
         Update: {
           active?: boolean
           banner?: string | null
+          code?: string
           created_at?: string
           description?: string | null
           extra_links?: Json
@@ -251,8 +277,18 @@ export type Database = {
     }
     Functions: {
       delete_account: { Args: { p_user_id: string }; Returns: undefined }
+      gen_store_code: { Args: never; Returns: string }
       increment_store_visit: { Args: { p_slug: string }; Returns: number }
       is_store_owner: { Args: { store_id: string }; Returns: boolean }
+      track_visit: {
+        Args: {
+          p_slug: string
+          p_utm_source?: string | null
+          p_utm_medium?: string | null
+          p_utm_campaign?: string | null
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
@@ -262,3 +298,4 @@ export type Database = {
     }
   }
 }
+

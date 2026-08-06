@@ -2,7 +2,6 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Logo from '$lib/components/Logo.svelte';
 
 	let params = $derived(new URLSearchParams($page.url.search));
 	let previewToken = $derived(params.get('preview') ?? '');
@@ -20,6 +19,7 @@
 	let info = $state('');
 	let loading = $state(false);
 	let claiming = $state(false);
+	let claimed = $state(false);
 
 	async function claimPreview(): Promise<string | null> {
 		const { data } = await supabase.auth.getSession();
@@ -32,27 +32,28 @@
 		});
 		if (!res.ok) return null;
 		const body = await res.json().catch(() => null);
-		return typeof body?.storeId === 'string' ? body.storeId : null;
+		return typeof body?.code === 'string' ? body.code : null;
 	}
 
 	async function afterAuth() {
-		if (previewToken) {
+		if (previewToken && !claimed) {
+			claimed = true;
 			claiming = true;
-			const storeId = await claimPreview();
+			const storeCode = await claimPreview();
 			claiming = false;
-			if (storeId) {
-				goto(`/app/store/${storeId}?created=1`);
+			if (storeCode) {
+				goto(`/dash/store/${storeCode}?created=1`);
 				return;
 			}
 		}
-		goto('/app');
+		goto('/dash');
 	}
 
 	$effect(() => {
-		if (previewToken && claiming === false) {
+		if (previewToken && !claimed) {
 			// vuelta del flujo OAuth: la sesión ya existe, reclamar directo
 			supabase.auth.getSession().then(({ data }) => {
-				if (data.session) afterAuth();
+				if (data.session && !claimed) afterAuth();
 			});
 		}
 	});
@@ -78,7 +79,7 @@
 		});
 		loading = false;
 		if (err) {
-			error = err.message;
+			error = friendlyAuthError(err.message);
 			return;
 		}
 		if (data.session) {
@@ -86,6 +87,16 @@
 		} else {
 			info = 'Revisa tu correo para confirmar la cuenta, luego inicia sesión para activar tu tienda.';
 		}
+	}
+
+	function friendlyAuthError(message: string): string {
+		const m = message.toLowerCase();
+		if (m.includes('invalid login credentials') || m.includes('invalid email or password')) return 'Correo o contraseña incorrectos.';
+		if (m.includes('email not confirmed')) return 'Confirma tu correo antes de entrar (revisa tu bandeja de entrada).';
+		if (m.includes('rate limit')) return 'Demasiados intentos. Espera un momento y vuelve a intentar.';
+		if (m.includes('user already registered')) return 'Ya existe una cuenta con ese correo. Inicia sesión.';
+		if (m.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+		return message;
 	}
 </script>
 
@@ -95,9 +106,6 @@
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
 	<div class="w-full max-w-sm">
-		<div class="flex justify-center mb-8">
-			<Logo size="h-12" />
-		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
 			<p class="text-sm text-muted mb-6">{subtitle}</p>

@@ -81,17 +81,15 @@
 			{#if atLimit}
 				<button
 					onclick={() => (upgradeOpen = true)}
-					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
 				>
-					<i class="ri-add-line"></i>
 					Nueva tienda
 				</button>
 			{:else}
 				<a
 					href="/wizard"
-					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
+					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
 				>
-					<i class="ri-add-line"></i>
 					Nueva tienda
 				</a>
 			{/if}
@@ -104,17 +102,13 @@
 			class="w-full flex items-start justify-between gap-4 bg-gradient-to-r from-ember/15 via-ember/5 to-transparent border border-ember/30 rounded-card p-5 text-left hover:border-ember/60 transition-colors cursor-pointer mb-8"
 		>
 			<div class="flex items-start gap-4 min-w-0">
-				<span class="h-11 w-11 flex items-center justify-center rounded-xl bg-ember text-white flex-shrink-0">
-					<i class="ri-star-line text-lg"></i>
-				</span>
 				<div class="text-left">
 					<p class="font-bold text-ink">Estás en el plan Free</p>
 					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Creator o Business para más tiendas y productos.</p>
 				</div>
 			</div>
-			<span class="inline-flex items-center gap-1.5 text-sm font-medium text-ember flex-shrink-0 mt-1">
+			<span class="text-sm font-medium text-ember flex-shrink-0 mt-1">
 				Mejorar plan
-				<i class="ri-arrow-right-line"></i>
 			</span>
 		</button>
 	{/if}
@@ -140,14 +134,13 @@
 				href="/wizard"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
-				<i class="ri-add-line"></i>
 				Crear mi tienda
 			</a>
 		</div>
 	{:else}
 		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 			{#each stores as store}
-				<a href={`/app/store/${store.id}`} class="bg-card border border-hairline rounded-card p-6 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
+				<a href={`/dash/store/${store.code}`} class="bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
 					<div class="flex items-center gap-3 mb-4">
 						{#if store.logo}
 							<img src={store.logo} alt={store.name} class="h-12 w-12 object-cover rounded-lg bg-canvas" />
@@ -161,8 +154,7 @@
 							<p class="text-xs text-muted truncate">@{store.slug}</p>
 						</div>
 						{#if !store.active}
-							<span class="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-full bg-error/10 text-error text-[10px] flex-shrink-0">
-								<i class="ri-eye-off-line"></i>
+							<span class="ml-auto inline-flex items-center px-2.5 py-1 rounded-full bg-error/10 text-error text-[11px] flex-shrink-0">
 								Oculta
 							</span>
 						{/if}
@@ -170,27 +162,32 @@
 					{#if store.description}
 						<p class="text-xs text-body line-clamp-2 mb-4">{store.description}</p>
 					{/if}
-					<div class="grid grid-cols-3 gap-2 mb-4">
-						<div class="bg-canvas rounded-btn px-2 py-2 text-center">
+					<div class="grid grid-cols-3 gap-3 mb-5">
+						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
 							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.products ?? 0}</p>
 							<p class="text-[10px] text-muted">Productos</p>
 						</div>
-						<div class="bg-canvas rounded-btn px-2 py-2 text-center">
+						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
 							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.orders ?? 0}</p>
 							<p class="text-[10px] text-muted">Pedidos</p>
 						</div>
-						<div class="bg-canvas rounded-btn px-2 py-2 text-center">
+						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
 							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.visits ?? 0}</p>
 							<p class="text-[10px] text-muted">Visitas</p>
 						</div>
 					</div>
 					<div class="flex items-center gap-2 text-xs">
-						<span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-ember text-white font-medium">
-							<i class="ri-settings-3-line"></i>
+						<span class="inline-flex items-center px-4 py-1.5 rounded-full bg-ember text-white font-medium">
 							Gestionar
 						</span>
-						<button onclick={() => window.open(storeUrl(store.slug), '_blank', 'noopener,noreferrer')} class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer">
-							<i class="ri-external-link-line"></i>
+						<button
+							onclick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								window.open(storeUrl(store.slug), '_blank', 'noopener,noreferrer');
+							}}
+							class="inline-flex items-center px-3 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer"
+						>
 							Ver
 						</button>
 						<button
@@ -221,7 +218,6 @@
 				<h2 class="text-lg font-bold text-ink mb-1">¿Eliminar {deleteTarget.name}?</h2>
 				<p class="text-sm text-muted mb-6">
 					Se borrarán permanentemente sus {stats[deleteTarget.id]?.products ?? 0} productos y {stats[deleteTarget.id]?.orders ?? 0} pedidos. Esta acción no se puede deshacer.
-				</p>
 				{#if deleteError}
 					<p class="text-xs text-error mb-4">{deleteError}</p>
 				{/if}
@@ -229,16 +225,15 @@
 					<button
 						onclick={() => (deleteTarget = null)}
 						disabled={deleting}
-						class="flex-1 px-5 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer disabled:opacity-50"
+						class="flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer disabled:opacity-50"
 					>
 						Cancelar
 					</button>
 					<button
 						onclick={confirmDelete}
 						disabled={deleting}
-						class="flex-1 inline-flex items-center justify-center gap-2 bg-error text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+						class="flex-1 inline-flex items-center justify-center bg-error text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
 					>
-						<i class="ri-delete-bin-6-line"></i>
 						{deleting ? 'Eliminando...' : 'Eliminar'}
 					</button>
 				</div>
@@ -278,7 +273,7 @@
 							</ul>
 							{#if p.id !== 'free'}
 								<span
-									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-2.5 rounded-btn text-sm font-medium no-underline opacity-90"
+									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-3 rounded-btn text-sm font-medium no-underline opacity-90"
 								>
 									<i class="ri-currency-line"></i>
 									Próximamente

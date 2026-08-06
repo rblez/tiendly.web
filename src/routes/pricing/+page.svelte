@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { PLANS } from '$lib/plans';
-	import Logo from '$lib/components/Logo.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 </script>
 
@@ -9,8 +8,7 @@
 	<meta name="description" content="Crea tu tienda gratis. Planes Free, Creator y Business con más tiendas y productos. Precios en USD, pago en cripto (USDT)." />
 </svelte:head>
 
-<header class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-	<a href="/" class="no-underline"><Logo /></a>
+<header class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-end">
 	<a href="/wizard" class="inline-flex items-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline">
 		<i class="ri-add-line"></i>
 		Crear mi tienda
@@ -52,9 +50,6 @@
 				>
 					{p.id === 'free' ? 'Empezar gratis' : `Elegir ${p.name}`}
 				</a>
-				{#if p.id !== 'free'}
-					<p class="text-[10px] text-muted-soft text-center mt-2">Próximamente · pago en USDT</p>
-				{/if}
 			</div>
 		{/each}
 	</div>

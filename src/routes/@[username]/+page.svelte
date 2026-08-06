@@ -29,6 +29,8 @@
 		if (filters.searchQuery) p.set('q', filters.searchQuery);
 		if (filters.selectedCategory) p.set('cat', filters.selectedCategory);
 		if (filters.sortOrder !== 'relevancia') p.set('orden', filters.sortOrder);
+		const preview = $page.url.searchParams.get('preview');
+		if (preview) p.set('preview', preview);
 		const qs = p.toString();
 		history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 	});
@@ -61,6 +63,7 @@
 			.from('products')
 			.select('*')
 			.eq('store_id', data.store.id)
+			.eq('active', true)
 			.order('position', { ascending: true });
 		products = (fresh as Product[] | null)?.map((p) => ({
 			...p,

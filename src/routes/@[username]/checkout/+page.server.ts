@@ -6,6 +6,7 @@ export const load = async ({ params }) => {
 		.from('stores')
 		.select('*')
 		.eq('slug', params.username)
+		.eq('active', true)
 		.maybeSingle();
 
 	if (!store) throw error(404, 'Tienda no encontrada');

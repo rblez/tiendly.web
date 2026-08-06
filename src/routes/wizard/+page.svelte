@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ensureUniqueSlug, fileToDataUrl, parseVariants, slugify, uploadImage } from '$lib/utils';
+	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, parseVariants, slugify, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 
 	type WizardProduct = {
@@ -153,7 +153,7 @@
 						store_id: storeId,
 						name: p.name.trim(),
 						description: p.description.trim() || null,
-						price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
+						price: parsePrice(p.price),
 						currency: p.currency,
 						category: p.category.trim() || 'General',
 						agotado: p.agotado,
@@ -170,12 +170,13 @@
 						owner_id: auth.session.user.id,
 						name: name.trim(),
 						slug: uniqueSlug,
+						code: generateStoreCode(),
 						logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
 						whatsapp: whatsapp.trim() || null,
 						theme_color: themeColor,
 						description: description.trim() || null,
 					})
-					.select('id')
+					.select('id, code')
 					.single();
 
 				if (storeError) throw storeError;
@@ -187,7 +188,7 @@
 				}
 
 				createdStoreId = store.id;
-				goto(`/app/store/${store.id}?created=1`);
+				goto(`/dash/store/${store.code}?created=1`);
 			} else {
 				const token = crypto.randomUUID();
 				const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -197,6 +198,7 @@
 					owner_id: null,
 					name: name.trim(),
 					slug: uniqueSlug,
+					code: generateStoreCode(),
 					logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
 					whatsapp: whatsapp.trim() || null,
 					theme_color: themeColor,
@@ -241,7 +243,7 @@
 			<p class="text-body mb-2">El plan Free incluye 1 tienda. Ya tienes una en Tiendly.</p>
 			<p class="text-xs text-muted-soft mb-8">Actualiza a Creator o Business para crear más tiendas cuando esté disponible.</p>
 			<a
-				href="/app"
+				href="/dash"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
 				<i class="ri-arrow-left-line"></i>

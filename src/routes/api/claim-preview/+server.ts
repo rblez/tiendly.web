@@ -8,6 +8,8 @@ const admin = createClient<Database>(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_
 	auth: { persistSession: false },
 });
 
+const PLAN_LIMITS: Record<string, number> = { free: 1, creator: 5, business: 15 };
+
 export const POST = async ({ request }) => {
 	const authHeader = request.headers.get('authorization') ?? '';
 	const accessToken = authHeader.replace(/^Bearer\s+/i, '');
@@ -38,16 +40,35 @@ export const POST = async ({ request }) => {
 		return new Response(JSON.stringify({ error: 'La vista previa expiró' }), { status: 410 });
 	}
 
-	const { error } = await admin
-		.from('stores')
-		.update({ owner_id: user.user.id, preview_token: null, preview_expires_at: null })
-		.eq('id', store.id);
+	const { data: profile } = await admin.from('profiles').select('plan').eq('id', user.user.id).maybeSingle();
+	const plan = profile?.plan ?? 'free';
+	const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
 
-	if (error) {
-		return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+	const { count } = await admin
+		.from('stores')
+		.select('id', { count: 'exact', head: true })
+		.eq('owner_id', user.user.id);
+
+	if ((count ?? 0) >= limit) {
+		return new Response(
+			JSON.stringify({ error: `Límite del plan alcanzado: máximo ${limit} tienda${limit === 1 ? '' : 's'}` }),
+			{ status: 409 },
+		);
 	}
 
-	return new Response(JSON.stringify({ storeId: store.id }), {
+	const { data: claimed, error } = await admin
+		.from('stores')
+		.update({ owner_id: user.user.id, preview_token: null, preview_expires_at: null })
+		.is('owner_id', null)
+		.eq('preview_token', previewToken)
+		.select('id, code')
+		.single();
+
+	if (error || !claimed) {
+		return new Response(JSON.stringify({ error: 'Vista previa no encontrada' }), { status: 404 });
+	}
+
+	return new Response(JSON.stringify({ storeId: claimed.id, code: claimed.code }), {
 		headers: { 'Content-Type': 'application/json' },
 	});
 };

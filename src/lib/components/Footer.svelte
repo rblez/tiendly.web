@@ -64,7 +64,6 @@
 					</p>
 				{/if}
 				<div class="inline-flex items-center gap-1.5 text-xs text-muted mt-4">
-					<img src="/isotipo.png" alt="" class="h-4 w-4 rounded flex-shrink-0" />
 					Creado con <span class="font-semibold">Tiendly</span>
 				</div>
 			</div>
@@ -149,10 +148,7 @@
 		</div>
 	{:else}
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center gap-3 text-center">
-			<div class="flex items-center gap-2.5">
-				<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-md select-none" />
-				<span class="font-bold text-lg text-ink">Tiendly</span>
-			</div>
+			<span class="font-bold text-lg text-ink">Tiendly</span>
 			<p class="text-sm text-muted max-w-md">
 				Crea tu tienda online y compártela en minutos. Sin tarjetas, sin complicaciones.
 			</p>

@@ -24,16 +24,27 @@
 			suggested = null;
 			return;
 		}
+		let cancelled = false;
 		loadingSuggestion = true;
 		supabase
 			.from('stores')
 			.select('id, name, slug, logo')
 			.eq('slug', slug)
+			.eq('active', true)
 			.limit(1)
-			.then(({ data }) => {
-				suggested = (data?.[0] as StoreRow | undefined) ?? null;
-				loadingSuggestion = false;
-			});
+			.then(
+				({ data }) => {
+					if (cancelled) return;
+					suggested = (data?.[0] as StoreRow | undefined) ?? null;
+					loadingSuggestion = false;
+				},
+				() => {
+					if (!cancelled) loadingSuggestion = false;
+				},
+			);
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	let query = $state('');
@@ -52,12 +63,20 @@
 			supabase
 				.from('stores')
 				.select('id, name, slug, logo')
+				.eq('active', true)
+				.not('owner_id', 'is', null)
 				.or(`slug.ilike.%${q}%,name.ilike.%${q}%`)
 				.limit(6)
-				.then(({ data }) => {
-					results = (data as StoreRow[] | null) ?? [];
-					searching = false;
-				});
+				.then(
+					({ data }) => {
+						results = (data as StoreRow[] | null) ?? [];
+						searching = false;
+					},
+					() => {
+						results = [];
+						searching = false;
+					},
+				);
 		}, 250);
 		return () => clearTimeout(timer);
 	});
@@ -67,7 +86,7 @@
 	<div class="w-16 h-16 bg-card border border-hairline rounded-full flex items-center justify-center mb-5">
 		<i class="ri-error-warning-line text-2xl text-ember"></i>
 	</div>
-	<h1 class="text-2xl font-bold text-ink mb-2">{$page.status} · Página no encontrada</h1>
+	<h1 class="text-2xl font-bold text-ink mb-2">{$page.status} · {$page.status === 404 ? 'Página no encontrada' : 'Algo salió mal'}</h1>
 	<p class="text-body mb-8 max-w-md">
 		{$page.status === 404 ? 'La página que buscas no existe o fue movida.' : ($page.error?.message ?? 'Algo salió mal.')}
 	</p>

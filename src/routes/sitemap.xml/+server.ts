@@ -4,7 +4,11 @@ import { SITE_URL, storeUrl } from '$lib/utils';
 export const prerender = false;
 
 export const GET = async () => {
-	const { data: stores } = await supabase.from('stores').select('slug').eq('active', true);
+	const { data: stores } = await supabase
+		.from('stores')
+		.select('slug')
+		.eq('active', true)
+		.not('owner_id', 'is', null);
 
 	const staticUrls = ['', '/wizard', '/pricing', '/precios', '/login', '/signup'];
 	const urls = [

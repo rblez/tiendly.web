@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, waLink } from '$lib/utils';
+	import { clearUtm, formatPrice, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -11,6 +11,8 @@
 	let phone = $state('');
 	let notes = $state('');
 	let sending = $state(false);
+	let orderError = $state('');
+	let orderPlaced = $state(false);
 
 	let directProduct = $state<Product | null>(null);
 
@@ -95,7 +97,7 @@
 	let cartEmpty = $derived(cartLines.length === 0);
 
 	$effect(() => {
-		if (cartEmpty && cacheReady) {
+		if (cartEmpty && cacheReady && !orderPlaced) {
 			goto(`/@${data.store.slug}`);
 		}
 	});
@@ -129,6 +131,7 @@
 		if (!name || !phone || sending) return;
 
 		sending = true;
+		orderError = '';
 		const msg = buildWhatsAppMessage();
 		const wa = data.store.whatsapp;
 
@@ -142,9 +145,11 @@
 			currency: cp.product.currency,
 		}));
 
+		let saved = true;
+		const utm = loadUtm();
 		try {
 			const { supabase } = await import('$lib/supabase/client');
-			const { data: orderRow } = await supabase
+			const { data: orderRow, error: orderError2 } = await supabase
 				.from('orders')
 				.insert({
 					store_id: data.store.id,
@@ -154,9 +159,13 @@
 					items,
 					total,
 					currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+					utm_source: utm.utm_source ?? null,
+					utm_medium: utm.utm_medium ?? null,
+					utm_campaign: utm.utm_campaign ?? null,
 				})
 				.select('id')
 				.single();
+			if (orderError2) saved = false;
 			try {
 				sessionStorage.setItem(
 					`tiendly-order-${data.store.slug}`,
@@ -175,13 +184,27 @@
 				// sin sessionStorage (privado) → solo WhatsApp
 			}
 		} catch {
-			// no bloquea el envío por WhatsApp
+			saved = false;
+		}
+
+		if (!saved) {
+			orderError = 'No se pudo registrar tu pedido. Tu mensaje de WhatsApp se envió igualmente; vuelve a intentarlo si no lo recibes.';
+			sending = false;
+			try {
+				window.open(waLink(wa ?? '', msg), '_blank');
+			} catch {
+				// popup bloqueado: el enlace va en el mensaje de error
+			}
+			return;
 		}
 
 		setTimeout(() => {
+			orderPlaced = true;
 			cart.clear();
+			const qs = utmQuery(loadUtm());
+			clearUtm();
 			window.open(waLink(wa ?? '', msg), '_blank');
-			goto(`/@${data.store.slug}/gracias`);
+			goto(`/@${data.store.slug}/gracias${qs ? `?${qs}` : ''}`);
 		}, 1200);
 	}
 </script>
@@ -280,6 +303,13 @@
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
 					></textarea>
 				</div>
+
+				{#if orderError}
+					<div class="flex items-start gap-2 bg-error/10 text-error border border-error/30 rounded-btn px-4 py-3 text-sm">
+						<i class="ri-alert-line mt-0.5 flex-shrink-0"></i>
+						<span>{orderError}</span>
+					</div>
+				{/if}
 
 				<button
 					type="submit"

@@ -65,6 +65,7 @@ export interface Profile {
 
 export interface Store {
 	id: string;
+	code: string;
 	owner_id: string;
 	name: string;
 	slug: string;

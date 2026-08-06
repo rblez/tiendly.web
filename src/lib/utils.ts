@@ -26,6 +26,15 @@ export function slugify(input: string): string {
 		.slice(0, 40);
 }
 
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+export function generateStoreCode(length = 8): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(length));
+	let code = '';
+	for (let i = 0; i < length; i++) code += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+	return code;
+}
+
 export function waDigits(whatsapp: string): string {
 	return whatsapp.replace(/[^\d]/g, '');
 }
@@ -67,6 +76,33 @@ export function themeStyle(store: { theme_color: string }): string {
 
 export type ProductLike = Pick<Product, 'name' | 'description' | 'category'>;
 
+export function parsePrice(raw: string): number {
+	const s = raw.trim().replace(/[^\d.,]/g, '');
+	if (!s) return 0;
+	const lastSep = Math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
+	const isDecimal = (sep: number, sepChar: string) => s.slice(sep + 1).length <= 2 && sep >= 0 && s.indexOf(sepChar) === sep;
+	if (s.includes(',') && s.includes('.')) {
+		const sepChar = s[lastSep];
+		const dec = sepChar === ',' ? ',' : '.';
+		const int = s.slice(0, lastSep).replace(/[.,]/g, '');
+		return Number(`${int}.${s.slice(lastSep + 1)}`);
+	}
+	if (isDecimal(s.lastIndexOf(','), ',')) {
+		return Number(`${s.slice(0, s.lastIndexOf(',')).replace(/[.,]/g, '')}.${s.slice(s.lastIndexOf(',') + 1)}`);
+	}
+	if (isDecimal(s.lastIndexOf('.'), '.')) {
+		return Number(`${s.slice(0, s.lastIndexOf('.')).replace(/[.,]/g, '')}.${s.slice(s.lastIndexOf('.') + 1)}`);
+	}
+	return Number(s.replace(/[.,]/g, ''));
+}
+
+function variantId(label: string, price: number): string {
+	let h = 0;
+	const s = `${label.trim().toLowerCase()}-${price}`;
+	for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+	return `v-${h.toString(36)}`;
+}
+
 export function parseVariants(text: string): Variant[] {
 	return text
 		.split('\n')
@@ -74,10 +110,11 @@ export function parseVariants(text: string): Variant[] {
 		.filter(Boolean)
 		.map((line) => {
 			const [label, rawPrice] = line.split(/[=:]/);
+			const price = parsePrice(rawPrice ?? '');
 			return {
-				id: `v-${Math.random().toString(36).slice(2, 8)}`,
+				id: variantId(label, price),
 				label: label.trim(),
-				price: Number(rawPrice?.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
+				price,
 			};
 		});
 }
@@ -110,4 +147,56 @@ export async function ensureUniqueSlug(base: string): Promise<string> {
 		candidate = `${base}-${suffix++}`;
 	}
 	return `${base}-${Date.now() % 10000}`;
+}
+
+export type Utm = { utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null };
+
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
+
+export function getUtmFromUrl(url: URL | string): Utm {
+	const u = typeof url === 'string' ? new URL(url, 'https://tiendly.local') : url;
+	const out: Utm = {};
+	for (const key of UTM_KEYS) {
+		const v = u.searchParams.get(key)?.trim();
+		if (v) out[key] = v.slice(0, 120);
+	}
+	return out;
+}
+
+export function utmQuery(u: Utm): string {
+	const parts: string[] = [];
+	for (const key of UTM_KEYS) {
+		const v = u[key];
+		if (v) parts.push(`${key}=${encodeURIComponent(v)}`);
+	}
+	return parts.join('&');
+}
+
+export function saveUtm(u: Utm): void {
+	try {
+		if (Object.keys(u).length > 0) sessionStorage.setItem('tiendly-utm', JSON.stringify(u));
+	} catch {
+		/* sin storage */
+	}
+}
+
+export function loadUtm(): Utm {
+	try {
+		const raw = sessionStorage.getItem('tiendly-utm');
+		if (!raw) return {};
+		const parsed = JSON.parse(raw) as Utm;
+		const out: Utm = {};
+		for (const key of UTM_KEYS) if (typeof parsed[key] === 'string') out[key] = parsed[key];
+		return out;
+	} catch {
+		return {};
+	}
+}
+
+export function clearUtm(): void {
+	try {
+		sessionStorage.removeItem('tiendly-utm');
+	} catch {
+		/* sin storage */
+	}
 }

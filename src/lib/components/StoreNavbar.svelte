@@ -5,7 +5,7 @@
 	import { productImage } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
-	let { store }: { store: Store } = $props();
+	let { store, previewMode = false }: { store: Store; previewMode?: boolean } = $props();
 
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
@@ -29,7 +29,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<nav class="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-hairline">
+<nav class="z-40 bg-canvas/80 backdrop-blur-md border-b border-hairline {previewMode ? '' : 'sticky top-0'}">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16 gap-4">
 			<a href={homePath} class="flex items-center gap-2.5 text-ink no-underline shrink-0 min-w-0">

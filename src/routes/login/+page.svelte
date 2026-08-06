@@ -2,7 +2,6 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Logo from '$lib/components/Logo.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	let previewToken = $derived(new URLSearchParams($page.url.search).get('preview') ?? '');
@@ -30,18 +29,18 @@
 		});
 		if (!res.ok) return null;
 		const body = await res.json().catch(() => null);
-		return typeof body?.storeId === 'string' ? body.storeId : null;
+		return typeof body?.code === 'string' ? body.code : null;
 	}
 
 	async function afterAuth() {
 		if (previewToken) {
-			const storeId = await claimPreview();
-			if (storeId) {
-				goto(`/app/store/${storeId}?created=1`);
+			const storeCode = await claimPreview();
+			if (storeCode) {
+				goto(`/dash/store/${storeCode}?created=1`);
 				return;
 			}
 		}
-		goto('/app');
+		goto('/dash');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -51,10 +50,20 @@
 		const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
 		loading = false;
 		if (err) {
-			error = err.message;
+			error = friendlyAuthError(err.message);
 			return;
 		}
 		await afterAuth();
+	}
+
+	function friendlyAuthError(message: string): string {
+		const m = message.toLowerCase();
+		if (m.includes('invalid login credentials') || m.includes('invalid email or password')) return 'Correo o contraseña incorrectos.';
+		if (m.includes('email not confirmed')) return 'Confirma tu correo antes de entrar (revisa tu bandeja de entrada).';
+		if (m.includes('rate limit')) return 'Demasiados intentos. Espera un momento y vuelve a intentar.';
+		if (m.includes('user already registered')) return 'Ya existe una cuenta con ese correo. Inicia sesión.';
+		if (m.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+		return message;
 	}
 
 	async function handleReset(e: SubmitEvent) {
@@ -65,7 +74,7 @@
 			return;
 		}
 		const { error: err } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-			redirectTo: `${location.origin}/app/profile?tab=ajustes`,
+			redirectTo: `${location.origin}/dash/profile?tab=general`,
 		});
 		if (err) {
 			resetError = err.message;
@@ -81,9 +90,6 @@
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
 	<div class="w-full max-w-sm">
-		<div class="flex justify-center mb-8">
-			<Logo size="h-12" />
-		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Bienvenido de vuelta</h1>
 			<p class="text-sm text-muted mb-6">Entra a tu cuenta para administrar tus tiendas.</p>
@@ -147,7 +153,7 @@
 			</form>
 		</div>
 		<p class="text-center text-sm text-muted mt-6">
-			¿No tienes cuenta? <a href="/signup" class="text-ember hover:text-ember-active no-underline">Crear cuenta gratis</a>
+			¿No tienes cuenta? <a href={previewToken ? `/signup?preview=${previewToken}` : '/signup'} class="text-ember hover:text-ember-active no-underline">Crear cuenta gratis</a>
 		</p>
 	</div>
 </div>

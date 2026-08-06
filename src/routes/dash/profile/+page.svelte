@@ -225,7 +225,7 @@
 	</div>
 
 	{#if tab === 'perfil'}
-		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8 space-y-6">
+		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8 space-y-8">
 			<div class="flex items-center gap-5">
 				<div class="h-16 w-16 flex-shrink-0 rounded-full overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
 					{#if auth.profile?.avatar_url}
@@ -238,8 +238,7 @@
 				</div>
 				<div class="space-y-2">
 					<div class="flex items-center gap-2">
-						<label class="inline-flex items-center gap-2 bg-ember text-white px-4 py-2 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active cursor-pointer">
-							<i class="ri-upload-2-line"></i>
+						<label class="inline-flex items-center bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active cursor-pointer">
 							{uploading ? 'Subiendo...' : auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
 							<input type="file" accept="image/*" class="hidden" onchange={handleAvatar} />
 						</label>
@@ -261,7 +260,7 @@
 						type="text"
 						bind:value={name}
 						placeholder="Tu nombre"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 				</div>
 				<div>
@@ -271,7 +270,7 @@
 						type="tel"
 						bind:value={phone}
 						placeholder="Ej: +53 5 1234567"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 				</div>
 			</div>
@@ -282,9 +281,9 @@
 					type="email"
 					value={auth.session?.user.email ?? ''}
 					disabled
-					class="w-full px-3.5 py-2.5 bg-bone border border-hairline rounded-btn text-sm text-muted cursor-not-allowed"
+					class="w-full px-3.5 py-3 bg-bone border border-hairline rounded-btn text-sm text-muted cursor-not-allowed"
 				/>
-				<p class="text-xs text-muted-soft mt-1.5">El correo es tu identificador de cuenta. Para cambiarlo usa la pestaña Seguridad.</p>
+				<p class="text-xs text-muted-soft mt-1.5">El correo es tu identificador de cuenta. Para cambiarlo usa la pestaña General.</p>
 			</div>
 
 			<div class="bg-canvas border border-hairline rounded-card p-5">
@@ -326,18 +325,17 @@
 			</div>
 
 			{#if profileError}
-				<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5">{profileError}</p>
+				<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{profileError}</p>
 			{/if}
 			{#if profileMsg}
-				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-2.5">{profileMsg}</p>
+				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-3">{profileMsg}</p>
 			{/if}
 
 			<div class="flex justify-end">
 				<button
 					onclick={saveProfile}
-					class="inline-flex items-center gap-2 bg-ember text-white px-6 py-2.5 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					class="inline-flex items-center bg-ember text-white px-7 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
 				>
-					<i class="ri-save-3-line"></i>
 					Guardar cambios
 				</button>
 			</div>
@@ -353,7 +351,7 @@
 			</div>
 		</div>
 
-		<div class="space-y-6 mt-6">
+		<div class="space-y-8 mt-6">
 			<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-ink mb-1">Cambiar contraseña</h2>
 				<p class="text-sm text-muted mb-5">Usa al menos 6 caracteres.</p>
@@ -364,12 +362,12 @@
 						type="password"
 						bind:value={password}
 						placeholder="••••••••"
-						class="flex-1 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="flex-1 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 					<button
 						onclick={changePassword}
 						disabled={secBusy || !password}
-						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						Actualizar contraseña
 					</button>
@@ -386,12 +384,12 @@
 						type="email"
 						bind:value={newEmail}
 						placeholder="nuevo@correo.com"
-						class="flex-1 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="flex-1 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 					<button
 						onclick={changeEmail}
 						disabled={secBusy || !newEmail}
-						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						Actualizar correo
 					</button>
@@ -404,22 +402,21 @@
 				<button
 					onclick={signOutOthers}
 					disabled={secBusy}
-					class="inline-flex items-center gap-2 bg-bone border border-hairline text-body px-5 py-2.5 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-40"
+					class="inline-flex items-center bg-bone border border-hairline text-body px-6 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-40"
 				>
-					<i class="ri-device-line"></i>
 					Cerrar sesión en otros dispositivos
 				</button>
 			</div>
 
 			{#if secError}
-				<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5">{secError}</p>
+				<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{secError}</p>
 			{/if}
 			{#if secMsg}
-				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-2.5">{secMsg}</p>
+				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-3">{secMsg}</p>
 			{/if}
 		</div>
 	{:else}
-		<div class="space-y-6">
+		<div class="space-y-8">
 			<div class="bg-card border border-error/30 rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-error mb-1">Eliminar cuenta</h2>
 				<p class="text-sm text-body mb-4">
@@ -430,14 +427,13 @@
 					<span class="text-sm text-body">Entiendo que esto eliminará mi cuenta y toda mi información permanentemente.</span>
 				</label>
 				{#if privError}
-					<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 mb-4">{privError}</p>
+					<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3 mb-4">{privError}</p>
 				{/if}
 				<button
 					onclick={deleteAccount}
 					disabled={!deleteConfirm || deleting}
-					class="inline-flex items-center gap-2 bg-error text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+					class="inline-flex items-center bg-error text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				>
-					<i class="ri-delete-bin-6-line"></i>
 					{deleting ? 'Eliminando...' : 'Eliminar mi cuenta'}
 				</button>
 			</div>
