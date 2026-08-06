@@ -228,9 +228,10 @@ import QRCode from 'qrcode';
 		formCategory = categories[0] ?? 'General';
 	}
 
-	$effect(() => {
+$effect(() => {
 		if (!auth.ready || !auth.session) return;
 		const storeCode = $page.params.code;
+		if (!storeCode) return;
 		(async () => {
 			loading = true;
 			const { data: storeData } = await supabase
@@ -390,7 +391,7 @@ import QRCode from 'qrcode';
 			agotado: formAgotado,
 			bajo_pedido: formBajoPedido,
 			active: formActive,
-			variants,
+			variants: variants as unknown as import('$lib/database.types').Json,
 			images: formImages,
 			image: formImages[0] ?? null,
 		};

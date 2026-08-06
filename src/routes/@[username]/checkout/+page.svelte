@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { clearUtm, formatPrice, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
-	import type { Product, Store } from '$lib/types';
+	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
 
@@ -28,7 +28,7 @@
 				.eq('store_id', data.store.id)
 				.maybeSingle();
 			if (p) {
-				directProduct = { ...p, variants: Array.isArray(p.variants) ? p.variants : [] };
+				directProduct = { ...p, variants: (Array.isArray(p.variants) ? p.variants : []) as unknown as Variant[], images: (Array.isArray(p.images) ? p.images : []) as unknown as string[] };
 				cart.clear();
 			}
 		})();
@@ -54,7 +54,7 @@
 			const ids = items.map((i) => i.productId);
 			const { data: rows } = await supabase.from('products').select('*').in('id', ids);
 			for (const row of rows ?? []) {
-				cartProductsCache[row.id] = { ...row, variants: Array.isArray(row.variants) ? row.variants : [] };
+				cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[] };
 			}
 			cacheReady = true;
 		})();

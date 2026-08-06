@@ -4,7 +4,7 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { formatPrice, productImage } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import type { Product, Store } from '$lib/types';
+	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
 
@@ -21,7 +21,7 @@
 		const ids = items.map((i) => i.productId);
 		const { data: rows } = await supabase.from('products').select('*').in('id', ids);
 		for (const row of rows ?? []) {
-			products[row.id] = { ...row, variants: Array.isArray(row.variants) ? row.variants : [] };
+			products[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[] };
 		}
 		loaded = true;
 	});
