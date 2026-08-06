@@ -143,10 +143,27 @@
 		error = '';
 		creating = true;
 		try {
-			if (auth.session) {
-				const uniqueSlug = await ensureUniqueSlug(slug);
-				slug = uniqueSlug;
+			const uniqueSlug = await ensureUniqueSlug(slug);
+			slug = uniqueSlug;
 
+			const buildProducts = (storeId: string) =>
+				products
+					.filter((p) => p.name.trim() && p.price.trim())
+					.map((p, i) => ({
+						store_id: storeId,
+						name: p.name.trim(),
+						description: p.description.trim() || null,
+						price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
+						currency: p.currency,
+						category: p.category.trim() || 'General',
+						agotado: p.agotado,
+						variants: parseVariants(p.variants) as unknown as import('$lib/database.types').Database['public']['Tables']['products']['Row']['variants'],
+						images: p.images.filter((img) => !img.startsWith('data:')),
+						image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
+						position: i,
+					}));
+
+			if (auth.session) {
 				const { data: store, error: storeError } = await supabase
 					.from('stores')
 					.insert({
@@ -163,22 +180,7 @@
 
 				if (storeError) throw storeError;
 
-				const validProducts = products
-					.filter((p) => p.name.trim() && p.price.trim())
-					.map((p, i) => ({
-						store_id: store.id,
-						name: p.name.trim(),
-						description: p.description.trim() || null,
-						price: Number(p.price.replace(/[^\d.,]/g, '').replace(',', '')) || 0,
-						currency: p.currency,
-						category: p.category.trim() || 'General',
-						agotado: p.agotado,
-						variants: parseVariants(p.variants) as unknown as import('$lib/database.types').Database['public']['Tables']['products']['Row']['variants'],
-						images: p.images.filter((img) => !img.startsWith('data:')),
-						image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
-						position: i,
-					}));
-
+				const validProducts = buildProducts(store.id);
 				if (validProducts.length > 0) {
 					const { error: productsError } = await supabase.from('products').insert(validProducts);
 					if (productsError) throw productsError;
@@ -187,15 +189,31 @@
 				createdStoreId = store.id;
 				goto(`/app/store/${store.id}?created=1`);
 			} else {
-				const params = new URLSearchParams({
-					from: 'wizard',
+				const token = crypto.randomUUID();
+				const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+				const previewId = crypto.randomUUID();
+				const { error: storeError } = await supabase.from('stores').insert({
+					id: previewId,
+					owner_id: null,
 					name: name.trim(),
-					slug,
-					description: description.trim(),
-					whatsapp: whatsapp.trim(),
-					theme: themeColor,
+					slug: uniqueSlug,
+					logo: logoUrl?.startsWith('data:') ? null : (logoUrl || null),
+					whatsapp: whatsapp.trim() || null,
+					theme_color: themeColor,
+					description: description.trim() || null,
+					preview_token: token,
+					preview_expires_at: expiresAt,
 				});
-				goto(`/register?${params.toString()}`);
+
+				if (storeError) throw storeError;
+
+				const validProducts = buildProducts(previewId);
+				if (validProducts.length > 0) {
+					const { error: productsError } = await supabase.from('products').insert(validProducts);
+					if (productsError) throw productsError;
+				}
+
+				goto(`/@${uniqueSlug}?preview=${token}`);
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Ocurrió un error al crear la tienda.';
@@ -251,7 +269,7 @@
 	{#if !auth.session}
 		<div class="flex items-center gap-2.5 bg-ember/10 border border-ember/20 rounded-card px-4 py-3 mb-6 text-sm text-body">
 			<i class="ri-save-3-line text-ember"></i>
-			<span>Al terminar te pediremos crear tu cuenta gratis para publicarla.</span>
+			<span>Verás tu tienda en vista previa por 10 minutos. Crea tu cuenta gratis para activarla.</span>
 		</div>
 	{/if}
 
@@ -514,7 +532,7 @@
 				? 'Creando tu tienda...'
 				: auth.session
 					? 'Crear mi tienda'
-					: 'Crear cuenta y publicar'}
+					: 'Crear mi tienda'}
 			{#if !creating}
 				<i class="ri-check-double-line"></i>
 			{/if}

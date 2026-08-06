@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import Logo from '$lib/components/Logo.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
+
+	let previewToken = $derived(new URLSearchParams($page.url.search).get('preview') ?? '');
 
 	let email = $state('');
 	let password = $state('');
@@ -16,7 +19,28 @@
 
 	$effect(() => { auth.init(); });
 
-	async function afterAuth(_userId: string) {
+	async function claimPreview(): Promise<string | null> {
+		const { data } = await supabase.auth.getSession();
+		const accessToken = data.session?.access_token;
+		if (!accessToken) return null;
+		const res = await fetch('/api/claim-preview', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+			body: JSON.stringify({ token: previewToken }),
+		});
+		if (!res.ok) return null;
+		const body = await res.json().catch(() => null);
+		return typeof body?.storeId === 'string' ? body.storeId : null;
+	}
+
+	async function afterAuth() {
+		if (previewToken) {
+			const storeId = await claimPreview();
+			if (storeId) {
+				goto(`/app/store/${storeId}?created=1`);
+				return;
+			}
+		}
 		goto('/app');
 	}
 
@@ -30,7 +54,7 @@
 			error = err.message;
 			return;
 		}
-		await afterAuth(data.user!.id);
+		await afterAuth();
 	}
 
 	async function handleReset(e: SubmitEvent) {

@@ -3,49 +3,67 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Logo from '$lib/components/Logo.svelte';
-	import { ensureUniqueSlug } from '$lib/utils';
 
 	let params = $derived(new URLSearchParams($page.url.search));
-	let fromWizard = $derived(params.get('from') === 'wizard');
+	let previewToken = $derived(params.get('preview') ?? '');
+	let storeName = $derived(params.get('name') ?? '');
 	let subtitle = $derived(
-		fromWizard
-			? `Tu tienda «${params.get('name') || 'sin nombre'}» se publicará al crear tu cuenta.`
+		previewToken
+			? `Tu tienda «${storeName || 'sin nombre'}» te espera. Crea tu cuenta para activarla.`
 			: 'Gratis, sin tarjeta. Tu tienda lista en 5 minutos.'
 	);
-	let name = $state(params.get('name') ?? '');
+	let name = $state(storeName);
 	let email = $state('');
 	let password = $state('');
 	let showPassword = $state(false);
 	let error = $state('');
 	let info = $state('');
 	let loading = $state(false);
+	let claiming = $state(false);
 
-	async function afterAuth(userId: string) {
-		if (fromWizard) {
-			try {
-				const uniqueSlug = await ensureUniqueSlug(params.get('slug') || 'tienda');
-				const { data: store, error: storeError } = await supabase
-					.from('stores')
-					.insert({
-						owner_id: userId,
-						name: params.get('name')?.trim() || 'Mi tienda',
-						slug: uniqueSlug,
-						whatsapp: params.get('whatsapp')?.trim() || null,
-						theme_color: params.get('theme') || '#e11d48',
-						description: params.get('description')?.trim() || null,
-					})
-					.select('id')
-					.single();
+	async function claimPreview(): Promise<string | null> {
+		const { data } = await supabase.auth.getSession();
+		const accessToken = data.session?.access_token;
+		if (!accessToken) return null;
+		const res = await fetch('/api/claim-preview', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+			body: JSON.stringify({ token: previewToken }),
+		});
+		if (!res.ok) return null;
+		const body = await res.json().catch(() => null);
+		return typeof body?.storeId === 'string' ? body.storeId : null;
+	}
 
-				if (!storeError && store) {
-					goto(`/app/store/${store.id}?created=1`);
-					return;
-				}
-			} catch (e) {
-				console.error('No se pudo crear la tienda', e);
+	async function afterAuth() {
+		if (previewToken) {
+			claiming = true;
+			const storeId = await claimPreview();
+			claiming = false;
+			if (storeId) {
+				goto(`/app/store/${storeId}?created=1`);
+				return;
 			}
 		}
 		goto('/app');
+	}
+
+	$effect(() => {
+		if (previewToken && claiming === false) {
+			// vuelta del flujo OAuth: la sesión ya existe, reclamar directo
+			supabase.auth.getSession().then(({ data }) => {
+				if (data.session) afterAuth();
+			});
+		}
+	});
+
+	async function signInWithGoogle() {
+		await supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				redirectTo: `${location.origin}/signup?preview=${previewToken}&name=${encodeURIComponent(storeName)}`,
+			},
+		});
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -64,9 +82,9 @@
 			return;
 		}
 		if (data.session) {
-			await afterAuth(data.session.user.id);
+			await afterAuth();
 		} else {
-			info = 'Revisa tu correo para confirmar la cuenta, luego inicia sesión.';
+			info = 'Revisa tu correo para confirmar la cuenta, luego inicia sesión para activar tu tienda.';
 		}
 	}
 </script>
@@ -83,6 +101,21 @@
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
 			<p class="text-sm text-muted mb-6">{subtitle}</p>
+
+			<button
+				type="button"
+				onclick={signInWithGoogle}
+				disabled={claiming}
+				class="w-full inline-flex items-center justify-center gap-2.5 bg-card border border-hairline text-ink px-5 py-2.5 rounded-btn text-sm font-semibold hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50 mb-3"
+			>
+				<i class="ri-google-line text-base"></i>
+				Continuar con Google
+			</button>
+			<div class="flex items-center gap-3 mb-4">
+				<div class="flex-1 h-px bg-hairline"></div>
+				<span class="text-[11px] text-muted-soft">o con correo</span>
+				<div class="flex-1 h-px bg-hairline"></div>
+			</div>
 
 			<form onsubmit={handleSubmit} class="space-y-4">
 				<div>
@@ -151,7 +184,7 @@
 			</form>
 		</div>
 		<p class="text-center text-sm text-muted mt-6">
-			¿Ya tienes cuenta? <a href="/login" class="text-ember hover:text-ember-active no-underline">Iniciar sesión</a>
+			¿Ya tienes cuenta? <a href={previewToken ? `/login?preview=${previewToken}` : '/login'} class="text-ember hover:text-ember-active no-underline">Iniciar sesión</a>
 		</p>
 	</div>
 </div>

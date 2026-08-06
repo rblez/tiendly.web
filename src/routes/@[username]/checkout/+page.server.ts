@@ -9,6 +9,7 @@ export const load = async ({ params }) => {
 		.maybeSingle();
 
 	if (!store) throw error(404, 'Tienda no encontrada');
+	if (!store.owner_id) throw error(404, 'Tienda no encontrada');
 
 	return { store };
 };

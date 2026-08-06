@@ -7,9 +7,37 @@
 	import { SITE_URL, themeStyle, storeUrl as buildStoreUrl } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
-	let { children, data }: { children: import('svelte').Snippet; data: { store: Store } } = $props();
+	let { children, data }: {
+		children: import('svelte').Snippet;
+		data: { store: Store; preview: { token: string; expiresAt: string | null } | null };
+	} = $props();
 
 	let store = $state(data.store);
+	let previewToken = $state(data.preview?.token ?? null);
+	let secondsLeft = $state(0);
+	let previewExpired = $state(false);
+
+	$effect(() => {
+		const expiresAt = data.preview?.expiresAt;
+		if (!expiresAt) return;
+		const update = () => {
+			const left = new Date(expiresAt).getTime() - Date.now();
+			secondsLeft = Math.max(0, Math.round(left / 1000));
+			if (left <= 0) previewExpired = true;
+		};
+		update();
+		const t = setInterval(update, 1000);
+		return () => clearInterval(t);
+	});
+
+	const previewTime = $derived(`${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`);
+
+	async function signInWithGoogle() {
+		await supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: { redirectTo: `${location.origin}/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}` },
+		});
+	}
 
 	$effect(() => {
 		try {
@@ -121,9 +149,42 @@
 </svelte:head>
 
 <div style={themeStyle(store)}>
+	{#if previewToken}
+		<div class="sticky top-0 z-50 px-4 py-2 text-white text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5" style={`background:${store.theme_color}`}>
+			{#if previewExpired}
+				<span>La vista previa expiró y tu tienda se eliminó.</span>
+				<a href="/wizard" class="underline underline-offset-2 font-bold no-underline">Crear tienda de nuevo</a>
+			{:else}
+				<span class="flex items-center gap-1.5">
+					<i class="ri-eye-line"></i>
+					Vista previa — se elimina en
+					<span class="font-bold tabular-nums">{previewTime}</span>
+				</span>
+				<span class="hidden sm:inline text-white/80">Actívalla creando tu cuenta:</span>
+				<div class="flex items-center gap-1.5">
+					<button
+						onclick={signInWithGoogle}
+						class="inline-flex items-center bg-white text-ink px-3 py-1 rounded-full text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer"
+					>
+						<i class="ri-google-line mr-1"></i>
+						Google
+					</button>
+					<a
+						href={`/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}`}
+						class="inline-flex items-center bg-white text-ink px-3 py-1 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline"
+					>
+						Correo
+					</a>
+				</div>
+			{/if}
+		</div>
+	{/if}
 	<StoreNavbar store={store} />
 	<main class="min-h-[calc(100vh-4rem)]">
 		{@render children()}
 	</main>
 	<Footer {store} />
+	{#if !previewToken}
+		<CreateStoreToast />
+	{/if}
 </div>

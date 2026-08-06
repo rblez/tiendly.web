@@ -11,40 +11,40 @@ export type Database = {
     Tables: {
       orders: {
         Row: {
-          id: string
-          store_id: string
+          created_at: string
+          currency: string
           customer_name: string
           customer_phone: string
-          notes: string | null
+          id: string
           items: Json
-          total: number
-          currency: string
+          notes: string | null
           status: string
-          created_at: string
+          store_id: string
+          total: number
         }
         Insert: {
-          id?: string
-          store_id: string
+          created_at?: string
+          currency?: string
           customer_name: string
           customer_phone: string
-          notes?: string | null
+          id?: string
           items?: Json
-          total?: number
-          currency?: string
+          notes?: string | null
           status?: string
-          created_at?: string
+          store_id: string
+          total?: number
         }
         Update: {
-          id?: string
-          store_id?: string
+          created_at?: string
+          currency?: string
           customer_name?: string
           customer_phone?: string
-          notes?: string | null
+          id?: string
           items?: Json
-          total?: number
-          currency?: string
+          notes?: string | null
           status?: string
-          created_at?: string
+          store_id?: string
+          total?: number
         }
         Relationships: [
           {
@@ -59,8 +59,8 @@ export type Database = {
       products: {
         Row: {
           active: boolean
-          bajo_pedido: boolean
           agotado: boolean
+          bajo_pedido: boolean
           category: string
           created_at: string
           currency: string
@@ -76,8 +76,8 @@ export type Database = {
         }
         Insert: {
           active?: boolean
-          bajo_pedido?: boolean
           agotado?: boolean
+          bajo_pedido?: boolean
           category?: string
           created_at?: string
           currency?: string
@@ -93,8 +93,8 @@ export type Database = {
         }
         Update: {
           active?: boolean
-          bajo_pedido?: boolean
           agotado?: boolean
+          bajo_pedido?: boolean
           category?: string
           created_at?: string
           currency?: string
@@ -145,71 +145,6 @@ export type Database = {
         }
         Relationships: []
       }
-      stores: {
-        Row: {
-          active: boolean
-          banner: string | null
-          created_at: string
-          description: string | null
-          extra_links: Json
-          id: string
-          location: string | null
-          logo: string | null
-          name: string
-          owner_id: string
-          schedule: string | null
-          slug: string
-          social: Json
-          theme_color: string
-          visits: number
-          whatsapp: string | null
-        }
-        Insert: {
-          active?: boolean
-          banner?: string | null
-          created_at?: string
-          description?: string | null
-          extra_links?: Json
-          id?: string
-          location?: string | null
-          logo?: string | null
-          name: string
-          owner_id: string
-          schedule?: string | null
-          slug: string
-          social?: Json
-          theme_color?: string
-          visits?: number
-          whatsapp?: string | null
-        }
-        Update: {
-          active?: boolean
-          banner?: string | null
-          created_at?: string
-          description?: string | null
-          extra_links?: Json
-          id?: string
-          location?: string | null
-          logo?: string | null
-          name?: string
-          owner_id?: string
-          schedule?: string | null
-          slug?: string
-          social?: Json
-          theme_color?: string
-          visits?: number
-          whatsapp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "stores_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       store_visits: {
         Row: {
           id: string
@@ -235,6 +170,77 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          active: boolean
+          banner: string | null
+          created_at: string
+          description: string | null
+          extra_links: Json
+          id: string
+          location: string | null
+          logo: string | null
+          name: string
+          owner_id: string | null
+          preview_expires_at: string | null
+          preview_token: string | null
+          schedule: string | null
+          slug: string
+          social: Json
+          theme_color: string
+          visits: number
+          whatsapp: string | null
+        }
+        Insert: {
+          active?: boolean
+          banner?: string | null
+          created_at?: string
+          description?: string | null
+          extra_links?: Json
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name: string
+          owner_id?: string | null
+          preview_expires_at?: string | null
+          preview_token?: string | null
+          schedule?: string | null
+          slug: string
+          social?: Json
+          theme_color?: string
+          visits?: number
+          whatsapp?: string | null
+        }
+        Update: {
+          active?: boolean
+          banner?: string | null
+          created_at?: string
+          description?: string | null
+          extra_links?: Json
+          id?: string
+          location?: string | null
+          logo?: string | null
+          name?: string
+          owner_id?: string | null
+          preview_expires_at?: string | null
+          preview_token?: string | null
+          schedule?: string | null
+          slug?: string
+          social?: Json
+          theme_color?: string
+          visits?: number
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
