@@ -172,6 +172,21 @@ export function utmQuery(u: Utm): string {
 	return parts.join('&');
 }
 
+export function appendUtm(url: string, u?: Utm | null): string {
+	if (!url) return url;
+	const utm = u ?? loadUtm();
+	if (Object.keys(utm).length === 0) return url;
+	try {
+		const parsed = new URL(url);
+		if (parsed.searchParams.has('utm_source')) return url;
+		const qs = utmQuery(utm);
+		if (!qs) return url;
+		return `${url}${url.includes('?') ? '&' : '?'}${qs}`;
+	} catch {
+		return url;
+	}
+}
+
 export function saveUtm(u: Utm): void {
 	try {
 		if (Object.keys(u).length > 0) sessionStorage.setItem('tiendly-utm', JSON.stringify(u));

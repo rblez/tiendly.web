@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appUrl } from '$lib/utils';
+	import { appUrl, appendUtm } from '$lib/utils';
 	import { socialIcon, storeSocials } from '$lib/socials';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
@@ -74,21 +74,21 @@
 						{#each extraLinks as link}
 							<li>
 								<a
-									href={link.url}
+									href={appendUtm(link.url)}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="text-sm text-body hover:text-ember transition-colors no-underline"
 								>
-									{link.title}
-								</a>
-							</li>
+{link.title}
+							</a>
+						</li>
 						{/each}
 					</ul>
 					{#if socials.length > 0}
 						<div class="flex items-center gap-2.5 mt-4">
 							{#each socials as s}
 								<a
-									href={s.url}
+									href={appendUtm(s.url)}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="h-9 w-9 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"

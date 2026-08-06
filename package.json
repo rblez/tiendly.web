@@ -27,5 +27,8 @@
 		"@supabase/supabase-js": "^2.49.0",
 		"qrcode": "^1.5.4",
 		"sharp": "^0.35.3"
+	},
+	"overrides": {
+		"cookie": "^0.7.2"
 	}
 }

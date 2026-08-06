@@ -5,7 +5,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import CreateStoreToast from '$lib/components/CreateStoreToast.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
+	import { SITE_URL, getUtmFromUrl, loadUtm, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { children, data }: {
@@ -34,9 +34,12 @@
 	const previewTime = $derived(`${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`);
 
 	async function signInWithGoogle() {
+		const qs = utmQuery(loadUtm());
 		await supabase.auth.signInWithOAuth({
 			provider: 'google',
-			options: { redirectTo: `${location.origin}/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}` },
+			options: {
+				redirectTo: `${location.origin}/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}${qs ? `&${qs}` : ''}`,
+			},
 		});
 	}
 

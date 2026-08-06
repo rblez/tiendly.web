@@ -120,10 +120,18 @@
 			`👤 ${name}`,
 			`📱 ${phone}`,
 			...(notes.trim() ? [`📝 ${notes.trim()}`, ``] : [``]),
-			`¿Está disponible?`,
+			...(utmLine() ? [utmLine(), ``] : [`¿Está disponible?`]),
 		];
 
 		return lines.join('\n');
+	}
+
+	function utmLine(): string {
+		const u = loadUtm();
+		const src = u.utm_source ?? '';
+		if (!src) return '';
+		const via = [u.utm_medium, u.utm_campaign].filter(Boolean).join(' · ');
+		return `📣 Llegó desde ${src}${via ? ` (${via})` : ''}`;
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
