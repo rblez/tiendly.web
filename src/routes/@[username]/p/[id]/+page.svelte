@@ -6,11 +6,15 @@
 	import { supabase } from '$lib/supabase/client';
 	import { formatPrice, productImage, productImages, storeUrl, waLink, SITE_URL } from '$lib/utils';
 	import { track } from '$lib/analytics';
-	import type { Product, Store } from '$lib/types';
+	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
 
 	let product = $state(data.product);
+
+	function firstAvailable(): Variant | null {
+		return product.variants.find((v) => !v.agotado) ?? product.variants[0] ?? null;
+	}
 
 	onMount(() => {
 		track('view_item', {
@@ -37,7 +41,7 @@
 		};
 	});
 
-	let selectedVariant = $state(product.variants[0] ?? null);
+	let selectedVariant = $state(firstAvailable());
 	let imgError = $state(false);
 	let activeIndex = $state(0);
 	let added = $state(false);
@@ -175,26 +179,41 @@
 			{/if}
 
 			{#if product.variants.length > 0}
-				<div>
-					<p class="text-xs sm:text-sm text-muted mb-2">Elige una opción:</p>
-					<div class="flex flex-wrap gap-2">
-						{#each product.variants as variant}
-							<button
-								onclick={() => selectedVariant = variant}
-								disabled={variant.agotado}
-								class="px-4 py-2 text-sm font-medium rounded-full border transition-all duration-200
-									{variant.agotado
-										? 'border-hairline text-muted-soft cursor-not-allowed line-through'
-										: selectedVariant?.id === variant.id
-											? 'bg-ember text-white border-ember shadow-lg shadow-ember/20 cursor-pointer'
-											: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ember cursor-pointer'}"
-							>
-								{variant.label}
-							</button>
-						{/each}
-					</div>
+			<div>
+				<div class="flex items-center justify-between gap-2 mb-2">
+					<p class="text-xs sm:text-sm text-muted">Elige una opción:</p>
+					{#if selectedVariant}
+						<p class="text-xs font-medium text-ember">Seleccionado: {selectedVariant.label}</p>
+					{/if}
 				</div>
-			{/if}
+				<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+					{#each product.variants as variant}
+						<button
+							role="radio"
+							onclick={() => { selectedVariant = variant; }}
+							disabled={variant.agotado}
+							class="relative flex items-center justify-between gap-2 px-3.5 py-3 text-sm font-medium rounded-card border transition-all duration-200 text-left
+								{variant.agotado
+									? 'border-hairline bg-canvas/50 text-muted-soft cursor-not-allowed'
+									: selectedVariant?.id === variant.id
+										? 'border-ember/70 bg-ember/10 text-ink shadow-sm shadow-ember/10 cursor-pointer'
+										: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
+						>
+							<span class="min-w-0">
+								<span class="block truncate {variant.agotado ? 'line-through' : ''}">{variant.label}</span>
+								<span class="block mt-0.5 text-xs tabular-nums font-semibold
+									{variant.agotado ? 'text-muted-soft' : selectedVariant?.id === variant.id ? 'text-ember' : 'text-muted'}">
+									{variant.agotado ? 'Agotada' : formatPrice(variant.price, product.currency)}
+								</span>
+							</span>
+							{#if selectedVariant?.id === variant.id}
+								<i class="ri-check-line text-base flex-shrink-0 text-ember"></i>
+							{/if}
+						</button>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 			{#if isAgotado}
 				<div class="bg-bone rounded-btn p-3 sm:p-4 text-center">
