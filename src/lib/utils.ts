@@ -109,21 +109,18 @@ export function parseVariants(text: string): Variant[] {
 		.map((line) => line.trim())
 		.filter(Boolean)
 		.map((line) => {
-			const agotado = line.endsWith('*');
-			const clean = agotado ? line.slice(0, -1).trim() : line;
-			const [label, rawPrice] = clean.split(/[=:]/);
+			const [label, rawPrice] = line.split(/[=:]/);
 			const price = parsePrice(rawPrice ?? '');
 			return {
 				id: variantId(label, price),
 				label: label.trim(),
 				price,
-				...{ agotado },
 			};
 		});
 }
 
 export function variantsToText(variants: Variant[]): string {
-	return variants.map((v) => `${v.label}=${v.price}${v.agotado ? '*' : ''}`).join('\n');
+	return variants.map((v) => `${v.label}=${v.price}`).join('\n');
 }
 
 export function fileToDataUrl(file: File): Promise<string> {

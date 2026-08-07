@@ -8,9 +8,8 @@ import { supabase } from '$lib/supabase/client';
 	import { formatPrice, parsePrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
-	import { PLAN_MAP } from '$lib/plans';
-	import QRCode from 'qrcode';
-	import { slide } from 'svelte/transition';
+import { PLAN_MAP } from '$lib/plans';
+import QRCode from 'qrcode';
 
 	type Tab = 'productos' | 'pedidos' | 'general';
 	const TAB_KEYS: Tab[] = ['productos', 'pedidos', 'general'];
@@ -111,34 +110,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formBajoPedido = $state(false);
 	let formActive = $state(true);
 	let formVariants = $state('');
-	let variantRows = $state<Variant[]>([]);
-
-	function syncVariantsToText() {
-		formVariants = variantsToText(variantRows);
-	}
-
-	function addVariantRow() {
-		variantRows = [
-			...variantRows,
-			{
-				id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now()}`,
-				label: `Opción ${variantRows.length + 1}`,
-				price: formPrice ? parsePrice(formPrice) : 0,
-				agotado: false,
-			},
-		];
-		syncVariantsToText();
-	}
-
-	function removeVariantRow(id: string) {
-		variantRows = variantRows.filter((v) => v.id !== id);
-		syncVariantsToText();
-	}
-
-	function updateVariantRow(id: string, patch: Partial<Pick<Variant, 'label' | 'price' | 'agotado'>>) {
-		variantRows = variantRows.map((v) => (v.id === id ? { ...v, ...patch } : v));
-		syncVariantsToText();
-	}
 	let formImages = $state<string[]>([]);
 	let formSaving = $state(false);
 	let productError = $state('');
@@ -364,7 +335,6 @@ $effect(() => {
 		formBajoPedido = false;
 		formActive = true;
 		formVariants = '';
-		variantRows = [];
 		formImages = [];
 		productError = atLimit
 			? `Límite del plan ${plan.name}: máximo ${productLimit} productos. Mejora tu plan para agregar más.`
@@ -385,7 +355,6 @@ $effect(() => {
 		formBajoPedido = p.bajo_pedido ?? false;
 		formActive = p.active;
 		formVariants = variantsToText(p.variants);
-		variantRows = p.variants.map((v) => ({ ...v }));
 		formImages = Array.isArray(p.images) ? p.images : [];
 		productError = '';
 	}
@@ -1832,65 +1801,16 @@ async function duplicateProduct(p: Product) {
 							{/if}
 						</div>
 						<div>
-							<label id="p-variants" class="block text-sm font-medium text-body mb-1.5">
-								Variantes <span class="text-muted-soft">(opcional)</span>
+							<label for="p-variants" class="block text-sm font-medium text-body mb-1.5">
+								Variantes <span class="text-muted-soft">(opcional, una por línea: etiqueta=precio)</span>
 							</label>
-							{#if variantRows.length > 0}
-								<div class="space-y-2 mb-3">
-									{#each variantRows as row, i}
-										<div class="flex items-center gap-2 rounded-btn border border-hairline bg-canvas p-2" transition:slide={{ duration: 150 }}>
-											<span class="text-xs text-muted-soft font-semibold w-5 text-center flex-shrink-0">{i + 1}</span>
-											<input
-												type="text"
-												value={row.label}
-												placeholder="Etiqueta"
-												oninput={(e) => updateVariantRow(row.id, { label: e.currentTarget.value })}
-												class="flex-1 min-w-0 px-3 py-2 bg-card border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-											/>
-											<div class="relative flex-shrink-0">
-												<span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-soft">por</span>
-												<input
-													type="number"
-													step="any"
-													min="0"
-													value={row.price}
-													oninput={(e) => updateVariantRow(row.id, { price: Math.max(0, Number(e.currentTarget.value) || 0) })}
-													class="w-32 px-8 pl-12 py-2 bg-card border border-hairline rounded-btn text-sm text-ink tabular-nums focus:outline-none focus:border-ember transition-colors"
-												/>
-											</div>
-											<label class="flex items-center gap-1.5 cursor-pointer select-none flex-shrink-0" title="Marcar como agotada">
-												<input
-													type="checkbox"
-													checked={row.agotado}
-													onchange={(e) => updateVariantRow(row.id, { agotado: e.currentTarget.checked })}
-													class="h-4 w-4 accent-ember"
-												/>
-												<span class="text-xs text-muted">Agotada</span>
-											</label>
-											<button
-												type="button"
-												onclick={() => removeVariantRow(row.id)}
-												class="h-8 w-8 flex items-center justify-center rounded-full text-muted-soft hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex-shrink-0 cursor-pointer"
-												aria-label={`Eliminar ${row.label}`}
-											>
-												<i class="ri-delete-bin-line"></i>
-											</button>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<p class="text-xs text-muted-soft mb-3 bg-bone border border-hairline rounded-btn px-3 py-3">
-									Sin variantes. El producto se vende a su precio único. Agrega variables como tamaño, color o cantidad.
-								</p>
-							{/if}
-							<button
-								type="button"
-								onclick={addVariantRow}
-								class="inline-flex items-center gap-1.5 text-sm font-medium text-ember hover:text-ember-active transition-colors cursor-pointer no-underline"
-							>
-								<i class="ri-add-line"></i>
-								Agregar variante
-							</button>
+							<textarea
+								id="p-variants"
+								bind:value={formVariants}
+								rows="3"
+								placeholder="1 unidad=500&#10;2 unidades=900"
+								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+							></textarea>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-body mb-1.5">Fotos <span class="text-muted-soft">({formImages.length})</span></label>
