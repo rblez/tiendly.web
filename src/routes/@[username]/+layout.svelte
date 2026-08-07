@@ -74,6 +74,7 @@
 	});
 
 	const storeUrl = $derived(buildStoreUrl(store.slug));
+	const ogImage = $derived(`${SITE_URL}/api/og/${store.slug}`);
 	const breadcrumbLd = $derived(
 		JSON.stringify({
 			'@context': 'https://schema.org',
@@ -166,15 +167,13 @@
 	<link rel="canonical" href={storeUrl} />
 	<meta property="og:site_name" content="Tiendly" />
 	<meta property="og:locale" content="es_ES" />
-	{#if logoUrl}
-		<meta property="og:image" content={logoUrl} />
-	{/if}
-	<meta name="twitter:card" content="summary" />
+	<meta property="og:image" content={ogImage} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={`${store.name} | Tiendly`} />
 	<meta name="twitter:description" content={store.description ?? `Compra en ${store.name} con Tiendly.`} />
-	{#if logoUrl}
-		<meta name="twitter:image" content={logoUrl} />
-	{/if}
+	<meta name="twitter:image" content={ogImage} />
 	<script type="application/ld+json">{jsonLd}</script>
 	<script type="application/ld+json">{breadcrumbLd}</script>
 </svelte:head>
