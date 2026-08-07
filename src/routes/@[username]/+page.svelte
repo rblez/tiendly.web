@@ -2,14 +2,12 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import ProductCard from '$lib/components/ProductCard.svelte';
-	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters, type SortOrder } from '$lib/stores/filters.svelte';
 	import type { Product, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
 
-	let loaded = $state(false);
 	let store = $state(data.store);
 	let products = $state<Product[]>(data.products);
 
@@ -71,11 +69,6 @@
 			images: Array.isArray(p.images) ? p.images : [],
 		})) ?? [];
 	}
-
-	$effect(() => {
-		const t = setTimeout(() => (loaded = true), 400);
-		return () => clearTimeout(t);
-	});
 
 	let categories = $derived(
 		Array.from(new Set(products.map((p) => p.category))).sort()
@@ -163,9 +156,7 @@
 		</div>
 	{/if}
 
-	{#if !loaded}
-		<SkeletonCard count={6} />
-	{:else if filtered.length === 0}
+	{#if filtered.length === 0}
 		<div class="text-center py-20">
 			<i class="ri-search-line text-5xl text-muted-soft mb-4 block"></i>
 			<p class="text-muted text-lg">No se encontraron productos</p>

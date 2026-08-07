@@ -1581,25 +1581,25 @@ async function duplicateProduct(p: Product) {
 							Vista previa
 						</h2>
 						<div class="rounded-card overflow-hidden border border-hairline">
-							<div class="relative h-24" style={`background: linear-gradient(135deg, ${settings.theme_color}, ${settings.theme_color}b3)`}>
-								<div class="absolute inset-0 flex items-end p-3">
-									<div class="flex items-center gap-2.5 bg-canvas/90 backdrop-blur-sm rounded-xl px-3 py-2 pr-4">
+							<div class="bg-canvas border-b border-hairline p-5 sm:p-6">
+								<div class="flex items-center justify-between gap-3 mb-4">
+									<div class="flex items-center gap-2.5">
 										{#if productImage({ image: store.logo })}
-											<img src={productImage({ image: store.logo })!} alt="" class="h-8 w-8 rounded-lg object-cover" />
+											<img src={productImage({ image: store.logo })!} alt="" class="h-9 w-9 rounded-lg object-cover" />
 										{:else}
-											<span class="h-8 w-8 flex items-center justify-center rounded-lg text-white font-black" style={`background:${settings.theme_color}`}>
+											<span class="h-9 w-9 flex items-center justify-center rounded-lg text-sm text-white font-black" style={`background:${settings.theme_color}`}>
 												{(settings.name || 'T').charAt(0).toUpperCase()}
 											</span>
 										{/if}
-										<div class="min-w-0">
-											<p class="text-xs font-bold text-ink leading-tight truncate">{settings.name || 'Mi tienda'}</p>
-											<p class="text-[10px] text-muted-soft leading-tight truncate">tiendly.lat/@{settings.slug || 'tutienda'}</p>
-										</div>
+										<span class="text-[10px] font-semibold text-muted-soft uppercase tracking-wider">Catálogo</span>
 									</div>
+									<span class="text-[10px] font-medium text-muted-soft">{products.length} productos</span>
 								</div>
+								<p class="text-xl sm:text-2xl font-bold text-ink leading-tight">{settings.name || 'Mi tienda'}</p>
+								<p class="text-xs text-muted-soft mt-1">tiendly.lat/@{settings.slug || 'tutienda'}</p>
 							</div>
 							<div class="p-4 flex items-center justify-between">
-								<p class="text-xs text-muted">Así se ve tu hero</p>
+								<p class="text-xs text-muted">Así se ve el inicio de tu tienda</p>
 								{#if store}
 									<a
 										href={storeUrl(store.slug)}
