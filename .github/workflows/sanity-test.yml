@@ -2,7 +2,7 @@ name: sanity-test
 
 on:
   push:
-    branches: [ci-test]
+    branches: [main]
 
 jobs:
   a:
