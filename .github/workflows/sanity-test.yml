@@ -1,9 +1,0 @@
-name: sanity-test
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  a:
-    uses: ./.github/workflows/sanity-callable.yml
