@@ -441,9 +441,10 @@ $effect(() => {
 		if (orders.length === 0) return;
 		const esc = (v: string | null | undefined) => `"${(v ?? '').replace(/"/g, '""')}"`;
 		const rows = [
-			['Fecha', 'Cliente', 'Teléfono', 'Estado', 'Productos', 'Total', 'Moneda', 'Notas'],
+			['Fecha', 'Código', 'Cliente', 'Teléfono', 'Estado', 'Productos', 'Total', 'Moneda', 'Notas'],
 			...orders.map((o) => [
 				new Date(o.created_at).toLocaleString('es-CU'),
+				o.code ?? '',
 				o.customer_name,
 				o.customer_phone,
 				o.status,
@@ -576,7 +577,8 @@ $effect(() => {
 				return (
 					!q ||
 					o.customer_name.toLowerCase().includes(q) ||
-					o.customer_phone.toLowerCase().includes(q)
+					o.customer_phone.toLowerCase().includes(q) ||
+					(o.code ?? '').toLowerCase().includes(q)
 				);
 			})
 			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
@@ -1291,7 +1293,13 @@ async function duplicateProduct(p: Product) {
 									<div class="min-w-0">
 										<h3 class="font-semibold text-ink text-sm truncate">{order.customer_name}</h3>
 										<p class="text-sm text-muted truncate">{order.customer_phone}</p>
-										<p class="text-xs text-muted-soft mt-0.5">{formatOrderDate(order.created_at)}</p>
+										<p class="text-xs text-muted-soft mt-0.5">
+											{#if order.code}
+												<span class="font-mono font-semibold">Nº {order.code}</span>
+												<span class="mx-1.5">·</span>
+											{/if}
+											{formatOrderDate(order.created_at)}
+										</p>
 									</div>
 								</div>
 								<div class="flex flex-col items-end gap-1.5 flex-shrink-0">
@@ -1327,7 +1335,7 @@ async function duplicateProduct(p: Product) {
 
 							<div class="flex flex-wrap items-center gap-2.5">
 								<a
-									href={waLink(order.customer_phone, `Hola ${order.customer_name}, soy de ${store.name}, te escribo por tu pedido del ${formatOrderDate(order.created_at)}.`)}
+									href={waLink(order.customer_phone, `Hola ${order.customer_name}, soy de ${store.name}, te escribo por tu pedido (Nº ${order.code ?? order.id.slice(0, 8)}) del ${formatOrderDate(order.created_at)}.`)}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-btn bg-ember text-white hover:bg-ember-active transition-colors no-underline"

@@ -3,6 +3,20 @@
 Todas las versiones notables de Tiendly se documentan en este archivo.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [Unreleased] - 2026-08-08
+
+### Añadido
+- Código corto visible por el cliente en el checkout y gracias (ej: ABC345), persistido en `orders.code` (migración `add_orders_code` + índice por tienda).
+- Panel de pedidos: búsqueda por Nº de pedido, badge Nº en las tarjetas y columna Código en el CSV exportado.
+
+### Cambiado
+- Registro de pedidos sin `.select()` (el anon no tiene policy de SELECT en `orders`): el insert ya no falla con RLS 42501 aunque el cliente no tenga la fila devuelta.
+- Variantes del storefront muestran solo la etiqueta (el precio real se muestra debajo); chips agotados con badge.
+- Compra directa "Comprar ahora" sin pasar por el carrito: `/checkout?product=...&v=...&id=<nº pedido>` con `replaceState`.
+- Botones "Añadir al carrito" (desktop y móvil) sin iconos, solo texto.
+- WhatsApp del pedido incluye `🧾 Nº pedido`.
+- OG en storefronts usa el logo de la tienda (si existe); eliminado el sistema OG-banner de Tiendly y sus assets.
+
 ## [1.1.12-beta] - 2026-08-06
 
 ### Añadido

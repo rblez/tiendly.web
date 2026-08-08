@@ -188,6 +188,7 @@
 				.from('orders')
 				.insert({
 					store_id: data.store.id,
+					code: orderId || null,
 					customer_name: name.trim(),
 					customer_phone: phone.trim(),
 					notes: notes.trim() || null,

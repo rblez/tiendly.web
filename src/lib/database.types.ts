@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       orders: {
         Row: {
+          code: string | null
           created_at: string
           currency: string
           customer_name: string
@@ -31,6 +32,7 @@ export type Database = {
           utm_source: string | null
         }
         Insert: {
+          code?: string | null
           created_at?: string
           currency?: string
           customer_name: string
@@ -46,6 +48,7 @@ export type Database = {
           utm_source?: string | null
         }
         Update: {
+          code?: string | null
           created_at?: string
           currency?: string
           customer_name?: string
