@@ -733,13 +733,6 @@ async function duplicateProduct(p: Product) {
 						Ver tienda
 					</a>
 				{/if}
-				<button
-					onclick={() => (shareOpen = true)}
-					class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-btn text-xs font-medium bg-ember text-white hover:bg-ember-active transition-colors cursor-pointer"
-				>
-					<i class="ri-share-line"></i>
-					Compartir
-				</button>
 			</div>
 		</div>
 	{/if}
@@ -927,12 +920,6 @@ async function duplicateProduct(p: Product) {
 						<i class="ri-check-double-line text-ember"></i>
 						<span class="truncate">¡Tu tienda está lista para vender!</span>
 					</p>
-					<button
-						onclick={() => (shareOpen = true)}
-						class="text-xs font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
-					>
-						Compartir
-					</button>
 				</div>
 			{:else}
 				<div class="bg-card border border-hairline rounded-card overflow-hidden mb-5">
@@ -1658,31 +1645,6 @@ async function duplicateProduct(p: Product) {
 								<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {settings.active ? 'left-[22px]' : 'left-0.5'}"></span>
 							</button>
 						</div>
-					</div>
-
-					<div class="bg-card border border-hairline rounded-card p-5">
-						<h2 class="font-bold text-ink flex items-center gap-2 mb-2">
-							<i class="ri-share-forward-line text-ember"></i>
-							Compartir
-						</h2>
-						<p class="text-xs text-muted mb-3">Envía el enlace de tu tienda a tus clientes.</p>
-						<div class="flex items-center gap-2">
-							<input
-								readonly
-								value={shareUrl}
-								onclick={(e) => (e.target as HTMLInputElement).select()}
-								class="flex-1 min-w-0 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember"
-							/>
-							<button
-								onclick={() => (shareOpen = true)}
-								class="inline-flex items-center bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer"
-							>
-								Compartir
-							</button>
-						</div>
-						{#if savedFlash}
-							<p class="text-xs text-ember mt-3 flex items-center gap-1.5"><i class="ri-check-line"></i> {savedMessage}</p>
-						{/if}
 					</div>
 
 					{#if settingsError}
