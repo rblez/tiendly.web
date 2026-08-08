@@ -1,0 +1,13 @@
+name: bot-test
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: bot-test
+  cancel-in-progress: false
+
+jobs:
+  bot:
+    uses: ./.github/workflows/sanity3-callable.yml
