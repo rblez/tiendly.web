@@ -13,6 +13,7 @@
 	let upgradeOpen = $state(false);
 	let deleteTarget = $state<Store | null>(null);
 	let deleting = $state(false);
+	let loadError = $state('');
 	let deleteError = $state('');
 
 	async function confirmDelete() {
@@ -33,10 +34,10 @@
 	const plan = PLAN_MAP[auth.plan] ?? PLAN_MAP.free;
 	const atLimit = $derived(stores.length >= (plan.limitStores ?? Infinity));
 
-	$effect(() => {
-		if (!auth.ready || !auth.session) return;
-		(async () => {
-			loading = true;
+	async function loadStores() {
+		loading = true;
+		loadError = '';
+		try {
 			const [storesRes, productsRes, ordersRes] = await Promise.all([
 				supabase.from('stores').select('*').eq('owner_id', auth.session!.user.id).order('created_at', { ascending: false }),
 				supabase.from('products').select('store_id').eq('active', true),
@@ -45,7 +46,6 @@
 
 			const storeRows = (storesRes.data as Store[] | null) ?? [];
 			stores = storeRows;
-			loading = false;
 
 			const acc: StoreStats = {};
 			for (const s of storeRows) acc[s.id] = { products: 0, orders: 0, visits: s.visits ?? 0 };
@@ -58,7 +58,16 @@
 				if (acc[row.store_id]) acc[row.store_id].orders += 1;
 			}
 			stats = acc;
-		})();
+		} catch {
+			loadError = 'No se pudieron cargar tus tiendas. Inténtalo de nuevo.';
+		} finally {
+			loading = false;
+		}
+	}
+
+	$effect(() => {
+		if (!auth.ready || !auth.session) return;
+		loadStores();
 	});
 </script>
 
@@ -111,6 +120,19 @@
 				Mejorar plan
 			</span>
 		</button>
+	{/if}
+
+	{#if loadError}
+		<div class="flex items-center gap-2.5 bg-error/10 border border-error/30 text-error rounded-btn px-4 py-3 mb-6 text-sm">
+			<i class="ri-error-warning-line flex-shrink-0"></i>
+			<p>{loadError}</p>
+			<button
+				onclick={() => loadStores()}
+				class="ml-auto text-xs font-semibold underline underline-offset-2 cursor-pointer"
+			>
+				Reintentar
+			</button>
+		</div>
 	{/if}
 
 	{#if loading}

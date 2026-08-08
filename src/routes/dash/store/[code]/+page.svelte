@@ -234,6 +234,7 @@ $effect(() => {
 		if (!storeCode) return;
 		(async () => {
 			loading = true;
+			try {
 			const { data: storeData } = await supabase
 				.from('stores')
 				.select('*')
@@ -283,6 +284,11 @@ $effect(() => {
 		await loadOrders();
 		await loadVisitChart();
 		loading = false;
+			} catch {
+				error = 'No se pudo cargar la tienda. Inténtalo de nuevo.';
+			} finally {
+				loading = false;
+			}
 		})();
 	});
 
