@@ -21,7 +21,6 @@
 			'@type': 'Organization',
 			name: 'Tiendly',
 			url: SITE_URL,
-			logo: `${SITE_URL}/tiendly-social.png`,
 		})}
 	</script>
 </svelte:head>

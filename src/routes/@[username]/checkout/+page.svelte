@@ -180,48 +180,33 @@
 		}));
 
 		let saved = true;
-		let insertedId: string | null = null;
 		const utm = loadUtm();
 		try {
 			const { supabase } = await import('$lib/supabase/client');
-			let row: { id: string } | null = null;
-			for (let attempt = 0; attempt < 3; attempt++) {
-				const current = orderId || generateStoreCode(6);
-				const { data: orderRow, error: orderError2 } = await supabase
-					.from('orders')
-					.insert({
-						id: current,
-						store_id: data.store.id,
-						customer_name: name.trim(),
-						customer_phone: phone.trim(),
-						notes: notes.trim() || null,
-						items,
-						total,
-						currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
-						utm_source: utm.utm_source ?? null,
-						utm_medium: utm.utm_medium ?? null,
-						utm_campaign: utm.utm_campaign ?? null,
-					})
-					.select('id')
-					.single();
-				if (orderRow) {
-					row = orderRow;
-					orderId = orderRow.id;
-					break;
-				}
-				if (orderError2?.code === '23505') {
-					orderId = generateStoreCode(6);
-					continue;
-				}
+			// sin .select(): anon no tiene policy de SELECT en orders, el RETURNING fallaría con RLS
+			const { error: orderError2 } = await supabase
+				.from('orders')
+				.insert({
+					store_id: data.store.id,
+					customer_name: name.trim(),
+					customer_phone: phone.trim(),
+					notes: notes.trim() || null,
+					items,
+					total,
+					currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+					utm_source: utm.utm_source ?? null,
+					utm_medium: utm.utm_medium ?? null,
+					utm_campaign: utm.utm_campaign ?? null,
+				});
+			if (orderError2) {
+				console.error('orders insert:', orderError2);
 				saved = false;
-				break;
 			}
-			if (row) insertedId = row.id;
 			try {
 				sessionStorage.setItem(
 					`tiendly-order-${data.store.slug}`,
 					JSON.stringify({
-						id: insertedId ?? null,
+						id: orderId || null,
 						name: name.trim(),
 						phone: phone.trim(),
 						items,

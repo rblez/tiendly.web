@@ -253,9 +253,8 @@
 						</button>
 						<button
 							onclick={addToCart}
-							class="hidden sm:flex flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer items-center justify-center gap-2"
+							class="hidden sm:flex flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer items-center justify-center"
 						>
-							<i class="ri-add-line"></i>
 							Añadir al carrito
 						</button>
 					</div>
@@ -276,16 +275,10 @@
 				</div>
 				<button
 					onclick={addToCart}
-					class="flex-1 inline-flex items-center justify-center gap-2 rounded-btn px-5 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] cursor-pointer
+					class="flex-1 inline-flex items-center justify-center rounded-btn px-5 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] cursor-pointer
 						{added ? 'bg-success text-white' : 'bg-ember text-white hover:bg-ember-active'}"
 				>
-					{#if added}
-						<i class="ri-check-line text-base"></i>
-						Añadido
-					{:else}
-						<i class="ri-shopping-cart-line text-base"></i>
-						Añadir al carrito
-					{/if}
+					{added ? 'Añadido' : 'Añadir al carrito'}
 				</button>
 			</div>
 		</div>
