@@ -183,31 +183,31 @@
 				<div class="flex items-center justify-between gap-2 mb-2">
 					<p class="text-xs sm:text-sm text-muted">Elige una opción:</p>
 					{#if selectedVariant}
-						<p class="text-xs font-medium text-ember">Seleccionado: {selectedVariant.label}</p>
+						<p class="text-xs font-medium text-ember truncate">Seleccionado: {selectedVariant.label}</p>
 					{/if}
 				</div>
-				<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+				<div class="flex flex-wrap gap-2 sm:grid sm:grid-cols-3">
 					{#each product.variants as variant}
 						<button
 							role="radio"
 							onclick={() => { selectedVariant = variant; }}
 							disabled={variant.agotado}
-							class="relative flex items-center justify-between gap-2 px-3.5 py-3 text-sm font-medium rounded-card border transition-all duration-200 text-left
+							class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left
 								{variant.agotado
 									? 'border-hairline bg-canvas/50 text-muted-soft cursor-not-allowed'
 									: selectedVariant?.id === variant.id
-										? 'border-ember/70 bg-ember/10 text-ink shadow-sm shadow-ember/10 cursor-pointer'
+										? 'border-ember bg-ember/10 text-ink cursor-pointer'
 										: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
 						>
 							<span class="min-w-0">
-								<span class="block truncate {variant.agotado ? 'line-through' : ''}">{variant.label}</span>
-								<span class="block mt-0.5 text-xs tabular-nums font-semibold
-									{variant.agotado ? 'text-muted-soft' : selectedVariant?.id === variant.id ? 'text-ember' : 'text-muted'}">
-									{variant.agotado ? 'Agotada' : formatPrice(variant.price, product.currency)}
-								</span>
+								<span class="leading-tight {variant.agotado ? 'line-through' : ''}">{variant.label}</span>
+							</span>
+							<span class="flex-shrink-0 text-xs tabular-nums font-semibold
+								{variant.agotado ? 'text-muted-soft' : selectedVariant?.id === variant.id ? 'text-ember' : 'text-muted'}">
+								{variant.agotado ? 'Agotada' : formatPrice(variant.price, product.currency)}
 							</span>
 							{#if selectedVariant?.id === variant.id}
-								<i class="ri-check-line text-base flex-shrink-0 text-ember"></i>
+								<i class="ri-check-line text-sm flex-shrink-0 text-ember"></i>
 							{/if}
 						</button>
 					{/each}
