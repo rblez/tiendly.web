@@ -14,4 +14,4 @@ concurrency:
 
 jobs:
   bot:
-    uses: ./.github/workflows/release-bot.yml
+    uses: ./.github/workflows/sanity4-callable.yml
