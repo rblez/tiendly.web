@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { clearUtm, formatPrice, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
+	import { clearUtm, formatPrice, generateStoreCode, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -16,10 +16,27 @@
 	let orderPlaced = $state(false);
 
 	let directProduct = $state<Product | null>(null);
+	let directVariantId = $state<string | null>(null);
+
+	// id de pedido: se genera al abrir el checkout y queda en la URL para rastreo
+	let orderId = $state('');
+
+	$effect(() => {
+		if (orderId) return;
+		const existing = $page.url.searchParams.get('id');
+		if (existing) {
+			orderId = existing;
+			return;
+		}
+		const code = generateStoreCode(6);
+		orderId = code;
+		goto(`/@${data.store.slug}/checkout?id=${code}`, { replaceState: true });
+	});
 
 	$effect(() => {
 		const id = $page.url.searchParams.get('product');
 		if (!id) return;
+		directVariantId = $page.url.searchParams.get('v');
 		(async () => {
 			const { supabase } = await import('$lib/supabase/client');
 			const { data: p } = await supabase
@@ -63,7 +80,7 @@
 
 	let cartLines = $derived.by(() => {
 		if (directProduct) {
-			const v = directProduct.variants[0] ?? null;
+			const v = (directVariantId ? directProduct.variants.find((x) => x.id === directVariantId) : null) ?? directProduct.variants[0] ?? null;
 			return [{
 				productId: directProduct.id,
 				variantId: v?.id,
@@ -98,7 +115,8 @@
 	let cartEmpty = $derived(cartLines.length === 0);
 
 	$effect(() => {
-		if (cartEmpty && cacheReady && !orderPlaced) {
+		const directMode = !!$page.url.searchParams.get('product');
+		if (cartEmpty && cacheReady && !orderPlaced && !directMode) {
 			goto(`/@${data.store.slug}`);
 		}
 	});
@@ -117,6 +135,7 @@
 			`Quiero hacer este pedido:`,
 			...items,
 			``,
+			...(orderId ? [`🧾 Nº pedido: *${orderId}*`, ``] : []),
 			`📍 Total: *${totalFormatted}*`,
 			`👤 ${name}`,
 			`📱 ${phone}`,
@@ -161,33 +180,48 @@
 		}));
 
 		let saved = true;
-		let orderId: string | null = null;
+		let insertedId: string | null = null;
 		const utm = loadUtm();
 		try {
 			const { supabase } = await import('$lib/supabase/client');
-			const { data: orderRow, error: orderError2 } = await supabase
-				.from('orders')
-				.insert({
-					store_id: data.store.id,
-					customer_name: name.trim(),
-					customer_phone: phone.trim(),
-					notes: notes.trim() || null,
-					items,
-					total,
-					currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
-					utm_source: utm.utm_source ?? null,
-					utm_medium: utm.utm_medium ?? null,
-					utm_campaign: utm.utm_campaign ?? null,
-				})
-				.select('id')
-				.single();
-			if (orderError2) saved = false;
-			if (orderRow) orderId = orderRow.id;
+			let row: { id: string } | null = null;
+			for (let attempt = 0; attempt < 3; attempt++) {
+				const current = orderId || generateStoreCode(6);
+				const { data: orderRow, error: orderError2 } = await supabase
+					.from('orders')
+					.insert({
+						id: current,
+						store_id: data.store.id,
+						customer_name: name.trim(),
+						customer_phone: phone.trim(),
+						notes: notes.trim() || null,
+						items,
+						total,
+						currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+						utm_source: utm.utm_source ?? null,
+						utm_medium: utm.utm_medium ?? null,
+						utm_campaign: utm.utm_campaign ?? null,
+					})
+					.select('id')
+					.single();
+				if (orderRow) {
+					row = orderRow;
+					orderId = orderRow.id;
+					break;
+				}
+				if (orderError2?.code === '23505') {
+					orderId = generateStoreCode(6);
+					continue;
+				}
+				saved = false;
+				break;
+			}
+			if (row) insertedId = row.id;
 			try {
 				sessionStorage.setItem(
 					`tiendly-order-${data.store.slug}`,
 					JSON.stringify({
-						id: orderRow?.id ?? null,
+						id: insertedId ?? null,
 						name: name.trim(),
 						phone: phone.trim(),
 						items,
@@ -270,7 +304,12 @@
 	{:else}
 		<div class="max-w-2xl mx-auto space-y-6">
 			<div class="bg-card border border-hairline rounded-card p-6 space-y-4">
-				<h2 class="text-lg font-semibold text-ink">Tu pedido</h2>
+				<div class="flex items-center justify-between">
+					<h2 class="text-lg font-semibold text-ink">Tu pedido</h2>
+					{#if orderId}
+						<span class="text-xs font-mono font-semibold text-muted-soft bg-bone px-2.5 py-1 rounded-full">Nº {orderId}</span>
+					{/if}
+				</div>
 				{#each cartLines as cp}
 					<div class="flex items-center justify-between text-sm">
 						<div class="text-body">

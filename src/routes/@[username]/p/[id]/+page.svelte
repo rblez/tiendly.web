@@ -89,7 +89,6 @@
 	);
 
 	function buyNow() {
-		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
 		track('add_to_cart', {
 			value: currentPrice,
 			currency: product.currency ?? 'CUP',
@@ -97,7 +96,8 @@
 			content_name: product.name,
 			num_items: 1,
 		});
-		goto(`/@${data.store.slug}/checkout`);
+		const v = selectedVariant?.id ? `&v=${encodeURIComponent(selectedVariant.id)}` : '';
+		goto(`/@${data.store.slug}/checkout?product=${product.id}${v}`);
 	}
 
 	function addToCart() {
@@ -199,12 +199,11 @@
 										? 'border-ember bg-ember/10 text-ink cursor-pointer'
 										: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
 						>
-							<span class="min-w-0">
+							<span class="min-w-0 flex items-center gap-1.5">
 								<span class="leading-tight {variant.agotado ? 'line-through' : ''}">{variant.label}</span>
-							</span>
-							<span class="flex-shrink-0 text-xs tabular-nums font-semibold
-								{variant.agotado ? 'text-muted-soft' : selectedVariant?.id === variant.id ? 'text-ember' : 'text-muted'}">
-								{variant.agotado ? 'Agotada' : formatPrice(variant.price, product.currency)}
+								{#if variant.agotado}
+									<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
+								{/if}
 							</span>
 							{#if selectedVariant?.id === variant.id}
 								<i class="ri-check-line text-sm flex-shrink-0 text-ember"></i>
