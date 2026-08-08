@@ -1,0 +1,17 @@
+name: release-main
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-bot
+  cancel-in-progress: false
+
+jobs:
+  bot:
+    uses: rblez/.github/.github/workflows/release-bot.yml@main

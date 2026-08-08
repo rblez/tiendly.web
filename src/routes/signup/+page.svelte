@@ -49,24 +49,6 @@
 		goto('/dash');
 	}
 
-	$effect(() => {
-		if (previewToken && !claimed) {
-			// vuelta del flujo OAuth: la sesión ya existe, reclamar directo
-			supabase.auth.getSession().then(({ data }) => {
-				if (data.session && !claimed) afterAuth();
-			});
-		}
-	});
-
-	async function signInWithGoogle() {
-		await supabase.auth.signInWithOAuth({
-			provider: 'google',
-			options: {
-				redirectTo: `${location.origin}/signup?preview=${previewToken}&name=${encodeURIComponent(storeName)}`,
-			},
-		});
-	}
-
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		error = '';
@@ -112,21 +94,6 @@
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
 			<p class="text-sm text-muted mb-6">{subtitle}</p>
-
-			<button
-				type="button"
-				onclick={signInWithGoogle}
-				disabled={claiming}
-				class="w-full inline-flex items-center justify-center gap-2.5 bg-card border border-hairline text-ink px-5 py-2.5 rounded-btn text-sm font-semibold hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50 mb-3"
-			>
-				<i class="ri-google-line text-base"></i>
-				Continuar con Google
-			</button>
-			<div class="flex items-center gap-3 mb-4">
-				<div class="flex-1 h-px bg-hairline"></div>
-				<span class="text-[11px] text-muted-soft">o con correo</span>
-				<div class="flex-1 h-px bg-hairline"></div>
-			</div>
 
 			<form onsubmit={handleSubmit} class="space-y-4">
 				<div>
