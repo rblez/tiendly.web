@@ -1,0 +1,59 @@
+name: sanity3-callable
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: run completo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          next_version() {
+            local last
+            last="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+            local msg
+            msg="$(git log -1 --pretty=%s)"
+
+            local major=0 minor=0 patch=0
+            if [[ "$last" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              major="${BASH_REMATCH[1]}"
+              minor="${BASH_REMATCH[2]}"
+              patch="${BASH_REMATCH[3]}"
+            fi
+
+            if [[ "$msg" == *"[release: major]"* ]]; then
+              major=$((major + 1)); minor=0; patch=0
+            elif [[ "$msg" == *"[release: minor]"* ]]; then
+              minor=$((minor + 1)); patch=0
+            else
+              patch=$((patch + 1))
+            fi
+
+            echo "v${major}.${minor}.${patch}"
+          }
+
+          VERSION="$(next_version)"
+          echo "Next version: $VERSION"
+
+          PR_URL="$(gh pr create \
+            --base main \
+            --head test \
+            --title "chore: release $VERSION [release-bot skip]" \
+            --body "Release automatica generada por **release-bot** a partir del commit.
+
+            Version: $VERSION
+            Notas generadas desde el tag anterior en la seccion de Releases.
+            Para forzar bump: [release: major] o [release: minor] en el mensaje del commit.")"
+          echo "PR: $PR_URL"
