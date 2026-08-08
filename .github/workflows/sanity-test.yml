@@ -1,0 +1,9 @@
+name: sanity-test
+
+on:
+  push:
+    branches: [ci-test]
+
+jobs:
+  a:
+    uses: ./.github/workflows/sanity-callable.yml
