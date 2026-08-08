@@ -91,27 +91,58 @@
 	<title>Iniciar sesión | Tiendly</title>
 </svelte:head>
 
-<div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
-	<div class="w-full max-w-sm">
-		<div class="flex flex-col items-center text-center mb-6">
-			<span class="h-12 w-12 rounded-2xl bg-ember text-white flex items-center justify-center text-xl font-black mb-3">T</span>
+<style>
+	@keyframes fade-up {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.fade-up {
+		animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+</style>
+
+<div class="relative min-h-[calc(100vh-4rem)] overflow-hidden flex flex-col items-center justify-center px-4 py-16">
+	<picture>
+		<source srcset="/auth-bg-mobile.webp" media="(max-width: 768px)" />
+		<img
+			src="/auth-bg.webp"
+			alt=""
+			class="absolute inset-0 h-full w-full object-cover"
+			fetchpriority="high"
+		/>
+	</picture>
+	<div class="absolute inset-0 bg-black/75"></div>
+	<div class="relative z-10 w-full max-w-sm fade-up" style="animation-delay: 0.05s">
+		<div class="flex flex-col items-center text-center mb-7">
+			<span class="h-14 w-14 rounded-2xl bg-ember text-white flex items-center justify-center text-2xl font-black mb-4 shadow-[0_10px_30px_rgba(34,197,94,0.35)]">T</span>
 		</div>
-		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-			<h1 class="text-xl font-bold text-ink mb-1">Bienvenido de vuelta</h1>
-			<p class="text-sm text-muted mb-6">Entra a tu cuenta para administrar tus tiendas.</p>
+		<div class="bg-card border border-hairline rounded-2xl p-7 sm:p-9 shadow-[0_25px_60px_rgba(0,0,0,0.5)] fade-up" style="animation-delay: 0.12s">
+			<div class="mb-7">
+				<h1 class="text-2xl sm:text-[1.7rem] font-bold text-ink tracking-tight mb-1.5">Bienvenido de vuelta</h1>
+				<p class="text-sm text-muted">Entra a tu cuenta para administrar tus tiendas.</p>
+			</div>
 
 			<form onsubmit={handleSubmit} class="space-y-4">
 				<div>
 					<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
-					<input
-						id="email"
-						type="email"
-						required
-						bind:value={email}
-						placeholder="tu@correo.com"
-						autocomplete="email"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
-					/>
+					<div class="relative">
+						<i class="ri-mail-line absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+						<input
+							id="email"
+							type="email"
+							required
+							bind:value={email}
+							placeholder="tu@correo.com"
+							autocomplete="email"
+							class="w-full pl-10 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+						/>
+					</div>
 				</div>
 				<div>
 					<div class="flex items-center justify-between mb-1.5">
@@ -125,6 +156,7 @@
 						</button>
 					</div>
 					<div class="relative">
+						<i class="ri-lock-2-line absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
 						<input
 							id="password"
 							type={showPassword ? 'text' : 'password'}
@@ -132,12 +164,12 @@
 							bind:value={password}
 							placeholder="••••••••"
 							autocomplete="current-password"
-							class="w-full px-3.5 py-2.5 pr-11 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+							class="w-full pl-10 pr-11 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
 						/>
 						<button
 							type="button"
 							onclick={() => (showPassword = !showPassword)}
-							class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer"
+							class="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer"
 							aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
 						>
 							<i class={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-lg`}></i>
@@ -146,7 +178,10 @@
 				</div>
 
 				{#if error}
-					<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5">{error}</p>
+					<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
+						<i class="ri-error-warning-line mt-0.5"></i>
+						<span>{error}</span>
+					</p>
 				{/if}
 
 				<button
@@ -158,19 +193,22 @@
 						<i class="ri-loader-4-line animate-spin"></i>
 					{/if}
 					{loading ? 'Entrando...' : 'Entrar'}
+					{#if !loading}
+						<i class="ri-arrow-right-line"></i>
+					{/if}
 				</button>
 			</form>
 		</div>
-		<p class="text-center text-sm text-muted mt-6">
-			¿No tienes cuenta? <a href={previewToken ? `/signup?preview=${previewToken}` : '/signup'} class="text-ember hover:text-ember-active no-underline">Crear cuenta gratis</a>
+		<p class="text-center text-sm text-white/60 mt-7 fade-up" style="animation-delay: 0.2s">
+			¿No tienes cuenta? <a href={previewToken ? `/signup?preview=${previewToken}` : '/signup'} class="text-ember font-medium hover:text-ember-active no-underline">Crear cuenta gratis</a>
 		</p>
 	</div>
 </div>
 
 {#if resetOpen}
 	<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" role="presentation">
-		<button type="button" class="absolute inset-0 bg-black/60 cursor-default" onclick={() => { resetOpen = false; resetSent = false; }} aria-label="Cerrar"></button>
-		<div class="relative bg-card border border-hairline rounded-card w-full max-w-sm p-6 sm:p-8">
+		<button type="button" class="absolute inset-0 bg-black/70 cursor-default" onclick={() => { resetOpen = false; resetSent = false; }} aria-label="Cerrar"></button>
+		<div class="relative bg-card border border-hairline rounded-2xl w-full max-w-sm p-7 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.5)] fade-up" style="animation-delay: 0.05s">
 			<button onclick={() => { resetOpen = false; resetSent = false; }} class="absolute top-4 right-4 text-muted hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
 				<i class="ri-close-line text-xl"></i>
 			</button>
@@ -188,17 +226,23 @@
 				<form onsubmit={handleReset} class="space-y-4">
 					<div>
 						<label for="reset-email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
-						<input
-							id="reset-email"
-							type="email"
-							required
-							bind:value={resetEmail}
-							placeholder="tu@correo.com"
-							class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-						/>
+						<div class="relative">
+							<i class="ri-mail-line absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
+							<input
+								id="reset-email"
+								type="email"
+								required
+								bind:value={resetEmail}
+								placeholder="tu@correo.com"
+								class="w-full pl-10 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-colors"
+							/>
+						</div>
 					</div>
 					{#if resetError}
-						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5">{resetError}</p>
+						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
+							<i class="ri-error-warning-line mt-0.5"></i>
+							<span>{resetError}</span>
+						</p>
 					{/if}
 					<button
 						type="submit"
