@@ -14,4 +14,4 @@ concurrency:
 
 jobs:
   bot:
-    uses: rblez/.github/.github/workflows/release-bot.yml@main
+    uses: rblez/.github/.github/workflows/release-bot.yml@994f8d213619e6bb83a4b90c9ca0d2473a3fa1cf
