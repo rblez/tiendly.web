@@ -49,12 +49,6 @@
 		return true;
 	});
 
-	function onNameInput() {
-		if (!slug || slug === slugify(name) || slug === '') {
-			slug = slugify(name);
-		}
-	}
-
 	function onSlugInput() {
 		slug = slugify(slug);
 	}
@@ -244,7 +238,6 @@
 						id="store-name"
 						type="text"
 						bind:value={name}
-						oninput={onNameInput}
 						placeholder="Ej: Dulces de Ana"
 						autofocus
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
