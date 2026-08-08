@@ -26,9 +26,9 @@
 	let limitLoading = $state(true);
 
 	const STEP_META = [
-		{ title: '¿Cómo se llama tu tienda?', desc: 'Solo el nombre y tu link. Lo demás se configura después.' },
-		{ title: '¿Dónde te escriben?', desc: 'Los pedidos llegarán directo a tu WhatsApp.' },
-		{ title: 'Agrega tus primeros productos', desc: 'Nombre y precio. Foto opcional, detalles después.' },
+		{ title: '¿Cómo se llama tu tienda?', desc: 'Solo el nombre y tu link. Lo demás se configura después.', short: 'Nombre y link' },
+		{ title: '¿Dónde te escriben?', desc: 'Los pedidos llegarán directo a tu WhatsApp.', short: 'WhatsApp' },
+		{ title: 'Agrega tus primeros productos', desc: 'Nombre y precio. Foto opcional, detalles después.', short: 'Productos' },
 	];
 
 	$effect(() => {
@@ -224,8 +224,28 @@
 
 	<!-- Progress -->
 	<div class="flex items-center gap-2 mb-8">
-		{#each STEP_META as _, i}
-			<div class={`flex-1 h-1.5 rounded-full transition-colors ${i < step ? 'bg-ember' : 'bg-bone'}`}></div>
+		{#each STEP_META as meta, i}
+			<div class="flex items-center gap-2 flex-1">
+				<div class="flex items-center gap-2">
+					<span
+						class={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+							i < step ? 'bg-ember text-white' : 'bg-bone text-muted-soft'
+						}`}
+					>
+						{#if i < step - 1}
+							<i class="ri-check-line"></i>
+						{:else}
+							{i + 1}
+						{/if}
+					</span>
+					<span class={`hidden sm:block text-xs font-semibold ${i <= step - 1 ? 'text-ink' : 'text-muted-soft'}`}>
+						{meta.short}
+					</span>
+				</div>
+				{#if i < STEP_META.length - 1}
+					<div class={`flex-1 h-px transition-colors ${i < step - 1 ? 'bg-ember' : 'bg-hairline'}`}></div>
+				{/if}
+			</div>
 		{/each}
 	</div>
 

@@ -9,8 +9,8 @@
 
 	const socials = $derived(storeSocials(store));
 	const extraLinks = $derived(Array.isArray(store?.extra_links) ? (store.extra_links as { title: string; url: string }[]) : []);
-	const year = new Date().getFullYear();
-	const showTiendlyBadge = $derived(ownerPlan === 'free' || ownerPlan === 'creator');
+		const year = new Date().getFullYear();
+	// const showTiendlyBadge = $derived(ownerPlan === 'free' || ownerPlan === 'creator'); // badge desactivado
 
 	let geo = $state<{ lat: number; lon: number; bbox: string } | null>(null);
 
@@ -139,6 +139,7 @@
 				</div>
 			{/if}
 		</div>
+		<!-- badge "Hecho con Tiendly" desactivado
 		{#if showTiendlyBadge}
 			<div class="border-t border-hairline">
 				<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
@@ -153,10 +154,11 @@
 				</div>
 			</div>
 		{/if}
+		-->
 		<div class="border-t border-hairline">
 			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
 				<p class="text-xs text-muted-soft">&copy; {year} {store.name}</p>
-				<ThemeToggle />
+				<!-- modo claro desactivado: ThemeToggle -->
 			</div>
 		</div>
 	{:else}
@@ -209,7 +211,7 @@
 		<div class="border-t border-hairline">
 			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
 				<p class="text-xs text-muted-soft">&copy; {year} Tiendly. Todos los derechos reservados.</p>
-				<ThemeToggle />
+				<!-- modo claro desactivado: ThemeToggle -->
 			</div>
 		</div>
 	{/if}

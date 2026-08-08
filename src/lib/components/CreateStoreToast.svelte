@@ -18,7 +18,7 @@
 
 {#if visible}
 	<div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[70] w-[calc(100vw-2rem)] max-w-sm">
-		<div class="bg-card border border-hairline rounded-card shadow-xl shadow-ink/10 p-4 flex items-center gap-3">
+		<div class="bg-card border border-hairline rounded-card p-4 flex items-center gap-3">
 			<div class="min-w-0 flex-1">
 				<p class="text-sm font-bold text-ink">¿Tienes un negocio?</p>
 				<p class="text-xs text-muted leading-snug">Crea tu tienda online gratis y compártela en minutos.</p>

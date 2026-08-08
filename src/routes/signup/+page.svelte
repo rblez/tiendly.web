@@ -106,6 +106,9 @@
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
 	<div class="w-full max-w-sm">
+		<div class="flex flex-col items-center text-center mb-6">
+			<span class="h-12 w-12 rounded-2xl bg-ember text-white flex items-center justify-center text-xl font-black mb-3">T</span>
+		</div>
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<h1 class="text-xl font-bold text-ink mb-1">Crea tu cuenta</h1>
 			<p class="text-sm text-muted mb-6">{subtitle}</p>

@@ -1,18 +1,22 @@
 export type ThemePref = 'dark' | 'light' | 'auto';
 export type ResolvedTheme = 'dark' | 'light';
 
+// Modo claro desactivado temporalmente (reactivar: cambiar a true)
+const LIGHT_ENABLED = false;
+
 const STORAGE_KEY = 'tiendly-theme';
 const media = () => window.matchMedia('(prefers-color-scheme: light)');
 
-let pref = $state<ThemePref>('light');
-let resolved = $state<ResolvedTheme>('light');
+let pref = $state<ThemePref>('dark');
+let resolved = $state<ResolvedTheme>('dark');
 
 function apply(t: ResolvedTheme) {
-	resolved = t;
-	document.documentElement.dataset.theme = t;
-	document.documentElement.style.colorScheme = t;
+	const final = LIGHT_ENABLED ? t : 'dark';
+	resolved = final;
+	document.documentElement.dataset.theme = final;
+	document.documentElement.style.colorScheme = final;
 	const meta = document.querySelector('meta[name="theme-color"]');
-	if (meta) meta.setAttribute('content', t === 'dark' ? '#080808' : '#ffffff');
+	if (meta) meta.setAttribute('content', final === 'dark' ? '#080808' : '#ffffff');
 }
 
 function resolve(p: ThemePref): ResolvedTheme {
@@ -30,9 +34,17 @@ export const theme = {
 	init() {
 		try {
 			const raw = localStorage.getItem(STORAGE_KEY);
-			pref = raw === 'dark' || raw === 'light' || raw === 'auto' ? raw : 'light';
+			pref = raw === 'dark' || raw === 'light' || raw === 'auto' ? raw : 'dark';
 		} catch {
-			pref = 'light';
+			pref = 'dark';
+		}
+		if (!LIGHT_ENABLED && pref !== 'dark') {
+			pref = 'dark';
+			try {
+				localStorage.setItem(STORAGE_KEY, 'dark');
+			} catch {
+				/* noop */
+			}
 		}
 		apply(resolve(pref));
 		media().addEventListener('change', (e) => {
@@ -40,12 +52,12 @@ export const theme = {
 		});
 	},
 	set(p: ThemePref) {
-		pref = p;
+		pref = LIGHT_ENABLED ? p : 'dark';
 		try {
-			localStorage.setItem(STORAGE_KEY, p);
+			localStorage.setItem(STORAGE_KEY, pref);
 		} catch {
 			/* noop */
 		}
-		apply(resolve(p));
+		apply(resolve(pref));
 	},
 };

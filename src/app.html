@@ -9,9 +9,11 @@
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" />
 		<script>
 			(function () {
+				var LIGHT_ENABLED = false;
 				try {
 					var t = localStorage.getItem('tiendly-theme');
-					if (t !== 'dark' && t !== 'light' && t !== 'auto') t = 'light';
+					if (!LIGHT_ENABLED) t = 'dark';
+					if (t !== 'dark' && t !== 'light' && t !== 'auto') t = 'dark';
 					var theme = t === 'auto'
 						? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
 						: t;
@@ -26,7 +28,7 @@
 					document.documentElement.dataset.theme = theme;
 					document.documentElement.style.colorScheme = theme;
 				} catch (e) {
-					document.documentElement.dataset.theme = 'light';
+					document.documentElement.dataset.theme = 'dark';
 				}
 			})();
 		</script>

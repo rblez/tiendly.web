@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import AppNavbar from '$lib/components/AppNavbar.svelte';
-	import AppFooter from '$lib/components/AppFooter.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	let { children } = $props();
@@ -20,7 +19,6 @@
 		<div class="flex-1">
 			{@render children()}
 		</div>
-		<AppFooter />
 	</div>
 {:else}
 	<div class="flex items-center justify-center py-32">
