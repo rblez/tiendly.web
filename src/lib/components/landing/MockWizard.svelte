@@ -33,7 +33,7 @@
 			<p class="text-[10px] text-muted mb-4">Opcional. Si no agregas uno, usaremos la inicial de tu tienda.</p>
 			<div class="flex items-center gap-4">
 				<div class="h-16 w-16 flex-shrink-0 flex items-center justify-center rounded-lg bg-canvas border border-hairline">
-					<span class="text-2xl font-black text-ember">T</span>
+					<img src="/isotipo.png" alt="" class="h-6 w-6 object-contain" />
 				</div>
 				<div class="space-y-2">
 					<span class="inline-flex items-center gap-1.5 bg-ember text-white text-[10px] font-medium px-3 py-1.5 rounded-md">

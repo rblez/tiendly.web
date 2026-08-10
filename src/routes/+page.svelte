@@ -28,7 +28,9 @@
 <main class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
 	<div class="w-full max-w-sm">
 		<div class="flex flex-col items-center text-center mb-8">
-			<span class="h-14 w-14 rounded-2xl bg-ember text-white flex items-center justify-center text-2xl font-black mb-4">T</span>
+			<span class="h-14 w-14 flex items-center justify-center mb-4">
+					<img src="/isotipo.png" alt="Tiendly" class="h-14 w-14 object-contain" />
+				</span>
 			<h1 class="text-2xl font-black tracking-tight text-ink">Tiendly</h1>
 			<p class="text-sm text-muted mt-1.5">Tu tienda online y los pedidos en tu WhatsApp.</p>
 		</div>

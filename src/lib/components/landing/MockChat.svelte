@@ -6,7 +6,7 @@
 
 <MockFrame url="wa.me/5351234567" className={className}>
 	<div class="bg-[#075e54] px-4 py-3 flex items-center gap-2.5">
-		<span class="h-7 w-7 rounded-full bg-ember flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">T</span>
+		<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-full object-contain flex-shrink-0" />
 		<div class="min-w-0">
 			<p class="text-[11px] font-semibold text-white truncate">Mi tienda</p>
 			<p class="text-[9px] text-white/70">en línea</p>

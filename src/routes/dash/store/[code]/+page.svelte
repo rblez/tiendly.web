@@ -188,7 +188,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		),
 	);
 
-	type StoreTask = { label: string; doneLabel: string; done: boolean; action: 'producto' | 'general' | 'compartir' };
+	type StoreTask = { label: string; doneLabel: string; done: boolean; action: 'producto' | 'general' };
 	const hasSocials = $derived(SOCIAL_NETWORKS.some((n) => ((social[n.key] ?? '') as string).trim() !== ''));
 	const tasks = $derived<StoreTask[]>([
 		{
@@ -202,7 +202,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		{ label: 'Configura el WhatsApp de pedidos', doneLabel: 'WhatsApp listo', done: !!settings.whatsapp.trim(), action: 'general' },
 		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'general' },
 		{ label: 'Añade tu ubicación al pie', doneLabel: 'Ubicación lista', done: !!settings.location.trim(), action: 'general' },
-		{ label: 'Comparte tu tienda', doneLabel: '¡Ya recibes visitas!', done: (store?.visits ?? 0) > 0, action: 'compartir' },
 	]);
 	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
 
@@ -966,13 +965,6 @@ async function duplicateProduct(p: Product) {
 											>
 												Agregar
 											</button>
-										{:else if t.action === 'compartir'}
-											<button
-												onclick={() => (shareOpen = true)}
-												class="text-[11px] font-medium text-ember hover:text-ember-active flex-shrink-0 cursor-pointer"
-											>
-												Compartir
-											</button>
 										{:else}
 											<a
 												href="?tab=general"
@@ -1400,14 +1392,14 @@ async function duplicateProduct(p: Product) {
 							<div>
 								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 								<div class="relative">
-									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">tiendly.lat/@</span>
+									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">@</span>
 									<input
 										id="s-slug"
 										type="text"
 										bind:value={settings.slug}
 										oninput={onSettingsSlugInput}
 										placeholder="username"
-										class="w-full pl-28 pr-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+										class="w-full pl-7 pr-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 									/>
 								</div>
 							</div>
@@ -1566,7 +1558,7 @@ async function duplicateProduct(p: Product) {
 									<span class="text-[10px] font-medium text-muted-soft">{products.length} productos</span>
 								</div>
 								<p class="text-xl sm:text-2xl font-bold text-ink leading-tight">{settings.name || 'Mi tienda'}</p>
-								<p class="text-xs text-muted-soft mt-1">tiendly.lat/@{settings.slug || 'tutienda'}</p>
+								<p class="text-xs text-muted-soft mt-1">@{settings.slug || 'tutienda'}</p>
 							</div>
 							<div class="p-4 flex items-center justify-between">
 								<p class="text-xs text-muted">Así se ve el inicio de tu tienda</p>

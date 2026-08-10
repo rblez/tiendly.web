@@ -120,7 +120,9 @@
 	<div class="absolute inset-0 bg-black/75"></div>
 	<div class="relative z-10 w-full max-w-sm fade-up" style="animation-delay: 0.05s">
 		<div class="flex flex-col items-center text-center mb-7">
-			<span class="h-14 w-14 rounded-2xl bg-ember text-white flex items-center justify-center text-2xl font-black mb-4 shadow-[0_10px_30px_rgba(34,197,94,0.35)]">T</span>
+			<span class="h-14 w-14 flex items-center justify-center mb-4 shadow-[0_10px_30px_rgba(34,197,94,0.35)]">
+						<img src="/isotipo.png" alt="Tiendly" class="h-14 w-14 object-contain" />
+					</span>
 		</div>
 		<div class="bg-card border border-hairline rounded-2xl p-7 sm:p-9 shadow-[0_25px_60px_rgba(0,0,0,0.5)] fade-up" style="animation-delay: 0.12s">
 			<div class="mb-7">
