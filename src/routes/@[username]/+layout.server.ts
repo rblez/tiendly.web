@@ -1,5 +1,6 @@
 import { supabase, createAdminClient } from '$lib/supabase/server';
 import { error } from '@sveltejs/kit';
+import { planFromProfile } from '$lib/plans';
 
 export const load = async ({ params, url }) => {
 	const token = url.searchParams.get('preview');
@@ -34,5 +35,5 @@ export const load = async ({ params, url }) => {
 
 	const { data: owner } = await supabase.from('profiles').select('plan').eq('id', store.owner_id).maybeSingle();
 
-	return { store, ownerPlan: owner?.plan ?? 'free', preview: null };
+	return { store, ownerPlan: planFromProfile(owner?.plan), preview: null };
 };

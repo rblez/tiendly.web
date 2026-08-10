@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
@@ -87,18 +86,6 @@
 			],
 		}),
 	);
-
-	function buyNow() {
-		track('add_to_cart', {
-			value: currentPrice,
-			currency: product.currency ?? 'CUP',
-			content_ids: [product.id],
-			content_name: product.name,
-			num_items: 1,
-		});
-		const v = selectedVariant?.id ? `&v=${encodeURIComponent(selectedVariant.id)}` : '';
-		goto(`/@${data.store.slug}/checkout?product=${product.id}${v}`);
-	}
 
 	function addToCart() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
@@ -246,14 +233,8 @@
 				{:else}
 					<div class="flex gap-3">
 						<button
-							onclick={buyNow}
-							class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
-						>
-							Comprar ahora
-						</button>
-						<button
 							onclick={addToCart}
-							class="hidden sm:flex flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm sm:text-base font-medium transition-all duration-200 hover:bg-bone cursor-pointer items-center justify-center"
+							class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
 						>
 							Añadir al carrito
 						</button>

@@ -3,12 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import type { Database } from '$lib/database.types';
+import { planFromProfile, type PlanId } from '$lib/plans';
 
 const admin = createClient<Database>(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 	auth: { persistSession: false },
 });
 
-const PLAN_LIMITS: Record<string, number> = { free: 1, creator: 5, business: 15 };
+const PLAN_LIMITS: Record<PlanId, number> = { free: 1, creator: 3, business: Infinity };
 
 export const POST = async ({ request }) => {
 	const authHeader = request.headers.get('authorization') ?? '';

@@ -26,6 +26,15 @@ export function slugify(input: string): string {
 		.slice(0, 40);
 }
 
+export function uniqueProductId(name: string, existingIds: Iterable<string> = []): string {
+	const base = slugify(name) || 'producto';
+	const used = new Set(existingIds);
+	let id = base;
+	let n = 2;
+	while (used.has(id)) id = `${base}-${n++}`;
+	return id;
+}
+
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export function generateStoreCode(length = 8): string {

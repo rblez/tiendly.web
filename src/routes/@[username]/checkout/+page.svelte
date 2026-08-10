@@ -15,9 +15,6 @@
 	let orderError = $state('');
 	let orderPlaced = $state(false);
 
-	let directProduct = $state<Product | null>(null);
-	let directVariantId = $state<string | null>(null);
-
 	// id de pedido: se genera al abrir el checkout y queda en la URL para rastreo
 	let orderId = $state('');
 
@@ -33,27 +30,7 @@
 		goto(`/@${data.store.slug}/checkout?id=${code}`, { replaceState: true });
 	});
 
-	$effect(() => {
-		const id = $page.url.searchParams.get('product');
-		if (!id) return;
-		directVariantId = $page.url.searchParams.get('v');
-		(async () => {
-			const { supabase } = await import('$lib/supabase/client');
-			const { data: p } = await supabase
-				.from('products')
-				.select('*')
-				.eq('id', id)
-				.eq('store_id', data.store.id)
-				.maybeSingle();
-			if (p) {
-				directProduct = { ...p, variants: (Array.isArray(p.variants) ? p.variants : []) as unknown as Variant[], images: (Array.isArray(p.images) ? p.images : []) as unknown as string[] };
-				cart.clear();
-			}
-		})();
-	});
-
 	function findProduct(id: string): Product | null {
-		if (directProduct?.id === id) return directProduct;
 		return cartProductsCache[id] ?? null;
 	}
 
@@ -79,18 +56,6 @@
 	});
 
 	let cartLines = $derived.by(() => {
-		if (directProduct) {
-			const v = (directVariantId ? directProduct.variants.find((x) => x.id === directVariantId) : null) ?? directProduct.variants[0] ?? null;
-			return [{
-				productId: directProduct.id,
-				variantId: v?.id,
-				quantity: 1,
-				product: directProduct,
-				variant: v,
-				price: v ? v.price : directProduct.price,
-				label: v?.label ?? null,
-			}];
-		}
 		return cart.items
 			.filter((i) => i.storeSlug === data.store.slug)
 			.map((ci) => {
@@ -111,12 +76,11 @@
 	});
 
 	let total = $derived(cartLines.reduce((sum, cp) => sum + cp.price * cp.quantity, 0));
-	let totalFormatted = $derived(formatPrice(total, directProduct?.currency ?? 'CUP'));
+	let totalFormatted = $derived(formatPrice(total, cartLines[0]?.product.currency ?? 'CUP'));
 	let cartEmpty = $derived(cartLines.length === 0);
 
 	$effect(() => {
-		const directMode = !!$page.url.searchParams.get('product');
-		if (cartEmpty && cacheReady && !orderPlaced && !directMode) {
+		if (cartEmpty && cacheReady && !orderPlaced) {
 			goto(`/@${data.store.slug}`);
 		}
 	});
@@ -165,7 +129,7 @@
 
 		track('begin_checkout', {
 			value: total,
-			currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+			currency: cartLines[0]?.product.currency ?? 'CUP',
 			num_items: cartLines.length,
 		});
 
@@ -194,7 +158,7 @@
 					notes: notes.trim() || null,
 					items,
 					total,
-					currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+					currency: cartLines[0]?.product.currency ?? 'CUP',
 					utm_source: utm.utm_source ?? null,
 					utm_medium: utm.utm_medium ?? null,
 					utm_campaign: utm.utm_campaign ?? null,
@@ -212,7 +176,7 @@
 						phone: phone.trim(),
 						items,
 						total,
-						currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+						currency: cartLines[0]?.product.currency ?? 'CUP',
 						storeName: data.store.name,
 						storeSlug: data.store.slug,
 					}),
@@ -239,7 +203,7 @@
 			orderPlaced = true;
 			track('purchase', {
 				value: total,
-				currency: directProduct?.currency ?? cartLines[0]?.product.currency ?? 'CUP',
+				currency: cartLines[0]?.product.currency ?? 'CUP',
 				transaction_id: orderId ?? undefined,
 				content_ids: items.map((i) => i.productId),
 			});

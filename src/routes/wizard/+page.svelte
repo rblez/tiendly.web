@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, slugify, uploadImage } from '$lib/utils';
+	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, slugify, uniqueProductId, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 
 	type WizardProduct = {
@@ -54,7 +54,7 @@
 	}
 
 	function addProduct() {
-		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 20) : 20;
+		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 10) : 10;
 		if (products.length < limit) {
 			products = [...products, { name: '', price: '', images: [] }];
 		}
@@ -102,24 +102,31 @@
 			const uniqueSlug = await ensureUniqueSlug(slug);
 			slug = uniqueSlug;
 
-			const buildProducts = (storeId: string) =>
-				products
+			const buildProducts = (storeId: string) => {
+				const ids = new Set<string>();
+				return products
 					.filter((p) => p.name.trim() && p.price.trim())
-					.map((p, i) => ({
-						store_id: storeId,
-						name: p.name.trim(),
-						description: null,
-						price: parsePrice(p.price),
-						currency: 'CUP',
-						category: 'General',
-						agotado: false,
-						bajo_pedido: false,
-						active: true,
-						variants: [],
-						images: p.images.filter((img) => !img.startsWith('data:')),
-						image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
-						position: i,
-					}));
+					.map((p, i) => {
+						const id = uniqueProductId(p.name.trim(), ids);
+						ids.add(id);
+						return {
+							id,
+							store_id: storeId,
+							name: p.name.trim(),
+							description: null,
+							price: parsePrice(p.price),
+							currency: 'CUP',
+							category: 'General',
+							agotado: false,
+							bajo_pedido: false,
+							active: true,
+							variants: [],
+							images: p.images.filter((img) => !img.startsWith('data:')),
+							image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
+							position: i,
+						};
+					});
+			};
 
 			if (auth.session) {
 				const { data: store, error: storeError } = await supabase
@@ -193,9 +200,9 @@
 			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
 				<i class="ri-star-line text-3xl text-ember"></i>
 			</div>
-			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Free</h1>
-			<p class="text-body mb-2">El plan Free incluye 1 tienda. Ya tienes una en Tiendly.</p>
-			<p class="text-xs text-muted-soft mb-8">Actualiza a Creator o Business para crear más tiendas cuando esté disponible.</p>
+			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Gratis</h1>
+			<p class="text-body mb-2">El plan Gratis incluye 1 tienda. Ya tienes una en Tiendly.</p>
+			<p class="text-xs text-muted-soft mb-8">Actualiza a Estándar o Negocios para crear más tiendas cuando esté disponible.</p>
 			<a
 				href="/dash"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"

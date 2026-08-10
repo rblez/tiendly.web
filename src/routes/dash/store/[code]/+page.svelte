@@ -5,7 +5,7 @@ import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { Order, Product, Store, Variant } from '$lib/types';
-	import { formatPrice, parsePrice, parseVariants, productImage, slugify, storeUrl, uploadImage, variantsToText, waLink } from '$lib/utils';
+	import { formatPrice, parsePrice, parseVariants, productImage, slugify, storeUrl, uniqueProductId, uploadImage, variantsToText, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
@@ -407,6 +407,7 @@ $effect(() => {
 		} else {
 			result = await supabase.from('products').insert({
 				...payload,
+				id: uniqueProductId(formName.trim(), products.map((p) => p.id)),
 				store_id: editingStoreId,
 				position: products.length,
 			});
@@ -686,6 +687,7 @@ async function duplicateProduct(p: Product) {
 									if (!data) return;
 									const src = data as unknown as Product;
 									const { error } = await supabase.from('products').insert({
+										id: uniqueProductId(`${src.name} (copia)`, products.map((p) => p.id)),
 										store_id: editingStoreId,
 										position: products.length,
 										name: `${src.name} (copia)`,
@@ -753,22 +755,25 @@ async function duplicateProduct(p: Product) {
 	{:else}
 		<header class="sticky top-16 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-canvas/90 backdrop-blur-md border-b border-hairline">
 			<div class="flex items-center justify-between gap-3 py-3">
-				<div class="flex items-center gap-2.5 min-w-0">
-					{#if productImage({ image: store.logo })}
-						<img src={productImage({ image: store.logo })!} alt={store.name} class="h-8 w-8 object-cover rounded-lg bg-card border border-hairline flex-shrink-0" />
-					{:else}
-						<span class="h-8 w-8 flex items-center justify-center rounded-lg bg-ember text-canvas font-black text-base select-none flex-shrink-0">
-							{store.name.charAt(0).toUpperCase()}
-						</span>
-					{/if}
-					<div class="min-w-0">
-						<a href="/dash" class="text-[11px] text-muted hover:text-ember no-underline inline-flex items-center gap-0.5">
-							<i class="ri-arrow-left-s-line text-sm -ml-1"></i>
-							Mis tiendas
-						</a>
-						<h1 class="font-bold text-ink leading-tight truncate text-sm sm:text-base">{store.name}</h1>
-					</div>
+<div class="flex items-center gap-2.5 min-w-0">
+				<a
+					href="/dash"
+					class="inline-flex items-center gap-2 px-3 py-2 rounded-btn border border-hairline text-sm font-medium text-body hover:bg-bone transition-colors no-underline flex-shrink-0"
+				>
+					<i class="ri-arrow-left-line"></i>
+					Mis tiendas
+				</a>
+				{#if productImage({ image: store.logo })}
+					<img src={productImage({ image: store.logo })!} alt={store.name} class="h-8 w-8 object-cover rounded-lg bg-card border border-hairline flex-shrink-0" />
+				{:else}
+					<span class="h-8 w-8 flex items-center justify-center rounded-lg bg-ember text-canvas font-black text-base select-none flex-shrink-0">
+						{store.name.charAt(0).toUpperCase()}
+					</span>
+				{/if}
+				<div class="min-w-0">
+					<h1 class="font-bold text-ink leading-tight truncate text-sm sm:text-base">{store.name}</h1>
 				</div>
+			</div>
 				<div class="flex items-center gap-2 flex-shrink-0">
 					<span
 						class={`hidden sm:inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1.5 border ${

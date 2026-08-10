@@ -158,6 +158,14 @@
 	let deleteConfirm = $state(false);
 	let deleting = $state(false);
 	let privError = $state('');
+	let loggingOut = $state(false);
+
+	async function signOut() {
+		if (loggingOut) return;
+		loggingOut = true;
+		await auth.signOut();
+		goto('/');
+	}
 
 	async function deleteAccount() {
 		if (!deleteConfirm || !auth.session) return;
@@ -452,6 +460,19 @@
 					class="inline-flex items-center bg-error text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				>
 					{deleting ? 'Eliminando...' : 'Eliminar mi cuenta'}
+				</button>
+			</div>
+
+			<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+				<h2 class="font-bold text-ink mb-1">Cerrar sesión</h2>
+				<p class="text-sm text-body mb-4">Cierra tu sesión actual en este dispositivo.</p>
+				<button
+					onclick={signOut}
+					disabled={loggingOut}
+					class="inline-flex items-center gap-2 px-5 py-3 rounded-btn border border-error text-error font-medium hover:bg-error/10 transition-colors cursor-pointer disabled:opacity-50"
+				>
+					<i class="ri-logout-box-r-line"></i>
+					{loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
 				</button>
 			</div>
 		</div>

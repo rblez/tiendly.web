@@ -1,6 +1,7 @@
 import { supabase } from '$lib/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import type { PlanId } from '$lib/plans';
+import { planFromProfile } from '$lib/plans';
 import type { Profile } from '$lib/types';
 
 	let session = $state<Session | null>(null);
@@ -13,14 +14,7 @@ import type { Profile } from '$lib/types';
 		const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
 		if (data) {
 			profile = data as Profile;
-			const map: Record<string, PlanId> = {
-				free: 'free',
-				pro: 'creator',
-				premium: 'business',
-				creator: 'creator',
-				business: 'business',
-			};
-			plan = map[data.plan] ?? 'free';
+			plan = planFromProfile(data.plan);
 		}
 	}
 

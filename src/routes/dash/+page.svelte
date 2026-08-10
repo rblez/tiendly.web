@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { storeUrl } from '$lib/utils';
-	import { PLAN_MAP, PLANS } from '$lib/plans';
+	import { PLAN_MAP, PLANS, planWhatsAppUrl } from '$lib/plans';
 	import type { Order, Product, Store } from '$lib/types';
 
 	type StoreStats = Record<string, { products: number; orders: number; visits: number }>;
@@ -112,8 +112,8 @@
 		>
 			<div class="flex items-start gap-4 min-w-0">
 				<div class="text-left">
-					<p class="font-bold text-ink">Estás en el plan Free</p>
-					<p class="text-sm text-body mt-0.5">Solo incluye 1 tienda. Actualiza a Creator o Business para más tiendas y productos.</p>
+					<p class="font-bold text-ink">Estás en el plan Gratis</p>
+					<p class="text-sm text-body mt-0.5">Incluye 1 tienda y 10 productos. Actualiza a Estándar o Negocios para más tiendas y productos.</p>
 				</div>
 			</div>
 			<span class="text-sm font-medium text-ember flex-shrink-0 mt-1">
@@ -273,7 +273,7 @@
 					<i class="ri-close-line text-xl"></i>
 				</button>
 				<h2 class="text-xl font-bold text-ink mb-1">Elige tu plan</h2>
-				<p class="text-sm text-muted mb-6">Precios en USD · pago en cripto (USDT) · próximamente</p>
+				<p class="text-sm text-muted mb-6">Precios en USD</p>
 
 				<div class="grid gap-4 sm:grid-cols-3">
 					{#each PLANS as p}
@@ -297,12 +297,13 @@
 								{/each}
 							</ul>
 							{#if p.id !== 'free'}
-								<span
-									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-3 rounded-btn text-sm font-medium no-underline opacity-90"
+								<a
+									href={planWhatsAppUrl(p.name, 'monthly', auth.session?.user?.email ?? '—')}
+									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-3 rounded-btn text-sm font-medium no-underline opacity-90 hover:opacity-100 transition-opacity"
 								>
-									<i class="ri-currency-line"></i>
-									Próximamente
-								</span>
+									<i class="ri-whatsapp-line"></i>
+									Adquirir
+								</a>
 							{/if}
 						</div>
 					{/each}
