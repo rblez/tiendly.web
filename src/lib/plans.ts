@@ -51,7 +51,7 @@ export const PLANS: Plan[] = [
 		id: 'creator',
 		name: 'Estándar',
 		price: 5.99,
-		priceLabel: '$5.99 USD/1 mes',
+		priceLabel: '$5.99 USD',
 		tagline: 'Para vender en serio',
 		features: [
 			'Hasta 3 tiendas',
@@ -70,7 +70,7 @@ export const PLANS: Plan[] = [
 		id: 'business',
 		name: 'Negocios',
 		price: 0,
-		priceLabel: 'Precio personalizado/1 mes',
+		priceLabel: 'Precio personalizado',
 		tagline: 'Sin frenos para un negocio grande',
 		features: [
 			'Productos ilimitados',

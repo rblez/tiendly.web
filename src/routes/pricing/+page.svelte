@@ -6,9 +6,9 @@
 	let billing: 'monthly' | 'quarterly' = $state('monthly');
 
 	function priceFor(p: (typeof PLANS)[number]): string {
-		if (p.customPrice) return `Precio personalizado/${billing === 'quarterly' ? '3 meses' : '1 mes'}`;
+		if (p.customPrice) return 'Precio personalizado';
 		if (p.price === 0) return '∞';
-		if (billing === 'quarterly') return `$${planQuarterPrice(p.price)} USD/3 meses`;
+		if (billing === 'quarterly') return `$${planQuarterPrice(p.price)} USD`;
 		return p.priceLabel;
 	}
 </script>
