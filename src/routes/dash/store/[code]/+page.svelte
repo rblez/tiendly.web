@@ -12,8 +12,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import QRCode from 'qrcode';
 
-	type Tab = 'productos' | 'pedidos' | 'general';
-	const TAB_KEYS: Tab[] = ['productos', 'pedidos', 'general'];
+	type Tab = 'resumen' | 'productos' | 'pedidos' | 'apariencia' | 'configuracion';
+	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'apariencia', 'configuracion'];
 
 	let store = $state<Store | null>(null);
 	let products = $state<Product[]>([]);
@@ -91,10 +91,11 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 
 	function urlTab(fallback: Tab): Tab {
 		const t = $page.url.searchParams.get('tab');
+		if (t === 'general') return 'configuracion';
 		return TAB_KEYS.includes(t as Tab) ? (t as Tab) : fallback;
 	}
 
-	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'general' : 'productos'));
+	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'resumen' : 'productos'));
 
 	$effect(() => {
 		if (tab === 'pedidos') markOrdersRead();
@@ -197,7 +198,7 @@ let formCreatingCategory = $state(false);
 		),
 	);
 
-	type StoreTask = { label: string; doneLabel: string; done: boolean; action: 'producto' | 'general' };
+	type StoreTask = { label: string; doneLabel: string; done: boolean; action: 'producto' | 'apariencia' | 'configuracion' };
 	const hasSocials = $derived(SOCIAL_NETWORKS.some((n) => ((social[n.key] ?? '') as string).trim() !== ''));
 	const tasks = $derived<StoreTask[]>([
 		{
@@ -206,22 +207,12 @@ let formCreatingCategory = $state(false);
 			done: products.length > 0,
 			action: 'producto',
 		},
-		{ label: 'Sube el logo de tu tienda', doneLabel: 'Logo listo', done: !!store?.logo, action: 'general' },
-		{ label: 'Escribe la descripción', doneLabel: 'Descripción lista', done: !!settings.description.trim(), action: 'general' },
-		{ label: 'Configura el WhatsApp de pedidos', doneLabel: 'WhatsApp listo', done: !!settings.whatsapp.trim(), action: 'general' },
-		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'general' },
+		{ label: 'Sube el logo de tu tienda', doneLabel: 'Logo listo', done: !!store?.logo, action: 'apariencia' },
+		{ label: 'Escribe la descripción', doneLabel: 'Descripción lista', done: !!settings.description.trim(), action: 'configuracion' },
+		{ label: 'Configura el WhatsApp de pedidos', doneLabel: 'WhatsApp listo', done: !!settings.whatsapp.trim(), action: 'configuracion' },
+		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'configuracion' },
 	]);
 	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
-
-	const GENERAL_SECTIONS = [
-		{ id: 'sec-info', label: 'Información', icon: 'ri-store-2-line' },
-		{ id: 'sec-socials', label: 'Redes sociales', icon: 'ri-share-box-line' },
-		{ id: 'sec-apariencia', label: 'Apariencia', icon: 'ri-palette-line' },
-	];
-
-	function scrollToSection(id: string) {
-		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	}
 
 	function startNewCategory() {
 		formCreatingCategory = true;
@@ -766,6 +757,13 @@ async function duplicateProduct(p: Product) {
 			<aside class="hidden lg:flex flex-col gap-4">
 				<nav class="bg-card border border-hairline rounded-card p-2 space-y-1">
 					<a
+						href="?tab=resumen"
+						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+					>
+						Resumen
+					</a>
+					<a
 						href="?tab=productos"
 						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
 							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
@@ -789,11 +787,18 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</a>
 					<a
-						href="?tab=general"
+						href="?tab=apariencia"
 						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
 					>
-						General
+						Apariencia
+					</a>
+					<a
+						href="?tab=configuracion"
+						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+					>
+						Configuración
 					</a>
 				</nav>
 				<div class="bg-card border border-hairline rounded-card divide-y divide-hairline-soft text-sm">
@@ -817,7 +822,14 @@ async function duplicateProduct(p: Product) {
 				</div>
 		</aside>
 			<div class="min-w-0">
-				<div class="lg:hidden flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-3">
+				<div class="lg:hidden flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-3 overflow-x-auto">
+					<a
+						href="?tab=resumen"
+						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+					>
+						Resumen
+					</a>
 					<a
 						href="?tab=productos"
 						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
@@ -838,11 +850,18 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</a>
 					<a
-						href="?tab=general"
+						href="?tab=apariencia"
 						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
-						General
+						Apariencia
+					</a>
+					<a
+						href="?tab=configuracion"
+						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+					>
+						Configuración
 					</a>
 				</div>
 				<div class="lg:hidden grid grid-cols-3 gap-3 mb-5">
@@ -865,7 +884,7 @@ async function duplicateProduct(p: Product) {
 					</div>
 				</div>
 
-		{#if tab === 'productos'}
+		{#if tab === 'resumen'}
 			{#if score === 100}
 				<div class="flex items-center justify-between gap-3 bg-ember/10 border border-ember/25 rounded-card px-4 py-3 mb-3">
 					<p class="text-xs font-semibold text-ink flex items-center gap-2 min-w-0">
@@ -920,7 +939,7 @@ async function duplicateProduct(p: Product) {
 											</button>
 										{:else}
 											<a
-												href="?tab=general"
+												href="?tab={t.action}"
 												class="text-[11px] font-medium text-ember hover:text-ember-active flex-shrink-0 no-underline"
 											>
 												Completar
@@ -962,6 +981,7 @@ async function duplicateProduct(p: Product) {
 				</div>
 			</div>
 
+		{:else if tab === 'productos'}
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
 				<div class="relative flex-1 max-w-sm">
 					<i class="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-soft text-sm pointer-events-none"></i>
@@ -1316,10 +1336,60 @@ async function duplicateProduct(p: Product) {
 			{/if}
 		{/if}
 
-		{:else}
+		{:else if tab === 'apariencia'}
+			<div class="max-w-lg">
+				<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
+					<h2 class="font-bold text-ink mb-5">Apariencia</h2>
+					<div class="flex items-center gap-3 mb-4">
+						<div class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
+							{#if productImage({ image: store.logo })}
+								<img src={productImage({ image: store.logo })!} alt="Logo" class="w-full h-full object-cover" />
+							{:else}
+								<span class="text-xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
+							{/if}
+						</div>
+						<label
+							class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+							title="Cambiar logo"
+						>
+							<i class="ri-image-edit-line"></i>
+							Cambiar
+							<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
+						</label>
+						{#if productImage({ image: store.logo })}
+							<button
+								onclick={handleRemoveLogo}
+								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
+								title="Quitar logo"
+							>
+								<i class="ri-delete-bin-6-line"></i>
+								Quitar
+							</button>
+						{/if}
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
+						<div class="flex flex-wrap items-center gap-3">
+							{#each PRESET_COLORS as color}
+								<button
+									onclick={() => (settings.theme_color = color)}
+									class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
+										{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
+									style={`background-color: ${color}`}
+									aria-label={`Color ${color}`}
+								></button>
+							{/each}
+						</div>
+					</div>
+					{#if settingsError}
+						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3 mt-5">{settingsError}</p>
+					{/if}
+				</div>
+			</div>
+		{:else if tab === 'configuracion'}
 			<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
 				<div class="space-y-5">
-					<div id="sec-info" class="scroll-mt-32 bg-card border border-hairline rounded-card p-6 sm:p-7">
+					<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
 						<h2 class="font-bold text-ink mb-5">Información general</h2>
 						<div class="grid gap-4 sm:grid-cols-2">
 							<div>
@@ -1356,20 +1426,20 @@ async function duplicateProduct(p: Product) {
 							></textarea>
 						</div>
 						{#if hasActionColumn}
-						<div class="mt-4">
-							<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Acción principal al comprar</label>
-							<select
-								id="s-action"
-								bind:value={settings.action}
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-							>
-								{#each STORE_ACTIONS as a}
-									<option value={a.id}>{a.label}</option>
-								{/each}
-							</select>
-							<p class="text-xs text-muted-soft mt-1.5">Elige cómo los clientes hacen pedidos: con carrito y checkout, o directo por WhatsApp o Telegram sin checkout.</p>
-						</div>
-					{/if}
+							<div class="mt-4">
+								<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Acción principal al comprar</label>
+								<select
+									id="s-action"
+									bind:value={settings.action}
+									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+								>
+									{#each STORE_ACTIONS as a}
+										<option value={a.id}>{a.label}</option>
+									{/each}
+								</select>
+								<p class="text-xs text-muted-soft mt-1.5">Elige cómo los clientes hacen pedidos: con carrito y checkout, o directo por WhatsApp o Telegram sin checkout.</p>
+							</div>
+						{/if}
 						<div class="mt-4">
 							<label for="s-wa" class="block text-sm font-medium text-body mb-1.5">WhatsApp para pedidos</label>
 							<input
@@ -1382,8 +1452,10 @@ async function duplicateProduct(p: Product) {
 							<p class="text-xs text-muted-soft mt-1.5">Los pedidos de tu tienda llegan a este número por WhatsApp.</p>
 						</div>
 					</div>
+				</div>
 
-					<div id="sec-socials" class="scroll-mt-32 bg-card border border-hairline rounded-card p-6 sm:p-7">
+				<div class="space-y-5">
+					<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
 						<h2 class="font-bold text-ink mb-1">Redes sociales</h2>
 						<p class="text-xs text-muted mb-4">Se muestran al pie de tu tienda. Deja vacío lo que no uses.</p>
 						<div class="space-y-3">
@@ -1429,53 +1501,6 @@ async function duplicateProduct(p: Product) {
 							{/each}
 						</div>
 					</div>
-				</div>
-
-				<div class="space-y-5">
-					<div id="sec-apariencia" class="scroll-mt-32 bg-card border border-hairline rounded-card p-6 sm:p-7">
-						<h2 class="font-bold text-ink mb-5">Apariencia</h2>
-						<div class="flex items-center gap-3 mb-4">
-							<div class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
-								{#if productImage({ image: store.logo })}
-									<img src={productImage({ image: store.logo })!} alt="Logo" class="w-full h-full object-cover" />
-								{:else}
-									<span class="text-xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
-								{/if}
-							</div>
-							<label
-								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-								title="Cambiar logo"
-							>
-								<i class="ri-image-edit-line"></i>
-								Cambiar
-								<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
-							</label>
-							{#if productImage({ image: store.logo })}
-								<button
-									onclick={handleRemoveLogo}
-									class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
-									title="Quitar logo"
-								>
-									<i class="ri-delete-bin-6-line"></i>
-									Quitar
-								</button>
-							{/if}
-						</div>
-						<div>
-							<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
-							<div class="flex flex-wrap items-center gap-3">
-								{#each PRESET_COLORS as color}
-									<button
-										onclick={() => (settings.theme_color = color)}
-										class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
-											{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
-										style={`background-color: ${color}`}
-										aria-label={`Color ${color}`}
-									></button>
-								{/each}
-							</div>
-						</div>
-					</div>
 
 					{#if settingsError}
 						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{settingsError}</p>
@@ -1486,7 +1511,7 @@ async function duplicateProduct(p: Product) {
 			</div>
 		</div>
 
-		{#if tab === 'general' && dirty}
+		{#if (tab === 'apariencia' || tab === 'configuracion') && dirty}
 			<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70]">
 				<button
 					onclick={saveAll}
