@@ -64,7 +64,7 @@
 					? 'bg-bone text-muted-soft cursor-not-allowed'
 					: 'bg-ember text-white hover:bg-ember-active'}"
 		>
-			{isAgotado ? 'Agotado' : 'Ver opciones'}
+			{isAgotado ? 'Agotado' : 'Ver producto'}
 		</span>
 	</div>
 </a>

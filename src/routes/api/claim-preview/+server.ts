@@ -42,8 +42,8 @@ export const POST = async ({ request }) => {
 	}
 
 	const { data: profile } = await admin.from('profiles').select('plan').eq('id', user.user.id).maybeSingle();
-	const plan = profile?.plan ?? 'free';
-	const limit = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+	const plan = planFromProfile(profile?.plan);
+	const limit = PLAN_LIMITS[plan];
 
 	const { count } = await admin
 		.from('stores')

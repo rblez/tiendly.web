@@ -209,32 +209,60 @@
 	<title>Perfil | Tiendly</title>
 </svelte:head>
 
-<section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<div class="mb-8">
 		<h1 class="text-2xl sm:text-3xl font-bold text-ink">Perfil</h1>
 		<p class="text-sm text-muted mt-1">Tu cuenta y preferencias en Tiendly</p>
 	</div>
 
-	<div class="flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-8 w-full">
-		<a
-			href="?tab=perfil"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-		>
-			Perfil
-		</a>
-		<a
-			href="?tab=general"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'general' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-		>
-			General
-		</a>
-		<a
-			href="?tab=privacidad"
-			class="flex-1 text-center px-3 sm:px-5 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-success text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-		>
-			Privacidad
-		</a>
-	</div>
+	<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
+		<aside class="hidden lg:flex flex-col gap-4">
+			<nav class="bg-card border border-hairline rounded-card p-2 space-y-1">
+				<a
+					href="?tab=perfil"
+					class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+						{tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+				>
+					Perfil
+				</a>
+				<a
+					href="?tab=general"
+					class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+						{tab === 'general' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+				>
+					General
+				</a>
+				<a
+					href="?tab=privacidad"
+					class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+						{tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+				>
+					Privacidad
+				</a>
+			</nav>
+		</aside>
+
+		<div class="min-w-0">
+			<div class="lg:hidden flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-3">
+				<a
+					href="?tab=perfil"
+					class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'perfil' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+				>
+					Perfil
+				</a>
+				<a
+					href="?tab=general"
+					class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'general' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+				>
+					General
+				</a>
+				<a
+					href="?tab=privacidad"
+					class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap ${tab === 'privacidad' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+				>
+					Privacidad
+				</a>
+			</div>
 
 	{#if tab === 'perfil'}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8 space-y-8">
@@ -475,6 +503,8 @@
 					{loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
 				</button>
 			</div>
-		</div>
-	{/if}
+			</div>
+		{/if}
+	</div>
+</div>
 </section>

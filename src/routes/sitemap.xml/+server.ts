@@ -26,8 +26,6 @@ export const GET = async () => {
 		['/', 'monthly', '1.0'],
 		['/wizard', 'monthly', '0.9'],
 		['/pricing', 'monthly', '0.7'],
-		['/precios', 'monthly', '0.7'],
-		['/crear', 'monthly', '0.7'],
 		['/login', 'monthly', '0.3'],
 		['/signup', 'monthly', '0.3'],
 	];

@@ -195,7 +195,7 @@
 	<main class="min-h-[calc(100vh-4rem)]">
 		{@render children()}
 	</main>
-	<Footer {store} ownerPlan={data.ownerPlan} />
+	<Footer {store} />
 	{#if !previewToken && (data.ownerPlan === 'free' || data.ownerPlan === 'creator')}
 		<CreateStoreToast />
 	{/if}

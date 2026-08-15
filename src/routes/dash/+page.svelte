@@ -31,6 +31,15 @@
 		deleteTarget = null;
 	}
 
+	async function toggleActive(store: Store) {
+		const next = !store.active;
+		stores = stores.map((s) => (s.id === store.id ? { ...s, active: next } : s));
+		const { error } = await supabase.from('stores').update({ active: next }).eq('id', store.id);
+		if (error) {
+			stores = stores.map((s) => (s.id === store.id ? { ...s, active: !next } : s));
+		}
+	}
+
 	const plan = PLAN_MAP[auth.plan] ?? PLAN_MAP.free;
 	const atLimit = $derived(stores.length >= (plan.limitStores ?? Infinity));
 
@@ -202,6 +211,19 @@
 						<span class="inline-flex items-center px-4 py-1.5 rounded-full bg-ember text-white font-medium">
 							Gestionar
 						</span>
+						<button
+							onclick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								toggleActive(store);
+							}}
+							class="relative w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0
+								{store.active ? 'bg-ember' : 'bg-bone border border-hairline'}"
+							title={store.active ? 'Apagar tienda' : 'Encender tienda'}
+							aria-label={store.active ? 'Ocultar tienda' : 'Mostrar tienda'}
+						>
+							<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {store.active ? 'left-[22px]' : 'left-0.5'}"></span>
+						</button>
 						<button
 							onclick={(e) => {
 								e.preventDefault();

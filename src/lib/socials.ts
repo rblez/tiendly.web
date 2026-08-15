@@ -1,7 +1,7 @@
 import type { StoreSocial } from '$lib/types';
 
 export const SOCIAL_NETWORKS = [
-	{ key: 'fb', label: 'Facebook', icon: 'Facebook', color: '#0866FF', prefix: 'facebook.com/', placeholder: 'tunombre' },
+	{ key: 'fb', label: 'Facebook', icon: 'Facebook', color: '#0866FF', prefix: '', placeholder: 'facebook.com/tunombre' },
 	{ key: 'ig', label: 'Instagram', icon: 'Instagram', color: '#E4405F', prefix: '@', placeholder: 'tutienda' },
 	{ key: 'x', label: 'X', icon: 'X', color: '#000000', prefix: '@', placeholder: 'tutienda' },
 	{ key: 'yt', label: 'YouTube', icon: 'YouTube', color: '#FF0000', prefix: '@', placeholder: 'tucanal' },

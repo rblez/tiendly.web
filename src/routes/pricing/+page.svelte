@@ -62,7 +62,7 @@
 				<p class="text-xs text-muted mb-4">{p.tagline}</p>
 				<p class="text-3xl font-black text-ink mb-1">{priceFor(p)}</p>
 				{#if !p.customPrice && billing === 'quarterly'}
-					<p class="text-[11px] text-muted-soft line-through">${p.price} USD/mes</p>
+					<p class="text-[11px] text-muted-soft line-through">${p.price} USD por mes</p>
 				{/if}
 				<ul class="space-y-2 my-5 flex-1">
 					{#each p.features as feat}
