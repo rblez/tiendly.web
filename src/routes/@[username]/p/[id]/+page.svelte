@@ -5,6 +5,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { formatPrice, productImage, productImages, storeUrl, SITE_URL } from '$lib/utils';
 	import { track } from '$lib/analytics';
+	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
@@ -44,6 +45,11 @@
 	let imgError = $state(false);
 	let activeIndex = $state(0);
 	let added = $state(false);
+
+	const catalogMode = $derived(isCatalogMode(data.store));
+	const action = $derived(storeAction(data.store));
+	const actionBtn = $derived(actionConfig(action));
+	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, product, selectedVariant)));
 
 	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
@@ -226,6 +232,19 @@
 					>
 						Agotado
 					</button>
+				{:else if catalogMode}
+					<a
+						href={ctaHref ?? '#'}
+						target="_blank"
+						rel="noopener noreferrer"
+						onclick={(e) => {
+							if (!ctaHref) e.preventDefault();
+						}}
+						class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline flex items-center justify-center gap-2"
+					>
+						<i class={actionBtn.icon}></i>
+						{actionBtn.label}
+					</a>
 				{:else}
 					<button
 						onclick={addToCart}

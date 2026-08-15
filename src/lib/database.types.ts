@@ -202,6 +202,7 @@ export type Database = {
       }
       stores: {
         Row: {
+          action: string
           active: boolean
           banner: string | null
           code: string
@@ -223,6 +224,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          action?: string
           active?: boolean
           banner?: string | null
           code: string
@@ -244,6 +246,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          action?: string
           active?: boolean
           banner?: string | null
           code?: string

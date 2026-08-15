@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
 	import { formatPrice, productImage } from '$lib/utils';
+	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 
 	let { product, store }: { product: Product; store: Store } = $props();
 
@@ -19,6 +20,11 @@
 
 	const img = $derived(productImage(product));
 	const productUrl = $derived(`/@${store.slug}/p/${product.id}`);
+
+	const catalogMode = $derived(isCatalogMode(store));
+	const action = $derived(storeAction(store));
+	const ctaHref = $derived(actionLink(action, store, productOrderMessage(store, product, null)));
+	const direct = $derived(catalogMode && !isAgotado && product.variants.length === 0);
 </script>
 
 <a
@@ -58,13 +64,28 @@
 		{/if}
 	</p>
 
-		<span
-			class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
-				{isAgotado
-					? 'bg-bone text-muted-soft cursor-not-allowed'
-					: 'bg-ember text-white hover:bg-ember-active'}"
-		>
-			{isAgotado ? 'Agotado' : 'Ver producto'}
-		</span>
+		{#if direct}
+			<a
+				href={ctaHref ?? productUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				onclick={(e) => {
+					if (!ctaHref) e.preventDefault();
+				}}
+				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium bg-ember text-white hover:bg-ember-active transition-all duration-200 inline-flex items-center justify-center gap-2 no-underline"
+			>
+				<i class={actionConfig(action).icon}></i>
+				{actionConfig(action).label}
+			</a>
+		{:else}
+			<span
+				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
+					{isAgotado
+						? 'bg-bone text-muted-soft cursor-not-allowed'
+						: 'bg-ember text-white hover:bg-ember-active'}"
+			>
+				{isAgotado ? 'Agotado' : 'Ver producto'}
+			</span>
+		{/if}
 	</div>
 </a>

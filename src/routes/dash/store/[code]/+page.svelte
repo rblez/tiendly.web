@@ -9,6 +9,7 @@ import { supabase } from '$lib/supabase/client';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
+	import { STORE_ACTIONS } from '$lib/storeActions';
 	import QRCode from 'qrcode';
 
 	type Tab = 'productos' | 'pedidos' | 'general';
@@ -151,6 +152,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		whatsapp: '',
 		theme_color: '#22c55e',
 		active: true,
+		action: 'comprar' as string,
 		extra_links: [] as { title: string; url: string }[],
 		location: '',
 		schedule: '',
@@ -175,7 +177,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 
 	let shareUrl = $derived(store ? storeUrl(store.slug) : '');
 
-	let formCreatingCategory = $state(false);
+let formCreatingCategory = $state(false);
+	let hasActionColumn = $state(true);
 	let categories = $derived(Array.from(new Set(products.map((p) => p.category))).sort());
 
 	let productQuery = $state('');
@@ -248,6 +251,7 @@ $effect(() => {
 				return;
 			}
 			store = storeData as unknown as Store;
+			hasActionColumn = 'action' in storeData;
 			settings = {
 				name: storeData.name,
 				slug: storeData.slug,
@@ -255,6 +259,7 @@ $effect(() => {
 				whatsapp: storeData.whatsapp ?? '',
 				theme_color: storeData.theme_color,
 				active: storeData.active,
+				action: ((storeData as { action?: string }).action ?? 'comprar') as string,
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
 				schedule: storeData.schedule ?? '',
@@ -652,6 +657,7 @@ $effect(() => {
 				whatsapp: settings.whatsapp.trim() || null,
 				theme_color: settings.theme_color,
 				active: settings.active,
+				...(hasActionColumn ? { action: settings.action } : {}),
 				social: clean,
 				extra_links: cleanLinks,
 				location: settings.location.trim() || null,
@@ -1349,6 +1355,21 @@ async function duplicateProduct(p: Product) {
 								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
 							></textarea>
 						</div>
+						{#if hasActionColumn}
+						<div class="mt-4">
+							<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Acción principal al comprar</label>
+							<select
+								id="s-action"
+								bind:value={settings.action}
+								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+							>
+								{#each STORE_ACTIONS as a}
+									<option value={a.id}>{a.label}</option>
+								{/each}
+							</select>
+							<p class="text-xs text-muted-soft mt-1.5">Elige cómo los clientes hacen pedidos: con carrito y checkout, o directo por WhatsApp o Telegram sin checkout.</p>
+						</div>
+					{/if}
 						<div class="mt-4">
 							<label for="s-wa" class="block text-sm font-medium text-body mb-1.5">WhatsApp para pedidos</label>
 							<input

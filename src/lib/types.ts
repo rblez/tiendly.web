@@ -79,6 +79,7 @@ export interface Store {
 	location?: string | null;
 	schedule?: string | null;
 	active: boolean;
+	action?: string;
 	created_at: string;
 	visits?: number;
 	social?: StoreSocial;
