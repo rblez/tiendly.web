@@ -207,7 +207,9 @@ export type Database = {
           banner: string | null
           code: string
           created_at: string
+          currency: string | null
           description: string | null
+          exchange_rate: number | null
           extra_links: Json
           id: string
           location: string | null
@@ -229,7 +231,9 @@ export type Database = {
           banner?: string | null
           code: string
           created_at?: string
+          currency?: string | null
           description?: string | null
+          exchange_rate?: number | null
           extra_links?: Json
           id?: string
           location?: string | null
@@ -251,7 +255,9 @@ export type Database = {
           banner?: string | null
           code?: string
           created_at?: string
+          currency?: string | null
           description?: string | null
+          exchange_rate?: number | null
           extra_links?: Json
           id?: string
           location?: string | null

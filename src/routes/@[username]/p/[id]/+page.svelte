@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, SITE_URL } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, convertPrice, vendorCurrency } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -17,8 +17,8 @@
 
 	onMount(() => {
 		track('view_item', {
-			value: currentPrice,
-			currency: product.currency ?? 'CUP',
+			value: displayPrice,
+			currency: displayCurrency,
 			content_ids: [product.id],
 			content_name: product.name,
 		});
@@ -45,15 +45,20 @@
 	let activeIndex = $state(0);
 	let added = $state(false);
 
+	let currentPrice = $derived(selectedVariant ? selectedVariant.price : product.price);
+
 	const catalogMode = $derived(isCatalogMode(data.store));
 	const action = $derived(storeAction(data.store));
 	const actionBtn = $derived(actionConfig(action));
-	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, product, selectedVariant)));
+	const displayProduct = $derived({
+		name: product.name,
+		price: convertPrice(currentPrice, data.store),
+		currency: vendorCurrency(data.store),
+	});
+	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, displayProduct, selectedVariant)));
 
 	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
-
-	let currentPrice = $derived(selectedVariant ? selectedVariant.price : product.price);
 	let isAgotado = $derived(
 		product.agotado ||
 		(product.variants.length > 0 && product.variants.every((v) => v.agotado)) ||
@@ -63,6 +68,8 @@
 
 	const img = $derived(productImage(product));
 	const shareUrl = $derived(`${storeUrl(data.store.slug)}/p/${product.id}`);
+	const displayPrice = $derived(convertPrice(currentPrice, data.store));
+	const displayCurrency = $derived(vendorCurrency(data.store));
 	const productLd = $derived(
 		JSON.stringify({
 			'@context': 'https://schema.org',
@@ -73,8 +80,8 @@
 			brand: { '@type': 'Brand', name: data.store.name },
 			offers: {
 				'@type': 'Offer',
-				price: String(currentPrice),
-				priceCurrency: product.currency ?? 'CUP',
+				price: String(displayPrice),
+				priceCurrency: displayCurrency,
 				availability: isAgotado ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
 				url: shareUrl,
 			},
@@ -95,8 +102,8 @@
 	function addToCart() {
 		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
 		track('add_to_cart', {
-			value: currentPrice,
-			currency: product.currency ?? 'CUP',
+			value: displayPrice,
+			currency: displayCurrency,
 			content_ids: [product.id],
 			content_name: product.name,
 			num_items: 1,
@@ -212,7 +219,7 @@
 					<div class="flex items-center justify-between gap-3">
 						<div>
 							<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
-							<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(currentPrice, product.currency)}</p>
+							<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(displayPrice, displayCurrency)}</p>
 						</div>
 						{#if product.bajo_pedido}
 							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning text-xs font-semibold flex-shrink-0">

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage } from '$lib/utils';
+	import { formatPrice, productImage, convertPrice, vendorCurrency } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -39,10 +39,10 @@
 			.filter((x): x is NonNullable<typeof x> => x !== null)
 	);
 
-	let total = $derived(cartLines.reduce((sum, cp) => sum + cp.price * cp.quantity, 0));
+	let total = $derived(cartLines.reduce((sum, cp) => sum + convertPrice(cp.price, data.store) * cp.quantity, 0));
 	let cartEmpty = $derived(cart.items.filter((i) => i.storeSlug === data.store.slug).length === 0);
 	let itemCount = $derived(cartLines.reduce((sum, cp) => sum + cp.quantity, 0));
-	let currency = $derived(cartLines[0]?.product.currency ?? 'CUP');
+	let currency = $derived(vendorCurrency(data.store));
 </script>
 
 <svelte:head>
@@ -139,9 +139,9 @@
 								</button>
 							</div>
 							<div class="text-right">
-								<p class="text-sm font-bold text-ink tabular-nums">{formatPrice(cp.price * cp.quantity, cp.product.currency)}</p>
+								<p class="text-sm font-bold text-ink tabular-nums">{formatPrice(convertPrice(cp.price, data.store) * cp.quantity, currency)}</p>
 								{#if cp.quantity > 1}
-									<p class="text-[11px] text-muted-soft tabular-nums">{formatPrice(cp.price, cp.product.currency)} c/u</p>
+									<p class="text-[11px] text-muted-soft tabular-nums">{formatPrice(convertPrice(cp.price, data.store), currency)} c/u</p>
 								{/if}
 							</div>
 						</div>

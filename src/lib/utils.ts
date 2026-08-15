@@ -12,8 +12,30 @@ export function storeUrl(slug: string): string {
 	return `${appUrl()}/@${slug}`;
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+	CUP: '$',
+	USD: 'US$',
+	EUR: '€',
+	MXN: 'MX$',
+	ARS: 'ARS$',
+};
+
 export function formatPrice(price: number, currency: string): string {
-	return `$${price.toLocaleString('es-CU')} ${currency}`;
+	const n = price.toLocaleString('es-CU');
+	const sym = CURRENCY_SYMBOLS[currency] ?? '$';
+	return currency === 'CUP' ? `${sym}${n} CUP` : `${sym}${n} ${currency}`;
+}
+
+type RateStore = { currency?: string | null; exchange_rate?: number | null };
+
+export function vendorCurrency(store: RateStore | null | undefined): string {
+	return store?.currency?.trim() || 'CUP';
+}
+
+export function convertPrice(price: number, store: RateStore | null | undefined): number {
+	const rate = store?.exchange_rate;
+	if (!Number.isFinite(rate) || !rate || rate <= 0) return price;
+	return price / rate;
 }
 
 export function slugify(input: string): string {

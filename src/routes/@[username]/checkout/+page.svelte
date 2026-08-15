@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink } from '$lib/utils';
+	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, convertPrice, vendorCurrency } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -70,13 +70,14 @@
 					variant,
 					price: variant ? variant.price : product.price,
 					label: variant?.label ?? null,
+					display: convertPrice(variant ? variant.price : product.price, data.store),
 				};
 			})
 			.filter((x): x is NonNullable<typeof x> => x !== null);
 	});
 
-	let total = $derived(cartLines.reduce((sum, cp) => sum + cp.price * cp.quantity, 0));
-	let totalFormatted = $derived(formatPrice(total, cartLines[0]?.product.currency ?? 'CUP'));
+	let total = $derived(cartLines.reduce((sum, cp) => sum + cp.display * cp.quantity, 0));
+	let totalFormatted = $derived(formatPrice(total, vendorCurrency(data.store)));
 	let cartEmpty = $derived(cartLines.length === 0);
 
 	$effect(() => {
@@ -89,8 +90,8 @@
 		const items = cartLines.map((cp) => {
 			const qty = cp.quantity > 1 ? ` x${cp.quantity}` : '';
 			const variant = cp.label ? ` (${cp.label})` : '';
-			const currency = cp.product.currency;
-			return `▸ ${cp.product.name}${variant}${qty} — ${formatPrice(cp.price * cp.quantity, currency)}`;
+			const currency = vendorCurrency(data.store);
+			return `▸ ${cp.product.name}${variant}${qty} — ${formatPrice(cp.display * cp.quantity, currency)}`;
 		});
 
 		const lines = [
@@ -129,7 +130,7 @@
 
 		track('begin_checkout', {
 			value: total,
-			currency: cartLines[0]?.product.currency ?? 'CUP',
+			currency: vendorCurrency(data.store),
 			num_items: cartLines.length,
 		});
 
@@ -139,8 +140,8 @@
 			quantity: cp.quantity,
 			productName: cp.product.name,
 			label: cp.label,
-			price: cp.price,
-			currency: cp.product.currency,
+			price: cp.display,
+			currency: vendorCurrency(data.store),
 		}));
 
 		let saved = true;
@@ -158,7 +159,7 @@
 					notes: notes.trim() || null,
 					items,
 					total,
-					currency: cartLines[0]?.product.currency ?? 'CUP',
+					currency: vendorCurrency(data.store),
 					utm_source: utm.utm_source ?? null,
 					utm_medium: utm.utm_medium ?? null,
 					utm_campaign: utm.utm_campaign ?? null,
@@ -176,7 +177,7 @@
 						phone: phone.trim(),
 						items,
 						total,
-						currency: cartLines[0]?.product.currency ?? 'CUP',
+						currency: vendorCurrency(data.store),
 						storeName: data.store.name,
 						storeSlug: data.store.slug,
 					}),
@@ -203,7 +204,7 @@
 			orderPlaced = true;
 			track('purchase', {
 				value: total,
-				currency: cartLines[0]?.product.currency ?? 'CUP',
+				currency: vendorCurrency(data.store),
 				transaction_id: orderId ?? undefined,
 				content_ids: items.map((i) => i.productId),
 			});
@@ -270,7 +271,7 @@ const qs = utmQuery(loadUtm());
 							{/if}
 							<span class="text-muted"> x{cp.quantity}</span>
 						</div>
-						<span class="font-medium text-ink">{formatPrice(cp.price * cp.quantity, cp.product.currency)}</span>
+						<span class="font-medium text-ink">{formatPrice(cp.display * cp.quantity, vendorCurrency(data.store))}</span>
 					</div>
 				{/each}
 				<div class="pt-3 border-t border-hairline flex items-center justify-between">

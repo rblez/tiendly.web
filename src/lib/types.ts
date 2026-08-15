@@ -80,6 +80,8 @@ export interface Store {
 	schedule?: string | null;
 	active: boolean;
 	action?: string;
+	currency?: string | null;
+	exchange_rate?: number | null;
 	created_at: string;
 	visits?: number;
 	social?: StoreSocial;

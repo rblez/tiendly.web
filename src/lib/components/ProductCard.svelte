@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
-	import { formatPrice, productImage } from '$lib/utils';
+	import { formatPrice, productImage, convertPrice, vendorCurrency } from '$lib/utils';
 	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 
 	let { product, store }: { product: Product; store: Store } = $props();
@@ -23,7 +23,12 @@
 
 	const catalogMode = $derived(isCatalogMode(store));
 	const action = $derived(storeAction(store));
-	const ctaHref = $derived(actionLink(action, store, productOrderMessage(store, product, null)));
+	const displayProduct = $derived({
+		name: product.name,
+		price: convertPrice(product.price, store),
+		currency: vendorCurrency(store),
+	});
+	const ctaHref = $derived(actionLink(action, store, productOrderMessage(store, displayProduct, null)));
 	const direct = $derived(catalogMode && !isAgotado && product.variants.length === 0);
 </script>
 
@@ -52,9 +57,9 @@
 		{#if isAgotado}
 			<span class="text-muted-soft">Agotado</span>
 		{:else if product.variants.length > 0}
-			Desde {formatPrice(minPrice, product.currency)}
+			Desde {formatPrice(convertPrice(minPrice, store), vendorCurrency(store))}
 		{:else}
-			{formatPrice(product.price, product.currency)}
+			{formatPrice(convertPrice(product.price, store), vendorCurrency(store))}
 		{/if}
 		{#if !isAgotado && product.bajo_pedido}
 			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-[10px] font-semibold">

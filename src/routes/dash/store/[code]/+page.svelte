@@ -154,6 +154,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		theme_color: '#22c55e',
 		active: true,
 		action: 'comprar' as string,
+		currency: 'CUP' as string,
+		exchange_rate: '',
 		extra_links: [] as { title: string; url: string }[],
 		location: '',
 		schedule: '',
@@ -180,6 +182,13 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 
 let formCreatingCategory = $state(false);
 	let hasActionColumn = $state(true);
+	let hasCurrencyColumn = $state(false);
+	let exchangeRateParsed = $derived.by(() => {
+		const raw = settings.exchange_rate.trim();
+		if (!raw) return null;
+		const n = Number(raw.replace(',', '.'));
+		return Number.isFinite(n) && n > 0 ? n : NaN;
+	});
 	let categories = $derived(Array.from(new Set(products.map((p) => p.category))).sort());
 
 	let productQuery = $state('');
@@ -243,6 +252,7 @@ $effect(() => {
 			}
 			store = storeData as unknown as Store;
 			hasActionColumn = 'action' in storeData;
+			hasCurrencyColumn = 'currency' in storeData;
 			settings = {
 				name: storeData.name,
 				slug: storeData.slug,
@@ -251,6 +261,8 @@ $effect(() => {
 				theme_color: storeData.theme_color,
 				active: storeData.active,
 				action: ((storeData as { action?: string }).action ?? 'comprar') as string,
+				currency: ((storeData as { currency?: string | null }).currency ?? 'CUP') as string,
+				exchange_rate: ((storeData as { exchange_rate?: number | null }).exchange_rate ?? '') === '' ? '' : String((storeData as { exchange_rate?: number | null }).exchange_rate ?? ''),
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
 				schedule: storeData.schedule ?? '',
@@ -537,6 +549,9 @@ $effect(() => {
 					if (row.whatsapp !== undefined) settings.whatsapp = row.whatsapp ?? '';
 					if (row.theme_color !== undefined) settings.theme_color = row.theme_color;
 					if (row.active !== undefined) settings.active = row.active;
+					if (row.action !== undefined) settings.action = row.action ?? 'comprar';
+					if (row.currency !== undefined) settings.currency = row.currency ?? 'CUP';
+					if (row.exchange_rate !== undefined) settings.exchange_rate = row.exchange_rate === null ? '' : String(row.exchange_rate);
 					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
 					if (row.location !== undefined) settings.location = row.location ?? '';
 					if (row.schedule !== undefined) settings.schedule = row.schedule ?? '';
@@ -639,6 +654,15 @@ $effect(() => {
 		const cleanLinks = settings.extra_links
 			.map((l) => ({ title: l.title.trim(), url: l.url.trim() }))
 			.filter((l) => l.title && l.url);
+		let rateNum: number | null = null;
+		if (hasCurrencyColumn) {
+			if (settings.exchange_rate.trim() && (exchangeRateParsed === null || Number.isNaN(exchangeRateParsed))) {
+				settingsError = 'La tasa de cambio debe ser un número mayor que 0.';
+				settingsSaving = false;
+				return;
+			}
+			rateNum = exchangeRateParsed;
+		}
 		const { error: err } = await supabase
 			.from('stores')
 			.update({
@@ -649,6 +673,7 @@ $effect(() => {
 				theme_color: settings.theme_color,
 				active: settings.active,
 				...(hasActionColumn ? { action: settings.action } : {}),
+				...(hasCurrencyColumn ? { currency: settings.currency, exchange_rate: rateNum } : {}),
 				social: clean,
 				extra_links: cleanLinks,
 				location: settings.location.trim() || null,
@@ -1451,6 +1476,48 @@ async function duplicateProduct(p: Product) {
 							/>
 							<p class="text-xs text-muted-soft mt-1.5">Los pedidos de tu tienda llegan a este número por WhatsApp.</p>
 						</div>
+						{#if hasCurrencyColumn}
+							<div class="mt-4 pt-4 border-t border-hairline">
+								<label class="block text-sm font-medium text-body mb-1.5">Multimoneda</label>
+								<p class="text-xs text-muted-soft mb-3">
+									Los clientes ven los precios convertidos a tu moneda de venta con tu propia tasa. Deja la tasa vacía para vender en la moneda en que publicas.
+								</p>
+								<div class="grid gap-4 sm:grid-cols-2">
+									<div>
+										<label for="s-currency" class="block text-sm font-medium text-body mb-1.5">Moneda de venta</label>
+										<select
+											id="s-currency"
+											bind:value={settings.currency}
+											class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+										>
+											{#each CURRENCIES as c}
+												<option value={c}>{c}</option>
+											{/each}
+										</select>
+									</div>
+									<div>
+										<label for="s-rate" class="block text-sm font-medium text-body mb-1.5">Tasa de cambio</label>
+										<input
+											id="s-rate"
+											type="text"
+											inputmode="decimal"
+											bind:value={settings.exchange_rate}
+											placeholder="Ej: 125"
+											class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+										/>
+									</div>
+								</div>
+								{#if settings.exchange_rate.trim() && (exchangeRateParsed === null || Number.isNaN(exchangeRateParsed))}
+									<p class="text-xs text-error mt-1.5">La tasa debe ser un número mayor que 0.</p>
+								{:else if exchangeRateParsed !== null && !Number.isNaN(exchangeRateParsed)}
+									<p class="text-xs text-muted-soft mt-1.5">
+										1 {settings.currency} = {exchangeRateParsed} en la moneda de tus precios · Ej: {formatPrice(100000, 'CUP')} ≈ {formatPrice(100000 / exchangeRateParsed, settings.currency)}
+									</p>
+								{:else}
+									<p class="text-xs text-muted-soft mt-1.5">Sin tasa: el catálogo se muestra tal como publicas los precios.</p>
+								{/if}
+							</div>
+						{/if}
 					</div>
 				</div>
 
