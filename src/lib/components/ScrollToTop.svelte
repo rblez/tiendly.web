@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { getModalOpen } from '$lib/stores/modal.svelte';
-
 	let visible = $state(false);
 
 	$effect(() => {
@@ -17,13 +15,11 @@
 	}
 </script>
 
-{#if !getModalOpen()}
-	<button
-		onclick={scrollToTop}
-		class="fixed right-4 sm:right-6 z-[55] w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-card border border-hairline text-body rounded-full shadow-lg hover:text-ember hover:border-ember/50 transition-all duration-300 cursor-pointer
-			{visible ? 'bottom-6 sm:bottom-6 opacity-100 translate-y-0' : 'bottom-6 sm:bottom-6 opacity-0 translate-y-4 pointer-events-none'}"
-		aria-label="Volver arriba"
-	>
-		<i class="ri-arrow-up-line text-lg"></i>
-	</button>
-{/if}
+<button
+	onclick={scrollToTop}
+	class="fixed right-4 sm:right-6 z-[55] w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-card border border-hairline text-body rounded-full shadow-lg hover:text-ember hover:border-ember/50 transition-all duration-300 cursor-pointer
+		{visible ? 'bottom-6 sm:bottom-6 opacity-100 translate-y-0' : 'bottom-6 sm:bottom-6 opacity-0 translate-y-4 pointer-events-none'}"
+	aria-label="Volver arriba"
+>
+	<i class="ri-arrow-up-line text-lg"></i>
+</button>

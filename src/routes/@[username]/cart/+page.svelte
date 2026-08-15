@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { formatPrice, productImage } from '$lib/utils';
 	import { onMount } from 'svelte';

@@ -21,7 +21,6 @@
 
 	let error = $state('');
 	let creating = $state(false);
-	let createdStoreId = $state('');
 	let atLimit = $state(false);
 	let limitLoading = $state(true);
 
@@ -150,7 +149,6 @@
 					if (productsError) throw productsError;
 				}
 
-				createdStoreId = store.id;
 				goto(`/dash/store/${store.code}?created=1`);
 			} else {
 				const token = crypto.randomUUID();

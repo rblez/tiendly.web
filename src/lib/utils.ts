@@ -1,5 +1,5 @@
 import { supabase } from '$lib/supabase/client';
-import type { Product, Variant } from '$lib/types';
+import type { Variant } from '$lib/types';
 
 export const SITE_URL = 'https://www.tiendly.lat';
 
@@ -83,8 +83,6 @@ export function themeStyle(store: { theme_color: string }): string {
 	return `--accent: ${store.theme_color}; --accent-active: color-mix(in srgb, ${store.theme_color} 82%, black);`;
 }
 
-export type ProductLike = Pick<Product, 'name' | 'description' | 'category'>;
-
 export function parsePrice(raw: string): number {
 	const s = raw.trim().replace(/[^\d.,]/g, '');
 	if (!s) return 0;
@@ -142,12 +140,6 @@ export function fileToDataUrl(file: File): Promise<string> {
 		reader.onerror = reject;
 		reader.readAsDataURL(file);
 	});
-}
-
-export async function dataUrlToFile(dataUrl: string): Promise<File> {
-	const res = await fetch(dataUrl);
-	const blob = await res.blob();
-	return new File([blob], `img-${Date.now()}.png`, { type: blob.type });
 }
 
 export async function ensureUniqueSlug(base: string): Promise<string> {
