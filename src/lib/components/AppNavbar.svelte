@@ -29,7 +29,7 @@
 				{#if isStoreRoute}
 					<i class="ri-arrow-left-line text-muted group-hover:text-ink transition-colors"></i>
 				{/if}
-				<img src="/isotipo.png" alt="Tiendly" class="h-8 w-8 rounded-lg object-contain" />
+				<img src="/isotipo.png" alt="Tiendly" class="h-11 w-11 object-contain" />
 				<span class="font-black text-lg tracking-tight text-ink">Tiendly</span>
 			</a>
 
