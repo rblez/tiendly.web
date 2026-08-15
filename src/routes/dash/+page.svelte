@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { storeUrl } from '$lib/utils';
+	import { ensureUniqueSlug, generateStoreCode, storeUrl } from '$lib/utils';
 	import { PLAN_MAP, PLANS, planWhatsAppUrl } from '$lib/plans';
+	import type { Json } from '$lib/database.types';
 	import type { Order, Product, Store } from '$lib/types';
 
 	type StoreStats = Record<string, { products: number; orders: number; visits: number }>;
@@ -15,6 +16,115 @@
 	let deleting = $state(false);
 	let loadError = $state('');
 	let deleteError = $state('');
+	let menuOpenId = $state<string | null>(null);
+	let copiedId = $state<string | null>(null);
+	let copyTimer: ReturnType<typeof setTimeout> | null = null;
+	let duplicatingId = $state<string | null>(null);
+	let duplicating = $state(false);
+	let duplicateError = $state('');
+
+	function fmtDate(iso: string): string {
+		return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+	}
+
+	async function copyStoreLink(store: Store) {
+		const url = storeUrl(store.slug);
+		try {
+			await navigator.clipboard.writeText(url);
+		} catch {
+			const ta = document.createElement('textarea');
+			ta.value = url;
+			ta.style.position = 'fixed';
+			ta.style.opacity = '0';
+			document.body.appendChild(ta);
+			ta.select();
+			document.execCommand('copy');
+			ta.remove();
+		}
+		copiedId = store.id;
+		if (copyTimer) clearTimeout(copyTimer);
+		copyTimer = setTimeout(() => (copiedId = null), 2000);
+	}
+
+	async function shareStore(store: Store) {
+		const url = storeUrl(store.slug);
+		if (navigator.share) {
+			try {
+				await navigator.share({ title: `Tiendly | ${store.name}`, url });
+				menuOpenId = null;
+				return;
+			} catch {
+				/* el usuario canceló o el navegador no soporta: se copia el enlace */
+			}
+		}
+		await copyStoreLink(store);
+	}
+
+	async function duplicateStore(store: Store) {
+		if (duplicating || !auth.session) return;
+		if (atLimit) {
+			menuOpenId = null;
+			upgradeOpen = true;
+			return;
+		}
+		duplicatingId = store.id;
+		duplicating = true;
+		duplicateError = '';
+		try {
+			const slug = await ensureUniqueSlug(`${store.slug}-copia`);
+			const { data: newStore, error: storeErr } = await supabase
+				.from('stores')
+				.insert({
+					code: generateStoreCode(8),
+					slug,
+					owner_id: auth.session.user.id,
+					name: `${store.name} (copia)`,
+					description: store.description,
+					logo: store.logo,
+					banner: store.banner,
+					whatsapp: store.whatsapp,
+					theme_color: store.theme_color,
+					active: store.active,
+					action: store.action ?? 'comprar',
+					extra_links: store.extra_links ?? [],
+					location: store.location ?? null,
+					schedule: store.schedule ?? null,
+					social: (store.social ?? {}) as Json,
+					visits: 0,
+				})
+				.select()
+				.single();
+			if (storeErr) throw new Error(storeErr.message);
+
+			const { data: srcProducts } = await supabase.from('products').select('*').eq('store_id', store.id);
+			const rows = (srcProducts ?? []).map((p) => ({
+				store_id: newStore.id,
+				name: p.name,
+				description: p.description,
+				image: p.image,
+				images: p.images,
+				price: p.price,
+				currency: p.currency,
+				category: p.category,
+				variants: p.variants,
+				agotado: p.agotado,
+				bajo_pedido: p.bajo_pedido,
+				active: p.active,
+				position: p.position,
+			}));
+			if (rows.length > 0) {
+				const { error: prodErr } = await supabase.from('products').insert(rows);
+				if (prodErr) throw new Error(prodErr.message);
+			}
+			await loadStores();
+		} catch (e) {
+			duplicateError = e instanceof Error ? e.message : 'No se pudo duplicar la tienda.';
+		} finally {
+			duplicatingId = null;
+			duplicating = false;
+			menuOpenId = null;
+		}
+	}
 
 	async function confirmDelete() {
 		const target = deleteTarget;
@@ -144,6 +254,16 @@
 		</div>
 	{/if}
 
+	{#if duplicateError}
+		<div class="flex items-center gap-2.5 bg-error/10 border border-error/30 text-error rounded-btn px-4 py-3 mb-6 text-sm">
+			<i class="ri-error-warning-line flex-shrink-0"></i>
+			<p>{duplicateError}</p>
+			<button onclick={() => (duplicateError = '')} class="ml-auto text-xs font-semibold underline underline-offset-2 cursor-pointer">
+				Cerrar
+			</button>
+		</div>
+	{/if}
+
 	{#if loading}
 		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 			{#each Array(3) as _, i}
@@ -171,8 +291,8 @@
 	{:else}
 		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 			{#each stores as store}
-				<a href={`/dash/store/${store.code}`} class="bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
-					<div class="flex items-center gap-3 mb-4">
+				<a href={`/dash/store/${store.code}`} class="relative bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
+					<div class="flex items-center gap-3 mb-4 pr-10">
 						{#if store.logo}
 							<img src={store.logo} alt={store.name} class="h-12 w-12 object-cover rounded-lg bg-canvas" />
 						{:else}
@@ -188,6 +308,87 @@
 							<span class="ml-auto inline-flex items-center px-2.5 py-1 rounded-full bg-error/10 text-error text-[11px] flex-shrink-0">
 								Oculta
 							</span>
+						{/if}
+					</div>
+					<div class="absolute top-4 right-4 z-30">
+						<button
+							onclick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								menuOpenId = menuOpenId === store.id ? null : store.id;
+							}}
+							class="h-8 w-8 flex items-center justify-center rounded-full bg-bone text-muted hover:text-ink hover:bg-bone/60 transition-colors cursor-pointer"
+							aria-label={`Opciones de ${store.name}`}
+							aria-expanded={menuOpenId === store.id}
+						>
+							<i class="ri-more-2-fill"></i>
+						</button>
+						{#if menuOpenId === store.id}
+							<button
+								type="button"
+								class="fixed inset-0 z-40 cursor-default"
+								onclick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									menuOpenId = null;
+								}}
+								aria-label="Cerrar menú"
+							></button>
+							<div class="absolute right-0 top-full mt-2 z-50 w-56 bg-card border border-hairline rounded-btn shadow-xl overflow-hidden">
+								<button
+									onclick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										copyStoreLink(store);
+									}}
+									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
+								>
+									<i class="ri-link text-muted-soft"></i>
+									<span class="flex-1">Copiar enlace</span>
+									{#if copiedId === store.id}
+										<span class="text-[11px] font-bold text-ember inline-flex items-center gap-1">
+											<i class="ri-check-line"></i>
+											Copiado
+										</span>
+									{/if}
+								</button>
+								<button
+									onclick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										shareStore(store);
+									}}
+									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
+								>
+									<i class="ri-share-forward-line text-muted-soft"></i>
+									Compartir
+								</button>
+								<button
+									onclick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										duplicateStore(store);
+									}}
+									disabled={duplicatingId === store.id}
+									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left disabled:opacity-50"
+								>
+									<i class="ri-file-copy-line text-muted-soft"></i>
+									{duplicatingId === store.id ? 'Duplicando...' : 'Duplicar tienda'}
+								</button>
+								<div class="border-t border-hairline"></div>
+								<button
+									onclick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										menuOpenId = null;
+										deleteTarget = store;
+									}}
+									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-error hover:bg-error/10 transition-colors cursor-pointer text-left"
+								>
+									<i class="ri-delete-bin-6-line"></i>
+									Eliminar
+								</button>
+							</div>
 						{/if}
 					</div>
 					{#if store.description}
@@ -234,19 +435,11 @@
 						>
 							Ver
 						</button>
-						<button
-							onclick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								deleteTarget = store;
-							}}
-							class="ml-auto inline-flex items-center justify-center h-8 w-8 rounded-full bg-bone text-muted hover:bg-error/10 hover:text-error transition-colors cursor-pointer"
-							aria-label="Eliminar tienda"
-							title="Eliminar tienda"
-						>
-							<i class="ri-delete-bin-6-line"></i>
-						</button>
 					</div>
+					<p class="text-[11px] text-muted-soft mt-4 flex items-center gap-1">
+						<i class="ri-time-line text-[10px]"></i>
+						Creada el {fmtDate(store.created_at)}
+					</p>
 				</a>
 			{/each}
 		</div>
