@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, waLink, SITE_URL } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, SITE_URL } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -201,11 +201,7 @@
 			</div>
 		{/if}
 
-			{#if isAgotado}
-				<div class="bg-bone rounded-btn p-3 sm:p-4 text-center">
-					<p class="text-sm font-medium text-muted-soft">Producto agotado</p>
-				</div>
-			{:else}
+			{#if !isAgotado}
 				<div class="bg-bone rounded-btn p-3 sm:p-4">
 					<div class="flex items-center justify-between gap-3">
 						<div>
@@ -231,37 +227,15 @@
 						Agotado
 					</button>
 				{:else}
-					<div class="flex gap-3">
-						<button
-							onclick={addToCart}
-							class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
-						>
-							Añadir al carrito
-						</button>
-					</div>
+					<button
+						onclick={addToCart}
+						class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2
+							{added ? 'bg-success' : ''}"
+					>
+						{added ? 'Añadido al carrito' : 'Añadir al carrito'}
+					</button>
 				{/if}
 			</div>
 		</div>
 	</div>
-	<div class="h-24 lg:hidden"></div>
 </section>
-
-{#if !isAgotado}
-	<div class="fixed bottom-0 inset-x-0 z-40 lg:hidden">
-		<div class="bg-card/95 backdrop-blur border-t border-hairline px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-			<div class="max-w-3xl mx-auto flex items-center gap-4">
-				<div class="flex-shrink-0">
-					<p class="text-[10px] text-muted uppercase tracking-wide mb-0.5">Total</p>
-					<p class="text-lg font-black text-ember tabular-nums leading-none">{formatPrice(currentPrice, product.currency)}</p>
-				</div>
-				<button
-					onclick={addToCart}
-					class="flex-1 inline-flex items-center justify-center rounded-btn px-5 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] cursor-pointer
-						{added ? 'bg-success text-white' : 'bg-ember text-white hover:bg-ember-active'}"
-				>
-					{added ? 'Añadido' : 'Añadir al carrito'}
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}

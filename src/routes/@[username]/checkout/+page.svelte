@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { clearUtm, formatPrice, generateStoreCode, loadUtm, productImage, utmQuery, waLink } from '$lib/utils';
+	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -208,10 +208,11 @@
 				content_ids: items.map((i) => i.productId),
 			});
 			cart.clear();
-			const qs = utmQuery(loadUtm());
-			clearUtm();
-			window.open(waLink(wa ?? '', msg), '_blank');
-			goto(`/@${data.store.slug}/gracias${qs ? `?${qs}` : ''}`);
+const qs = utmQuery(loadUtm());
+		clearUtm();
+		window.open(waLink(wa ?? '', msg), '_blank');
+		const thanks = `/@${data.store.slug}/thanks?order_id=${encodeURIComponent(orderId ?? '')}`;
+		goto(qs ? `${thanks}&${qs}` : thanks);
 		}, 1200);
 	}
 </script>

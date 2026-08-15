@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { formatPrice } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
@@ -26,8 +25,13 @@
 	};
 
 	let order = $state<OrderSummary | null>(null);
+	let orderId = $state('');
 
 	$effect.pre(() => {
+		orderId = $page.url.searchParams.get('order_id') ?? '';
+	});
+
+	$effect(() => {
 		if (typeof sessionStorage === 'undefined') return;
 		const raw = sessionStorage.getItem(`tiendly-order-${data.store.slug}`);
 		if (!raw) return;
@@ -73,8 +77,8 @@
 		<div class="bg-card border border-hairline rounded-card p-6 mb-6">
 			<div class="flex items-center justify-between mb-4 pb-4 border-b border-hairline">
 				<h2 class="text-lg font-semibold text-ink">Tu pedido</h2>
-				{#if order.id}
-					<span class="text-xs font-mono text-muted-soft">Nº {order.id.slice(0, 8).toUpperCase()}</span>
+				{#if orderId || order.id}
+					<span class="text-xs font-mono text-muted-soft">Nº {orderId || (order.id ?? '').slice(0, 8).toUpperCase()}</span>
 				{/if}
 			</div>
 			<div class="space-y-3">
