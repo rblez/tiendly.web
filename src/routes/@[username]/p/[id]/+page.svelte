@@ -183,6 +183,7 @@
 					{#each product.variants as variant}
 						<button
 							role="radio"
+							aria-checked={selectedVariant?.id === variant.id}
 							onclick={() => { selectedVariant = variant; }}
 							disabled={variant.agotado}
 							class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left

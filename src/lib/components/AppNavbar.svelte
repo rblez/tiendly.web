@@ -63,7 +63,7 @@
 					</button>
 
 					{#if menuOpen}
-						<div class="fixed inset-0 z-40" onclick={() => (menuOpen = false)}></div>
+						<button type="button" class="fixed inset-0 z-40 cursor-default" onclick={() => (menuOpen = false)} aria-label="Cerrar menú"></button>
 						<div class="absolute right-0 mt-2 w-52 bg-card border border-hairline rounded-card shadow-xl overflow-hidden z-50">
 							<div class="px-4 py-3 border-b border-hairline">
 								<p class="text-sm font-semibold text-ink truncate">{profileName}</p>

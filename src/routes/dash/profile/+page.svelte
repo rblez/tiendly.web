@@ -325,8 +325,9 @@
 			</div>
 
 			<div>
-				<label class="block text-sm font-medium text-body mb-1.5">Correo</label>
+				<label for="p-email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<input
+					id="p-email"
 					type="email"
 					value={auth.session?.user.email ?? ''}
 					disabled

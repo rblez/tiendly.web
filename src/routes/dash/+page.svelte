@@ -262,6 +262,7 @@
 				<h2 class="text-lg font-bold text-ink mb-1">¿Eliminar {deleteTarget.name}?</h2>
 				<p class="text-sm text-muted mb-6">
 					Se borrarán permanentemente sus {stats[deleteTarget.id]?.products ?? 0} productos y {stats[deleteTarget.id]?.orders ?? 0} pedidos. Esta acción no se puede deshacer.
+				</p>
 				{#if deleteError}
 					<p class="text-xs text-error mb-4">{deleteError}</p>
 				{/if}

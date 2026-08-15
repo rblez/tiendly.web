@@ -65,18 +65,26 @@
 	</p>
 
 		{#if direct}
-			<a
-				href={ctaHref ?? productUrl}
-				target="_blank"
-				rel="noopener noreferrer"
+			<span
+				role="button"
+				tabindex="0"
 				onclick={(e) => {
-					if (!ctaHref) e.preventDefault();
+					e.preventDefault();
+					e.stopPropagation();
+					if (ctaHref) window.open(ctaHref, '_blank');
 				}}
-				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium bg-ember text-white hover:bg-ember-active transition-all duration-200 inline-flex items-center justify-center gap-2 no-underline"
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						e.stopPropagation();
+						if (ctaHref) window.open(ctaHref, '_blank');
+					}
+				}}
+				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium bg-ember text-white hover:bg-ember-active transition-all duration-200 inline-flex items-center justify-center gap-2 cursor-pointer select-none"
 			>
 				<i class={actionConfig(action).icon}></i>
 				{actionConfig(action).label}
-			</a>
+			</span>
 		{:else}
 			<span
 				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
