@@ -19,6 +19,7 @@ export const load = async ({ params, parent }) => {
 			...product,
 			variants: Array.isArray(product.variants) ? product.variants : [],
 			images: Array.isArray(product.images) ? product.images : [],
+			ask: Array.isArray(product.ask) ? product.ask : [],
 		},
 	};
 };

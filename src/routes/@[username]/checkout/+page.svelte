@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, convertPrice, vendorCurrency } from '$lib/utils';
+	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, convertPrice, vendorCurrency, variantPrice } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -14,6 +14,23 @@
 	let sending = $state(false);
 	let orderError = $state('');
 	let orderPlaced = $state(false);
+	let askValues = $state<Record<string, string>>({});
+
+	const askFields = $derived.by(() => {
+		const seen = new Set<string>();
+		const out: { key: string; productId: string; label: string }[] = [];
+		for (const cp of cartLines) {
+			for (const label of cp.product.ask ?? []) {
+				const key = `${cp.productId}::${label}`;
+				if (seen.has(key)) continue;
+				seen.add(key);
+				out.push({ key, productId: cp.productId, label });
+			}
+		}
+		return out;
+	});
+
+	const askMissing = $derived(askFields.filter((f) => !(askValues[f.key] ?? '').trim()));
 
 	// id de pedido: se genera al abrir el checkout y queda en la URL para rastreo
 	let orderId = $state('');
@@ -49,7 +66,7 @@
 			const ids = items.map((i) => i.productId);
 			const { data: rows } = await supabase.from('products').select('*').in('id', ids);
 			for (const row of rows ?? []) {
-				cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[] };
+				cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
 			}
 			cacheReady = true;
 		})();
@@ -64,13 +81,18 @@
 				const variant = ci.variantId
 					? product.variants.find((v) => v.id === ci.variantId)
 					: null;
+				const option = ci.optionId && variant
+					? (variant.options ?? []).find((o) => o.id === ci.optionId) ?? null
+					: null;
+				const price = variantPrice(variant, ci.optionId);
 				return {
 					...ci,
 					product,
 					variant,
-					price: variant ? variant.price : product.price,
-					label: variant?.label ?? null,
-					display: convertPrice(variant ? variant.price : product.price, data.store),
+					option,
+					price,
+					label: variant ? (option && variant.options?.length ? variant.label + ' — ' + option.label : variant.label) : null,
+					display: convertPrice(price, data.store),
 				};
 			})
 			.filter((x): x is NonNullable<typeof x> => x !== null);
@@ -91,7 +113,13 @@
 			const qty = cp.quantity > 1 ? ` x${cp.quantity}` : '';
 			const variant = cp.label ? ` (${cp.label})` : '';
 			const currency = vendorCurrency(data.store);
-			return `▸ ${cp.product.name}${variant}${qty} — ${formatPrice(cp.display * cp.quantity, currency)}`;
+			const askList = (cp.product.ask ?? [])
+				.map((label) => {
+					const value = (askValues[`${cp.productId}::${label}`] ?? '').trim();
+					return value ? `\n   · ${label}: ${value}` : '';
+				})
+				.join('');
+			return `▸ ${cp.product.name}${variant}${qty} — ${formatPrice(cp.display * cp.quantity, currency)}${askList}`;
 		});
 
 		const lines = [
@@ -123,6 +151,11 @@
 		e.preventDefault();
 		if (!name || !phone || sending) return;
 
+		if (askMissing.length > 0) {
+			orderError = `Falta completar: ${askMissing.map((f) => f.label).join(', ')}.`;
+			return;
+		}
+
 		sending = true;
 		orderError = '';
 		const msg = buildWhatsAppMessage();
@@ -134,15 +167,24 @@
 			num_items: cartLines.length,
 		});
 
-		const items = cartLines.map((cp) => ({
-			productId: cp.productId,
-			variantId: cp.variantId ?? undefined,
-			quantity: cp.quantity,
-			productName: cp.product.name,
-			label: cp.label,
-			price: cp.display,
-			currency: vendorCurrency(data.store),
-		}));
+		const items = cartLines.map((cp) => {
+			const askObj: Record<string, string> = {};
+			for (const label of cp.product.ask ?? []) {
+				const v = (askValues[`${cp.productId}::${label}`] ?? '').trim();
+				if (v) askObj[label] = v;
+			}
+			return {
+				productId: cp.productId,
+				variantId: cp.variantId ?? undefined,
+				optionId: cp.optionId ?? undefined,
+				quantity: cp.quantity,
+				productName: cp.product.name,
+				label: cp.label,
+				price: cp.display,
+				currency: vendorCurrency(data.store),
+				...(Object.keys(askObj).length > 0 ? { ask: askObj } : {}),
+			};
+		});
 
 		let saved = true;
 		const utm = loadUtm();
@@ -306,6 +348,30 @@ const qs = utmQuery(loadUtm());
 						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 				</div>
+
+				{#if askFields.length > 0}
+					<div class="bg-bone rounded-btn p-4 space-y-3">
+						<p class="text-sm font-medium text-body">Datos para tu pedido</p>
+						{#each askFields as f}
+							<div>
+								<label for={`ask-${f.key}`} class="block text-sm text-body mb-1.5">
+									{f.label}
+									{#if !(askValues[f.key] ?? '').trim() && askMissing.some((m) => m.key === f.key)}
+										<span class="text-error">(obligatorio)</span>
+									{/if}
+								</label>
+								<input
+									id={`ask-${f.key}`}
+									type="text"
+									required
+									bind:value={askValues[f.key]}
+									placeholder={`Tu ${f.label}`}
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+						{/each}
+					</div>
+				{/if}
 
 				<div>
 					<label for="notes" class="block text-sm font-medium text-body mb-1.5">Notas <span class="text-muted-soft">(opcional)</span></label>

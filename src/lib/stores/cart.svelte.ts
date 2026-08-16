@@ -26,7 +26,15 @@ function createCartStore() {
 
 	let storeSlug = $derived(items[0]?.storeSlug ?? '');
 
-	function addItem(slug: string, productId: string, variantId?: string) {
+	function sameLine(a: CartLine, b: Pick<CartLine, 'productId' | 'variantId' | 'optionId'>) {
+		return (
+			a.productId === b.productId &&
+			a.variantId === (b.variantId ?? undefined) &&
+			a.optionId === (b.optionId ?? undefined)
+		);
+	}
+
+	function addItem(slug: string, productId: string, variantId?: string, optionId?: string) {
 		if (items.length > 0 && items[0].storeSlug !== slug) {
 			if (
 				typeof window !== 'undefined' &&
@@ -36,32 +44,32 @@ function createCartStore() {
 			}
 			items = [];
 		}
-		const existing = items.find(
-			(i) => i.productId === productId && i.variantId === (variantId ?? undefined)
-		);
+		const existing = items.find((i) => sameLine(i, { productId, variantId, optionId }));
 		if (existing) {
 			existing.quantity += 1;
 		} else {
-			items.push({ storeSlug: slug, productId, variantId: variantId ?? undefined, quantity: 1 });
+			items.push({
+				storeSlug: slug,
+				productId,
+				variantId: variantId ?? undefined,
+				optionId: optionId ?? undefined,
+				quantity: 1,
+			});
 		}
 		saveCart(items);
 	}
 
-	function removeItem(productId: string, variantId?: string) {
-		items = items.filter(
-			(i) => !(i.productId === productId && i.variantId === (variantId ?? undefined))
-		);
+	function removeItem(productId: string, variantId?: string, optionId?: string) {
+		items = items.filter((i) => !sameLine(i, { productId, variantId, optionId }));
 		saveCart(items);
 	}
 
-	function updateQuantity(productId: string, quantity: number, variantId?: string) {
+	function updateQuantity(productId: string, quantity: number, variantId?: string, optionId?: string) {
 		if (quantity <= 0) {
-			removeItem(productId, variantId);
+			removeItem(productId, variantId, optionId);
 			return;
 		}
-		const item = items.find(
-			(i) => i.productId === productId && i.variantId === (variantId ?? undefined)
-		);
+		const item = items.find((i) => sameLine(i, { productId, variantId, optionId }));
 		if (item) {
 			item.quantity = quantity;
 			saveCart(items);

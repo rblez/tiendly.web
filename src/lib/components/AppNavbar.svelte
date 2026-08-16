@@ -5,7 +5,7 @@
 
 	const profileName = $derived(auth.profile?.name ?? auth.session?.user.email ?? '');
 	const avatar = $derived(auth.profile?.avatar_url ?? null);
-	const isStoreRoute = $derived($page.url.pathname.startsWith('/dash/store/'));
+	const isStoreRoute = $derived($page.url.pathname.startsWith('/dashboard/s/'));
 
 	let menuOpen = $state(false);
 	let logoutOpen = $state(false);
@@ -25,7 +25,7 @@
 <nav class="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-hairline">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16">
-			<a href="/dash" class="flex items-center gap-2.5 no-underline group" aria-label="Mis tiendas" title="Mis tiendas">
+			<a href="/dashboard" class="flex items-center gap-2.5 no-underline group" aria-label="Mis tiendas" title="Mis tiendas">
 				{#if isStoreRoute}
 					<i class="ri-arrow-left-line text-muted group-hover:text-ink transition-colors"></i>
 				{/if}
@@ -72,7 +72,7 @@
 							<button
 								onclick={() => {
 									menuOpen = false;
-									goto('/dash');
+									goto('/dashboard');
 								}}
 								class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink hover:bg-bone transition-colors cursor-pointer"
 							>
@@ -82,7 +82,7 @@
 							<button
 								onclick={() => {
 									menuOpen = false;
-									goto('/dash/profile');
+									goto('/dashboard/profile');
 								}}
 								class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink hover:bg-bone transition-colors cursor-pointer"
 							>

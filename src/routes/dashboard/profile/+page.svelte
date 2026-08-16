@@ -344,9 +344,6 @@
 							Miembro desde {auth.profile?.created_at ? new Date(auth.profile.created_at).toLocaleDateString('es-CU', { year: 'numeric', month: 'long' }) : '—'}
 						</p>
 					</div>
-					<a href="/pricing" class="text-sm font-medium text-ember hover:text-ember-active no-underline whitespace-nowrap">
-						{plan.price > 0 ? 'Cambiar plan' : 'Mejorar plan'}
-					</a>
 				</div>
 				<div class="space-y-3">
 					<div>

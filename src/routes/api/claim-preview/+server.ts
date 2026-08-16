@@ -9,7 +9,7 @@ const admin = createClient<Database>(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_
 	auth: { persistSession: false },
 });
 
-const PLAN_LIMITS: Record<PlanId, number> = { free: 1, creator: 3, business: Infinity };
+const PLAN_LIMITS: Record<PlanId, number> = { free: 1 };
 
 export const POST = async ({ request }) => {
 	const authHeader = request.headers.get('authorization') ?? '';

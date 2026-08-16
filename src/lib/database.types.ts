@@ -77,6 +77,7 @@ export type Database = {
         Row: {
           active: boolean
           agotado: boolean
+          ask?: string[] | null
           bajo_pedido: boolean
           category: string
           created_at: string
@@ -94,6 +95,7 @@ export type Database = {
         Insert: {
           active?: boolean
           agotado?: boolean
+          ask?: string[] | null
           bajo_pedido?: boolean
           category?: string
           created_at?: string
@@ -111,6 +113,7 @@ export type Database = {
         Update: {
           active?: boolean
           agotado?: boolean
+          ask?: string[] | null
           bajo_pedido?: boolean
           category?: string
           created_at?: string

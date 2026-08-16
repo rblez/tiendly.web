@@ -35,11 +35,11 @@
 			claimed = true;
 			const storeCode = await claimPreview();
 			if (storeCode) {
-				goto(`/dash/store/${storeCode}?created=1`);
+				goto(`/dashboard/s/${storeCode}?created=1`);
 				return;
 			}
 		}
-		goto('/dash');
+		goto('/dashboard');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {

@@ -9,12 +9,25 @@
 
 	let isAgotado = $derived(
 		product.agotado ||
-		(product.variants.length > 0 && product.variants.every((v) => v.agotado))
+		(product.variants.length > 0 &&
+			product.variants.every((v) => {
+				const options = v.options ?? [];
+				return v.agotado || (options.length > 0 && options.every((o) => o.agotado));
+			}))
 	);
 
 	let minPrice = $derived(
 		product.variants.length > 0
-			? Math.min(...product.variants.filter((v) => !v.agotado).map((v) => v.price))
+			? Math.min(
+					...product.variants
+						.filter((v) => !v.agotado)
+						.map((v) => {
+							const options = v.options ?? [];
+							const live = options.filter((o) => !o.agotado);
+							if (options.length > 0 && live.length === 0) return Infinity;
+							return v.price + (live.length > 0 ? Math.min(...live.map((o) => o.price)) : 0);
+						}),
+				)
 			: product.price
 	);
 

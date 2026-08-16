@@ -1,6 +1,6 @@
 import type { Product, Store, Variant } from '$lib/types';
 import type { StoreSocial } from '$lib/types';
-import { formatPrice, waLink } from '$lib/utils';
+import { formatPrice, waLink, variantLabel, variantPrice } from '$lib/utils';
 import { storeSocials } from '$lib/socials';
 
 export type StoreAction = 'comprar' | 'whatsapp' | 'telegram' | 'contactar';
@@ -34,10 +34,16 @@ export function isCatalogMode(store: Pick<Store, 'action' | 'whatsapp' | 'social
 	return storeAction(store) !== 'comprar';
 }
 
-export function productOrderMessage(store: Pick<Store, 'name'>, product: Pick<Product, 'name' | 'price' | 'currency'>, variant?: Variant | null): string {
-	const label = variant ? ` (${variant.label})` : '';
-	const price = formatPrice(variant?.price ?? product.price, product.currency);
-	return `Hola ${store.name} 👋\nQuiero pedir: ${product.name}${label} — ${price}`;
+export function productOrderMessage(
+	store: Pick<Store, 'name'>,
+	product: Pick<Product, 'name' | 'price' | 'currency'>,
+	variant?: Variant | null,
+	optionId?: string | null,
+): string {
+	const label = variantLabel(variant ?? null, optionId);
+	const labelPart = label ? ` (${label})` : '';
+	const price = formatPrice(variantPrice(variant, optionId), product.currency);
+	return `Hola ${store.name} 👋\nQuiero pedir: ${product.name}${labelPart} — ${price}`;
 }
 
 export function actionLink(

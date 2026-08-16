@@ -66,6 +66,7 @@
 		products = (fresh as Product[] | null)?.map((p) => ({
 			...p,
 			variants: Array.isArray(p.variants) ? p.variants : [],
+			ask: Array.isArray(p.ask) ? p.ask : [],
 			images: Array.isArray(p.images) ? p.images : [],
 		})) ?? [];
 	}

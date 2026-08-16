@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, convertPrice, vendorCurrency } from '$lib/utils';
+	import { formatPrice, productImage, convertPrice, vendorCurrency, variantPrice } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -19,7 +19,7 @@
 		const ids = items.map((i) => i.productId);
 		const { data: rows } = await supabase.from('products').select('*').in('id', ids);
 		for (const row of rows ?? []) {
-			products[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[] };
+			products[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
 		}
 		loaded = true;
 	});
@@ -33,8 +33,11 @@
 				const variant = ci.variantId
 					? product.variants.find((v) => v.id === ci.variantId)
 					: null;
-				const price = variant ? variant.price : product.price;
-				return { ...ci, product, variant, price, label: variant?.label ?? null };
+				const option = ci.optionId && variant
+					? (variant.options ?? []).find((o) => o.id === ci.optionId) ?? null
+					: null;
+				const price = variantPrice(variant, ci.optionId);
+				return { ...ci, product, variant, option, price, label: variant ? (option && variant.options?.length ? variant.label + ' — ' + option.label : variant.label) : null };
 			})
 			.filter((x): x is NonNullable<typeof x> => x !== null)
 	);
@@ -108,7 +111,7 @@
 								</a>
 							</h3>
 							<button
-								onclick={() => cart.removeItem(cp.productId, cp.variantId)}
+								onclick={() => cart.removeItem(cp.productId, cp.variantId, cp.optionId)}
 								class="p-1.5 text-muted-soft hover:text-error hover:bg-error/10 rounded-full transition-colors cursor-pointer flex-shrink-0"
 								aria-label="Eliminar"
 							>
@@ -123,7 +126,7 @@
 						<div class="mt-3 flex items-center justify-between gap-3">
 							<div class="inline-flex items-center border border-hairline rounded-full px-1 py-1">
 								<button
-									onclick={() => cart.updateQuantity(cp.productId, cp.quantity - 1, cp.variantId)}
+									onclick={() => cart.updateQuantity(cp.productId, cp.quantity - 1, cp.variantId, cp.optionId)}
 									class="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-bone transition-colors cursor-pointer"
 									aria-label="Restar"
 								>
@@ -131,7 +134,7 @@
 								</button>
 								<span class="w-8 text-center font-semibold text-ink tabular-nums">{cp.quantity}</span>
 								<button
-									onclick={() => cart.updateQuantity(cp.productId, cp.quantity + 1, cp.variantId)}
+									onclick={() => cart.updateQuantity(cp.productId, cp.quantity + 1, cp.variantId, cp.optionId)}
 									class="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-bone transition-colors cursor-pointer"
 									aria-label="Sumar"
 								>

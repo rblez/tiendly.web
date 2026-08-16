@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { ensureUniqueSlug, generateStoreCode, storeUrl } from '$lib/utils';
-	import { PLAN_MAP, PLANS, planWhatsAppUrl } from '$lib/plans';
+	import { PLAN_MAP } from '$lib/plans';
 	import type { Json } from '$lib/database.types';
 	import type { Order, Product, Store } from '$lib/types';
 
@@ -159,17 +159,18 @@
 		loading = true;
 		loadError = '';
 		try {
-			const [storesRes, productsRes, ordersRes] = await Promise.all([
+			const [storesRes, productsRes, ordersRes, visitRes] = await Promise.all([
 				supabase.from('stores').select('*').eq('owner_id', auth.session!.user.id).order('created_at', { ascending: false }),
 				supabase.from('products').select('store_id').eq('active', true),
 				supabase.from('orders').select('store_id'),
+				supabase.from('store_visits').select('store_id, visits'),
 			]);
 
 			const storeRows = (storesRes.data as Store[] | null) ?? [];
 			stores = storeRows;
 
 			const acc: StoreStats = {};
-			for (const s of storeRows) acc[s.id] = { products: 0, orders: 0, visits: s.visits ?? 0 };
+			for (const s of storeRows) acc[s.id] = { products: 0, orders: 0, visits: 0 };
 			for (const p of productsRes.data ?? []) {
 				const row = p as { store_id: string };
 				if (acc[row.store_id]) acc[row.store_id].products += 1;
@@ -177,6 +178,10 @@
 			for (const o of ordersRes.data ?? []) {
 				const row = o as { store_id: string };
 				if (acc[row.store_id]) acc[row.store_id].orders += 1;
+			}
+			for (const v of visitRes.data ?? []) {
+				const row = v as { store_id: string; visits: number };
+				if (acc[row.store_id]) acc[row.store_id].visits += row.visits;
 			}
 			stats = acc;
 		} catch {
@@ -227,20 +232,16 @@
 	</div>
 
 	{#if atLimit}
-		<button
-			onclick={() => (upgradeOpen = true)}
-			class="w-full flex items-start justify-between gap-4 bg-gradient-to-r from-ember/15 via-ember/5 to-transparent border border-ember/30 rounded-card p-5 text-left hover:border-ember/60 transition-colors cursor-pointer mb-8"
+		<div
+			class="w-full flex items-start justify-between gap-4 bg-gradient-to-r from-ember/15 via-ember/5 to-transparent border border-ember/30 rounded-card p-5 mb-8"
 		>
 			<div class="flex items-start gap-4 min-w-0">
 				<div class="text-left">
 					<p class="font-bold text-ink">Estás en el plan Gratis</p>
-					<p class="text-sm text-body mt-0.5">Incluye 1 tienda y 10 productos. Actualiza a Estándar o Negocios para más tiendas y productos.</p>
+					<p class="text-sm text-body mt-0.5">Incluye {plan.limitStores} tienda y hasta {plan.limitProducts} productos por tienda. Puedes duplicar, eliminar o editar tus tiendas desde el menú ⋮.</p>
 				</div>
 			</div>
-			<span class="text-sm font-medium text-ember flex-shrink-0 mt-1">
-				Mejorar plan
-			</span>
-		</button>
+		</div>
 	{/if}
 
 	{#if loadError}
@@ -293,7 +294,7 @@
 	{:else}
 		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 			{#each stores as store}
-				<a href={`/dash/store/${store.code}`} class="relative bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
+				<a href={`/dashboard/s/${store.code}`} class="relative bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
 					<div class="flex items-center gap-3 mb-4 pr-10">
 						{#if store.logo}
 							<img src={store.logo} alt={store.name} class="h-12 w-12 object-cover rounded-lg bg-canvas" />
@@ -486,51 +487,24 @@
 
 	{#if upgradeOpen}		<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" role="presentation">
 			<button type="button" class="absolute inset-0 bg-black/60 cursor-default" onclick={() => (upgradeOpen = false)} aria-label="Cerrar"></button>
-			<div class="relative bg-card border border-hairline rounded-card w-full max-w-3xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto">
+			<div class="relative bg-card border border-hairline rounded-card w-full max-w-md p-5 sm:p-8">
 				<button onclick={() => (upgradeOpen = false)} class="absolute top-4 right-4 text-muted hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
 					<i class="ri-close-line text-xl"></i>
 				</button>
-				<h2 class="text-xl font-bold text-ink mb-1">Elige tu plan</h2>
-				<p class="text-sm text-muted mb-6">Precios en USD</p>
-
-				<div class="grid gap-4 sm:grid-cols-3">
-					{#each PLANS as p}
-						<div class={`border rounded-card p-5 flex flex-col ${p.id === plan.id ? 'border-ember border-2' : 'border-hairline'}`}>
-							<div class="flex items-center justify-between mb-1">
-								<h3 class="font-bold text-ink">{p.name}</h3>
-								{#if p.id === plan.id}
-									<span class="text-[10px] font-bold bg-ember/10 text-ember rounded-full px-2 py-0.5">Actual</span>
-								{:else if p.id === 'business'}
-									<span class="text-[10px] font-bold bg-ember text-white rounded-full px-2 py-0.5">Top</span>
-								{/if}
-							</div>
-							<p class="text-2xl font-black text-ink mb-1">{p.priceLabel}</p>
-							<p class="text-xs text-muted mb-4">{p.tagline}</p>
-							<ul class="space-y-1.5 mb-5 flex-1">
-								{#each p.features as feat}
-									<li class="text-xs text-body flex items-start gap-1.5">
-										<i class="ri-check-line text-ember mt-0.5 flex-shrink-0"></i>
-										{feat}
-									</li>
-								{/each}
-							</ul>
-							{#if p.id !== 'free'}
-								<a
-									href={planWhatsAppUrl(p.name, 'monthly', auth.session?.user?.email ?? '—')}
-									class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-3 rounded-btn text-sm font-medium no-underline opacity-90 hover:opacity-100 transition-opacity"
-								>
-									<i class="ri-whatsapp-line"></i>
-									Adquirir
-								</a>
-							{/if}
-						</div>
-					{/each}
+				<div class="w-14 h-14 bg-ember/10 rounded-full flex items-center justify-center mb-4">
+					<i class="ri-store-2-line text-2xl text-ember"></i>
 				</div>
-
-				<p class="text-xs text-muted-soft mt-5 flex items-center gap-1.5">
-					<i class="ri-gift-line"></i>
-					Al suscribirte a un plan de pago soportas el desarrollo de Tiendly.
+				<h2 class="text-xl font-bold text-ink mb-1">Límite del plan Gratis</h2>
+				<p class="text-sm text-body">
+					El plan Gratis incluye {plan.limitStores === Infinity ? 'tiendas ilimitadas' : `${plan.limitStores} ${plan.limitStores === 1 ? 'tienda' : 'tiendas'}`} y hasta {plan.limitProducts === Infinity ? 'productos ilimitados' : `${plan.limitProducts} productos`} por tienda.
 				</p>
+				<button
+					type="button"
+					onclick={() => (upgradeOpen = false)}
+					class="mt-6 w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active cursor-pointer"
+				>
+					Entendido
+				</button>
 			</div>
 		</div>
 	{/if}

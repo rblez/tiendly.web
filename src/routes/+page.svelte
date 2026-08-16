@@ -7,7 +7,7 @@
 		auth.init();
 	});
 	$effect(() => {
-		if (auth.ready && auth.session) goto('/dash');
+		if (auth.ready && auth.session) goto('/dashboard');
 	});
 </script>
 

@@ -118,6 +118,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formBajoPedido = $state(false);
 	let formActive = $state(true);
 	let formVariants = $state('');
+	let formAsk = $state('');
 	let formImages = $state<string[]>([]);
 	let formSaving = $state(false);
 	let productError = $state('');
@@ -183,6 +184,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 let formCreatingCategory = $state(false);
 	let hasActionColumn = $state(true);
 	let hasCurrencyColumn = $state(false);
+	let hasAskColumn = $state(false);
 	let exchangeRateParsed = $derived.by(() => {
 		const raw = settings.exchange_rate.trim();
 		if (!raw) return null;
@@ -285,7 +287,11 @@ $effect(() => {
 			...p,
 			variants: Array.isArray(p.variants) ? p.variants : [],
 			images: Array.isArray(p.images) ? p.images : [],
+			ask: Array.isArray(p.ask) ? p.ask : [],
 		})) ?? [];
+			if (!hasAskColumn && (productsData ?? []).length > 0) {
+				hasAskColumn = 'ask' in (productsData as object[])[0];
+			}
 			const openPid = $page.url.searchParams.get('producto');
 			if (openPid) {
 				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
@@ -351,6 +357,7 @@ $effect(() => {
 		formBajoPedido = false;
 		formActive = true;
 		formVariants = '';
+		formAsk = '';
 		formImages = [];
 		productError = atLimit
 			? `Límite del plan ${plan.name}: máximo ${productLimit} productos. Mejora tu plan para agregar más.`
@@ -371,6 +378,7 @@ $effect(() => {
 		formBajoPedido = p.bajo_pedido ?? false;
 		formActive = p.active;
 		formVariants = variantsToText(p.variants);
+		formAsk = (p.ask ?? []).join('\n');
 		formImages = Array.isArray(p.images) ? p.images : [];
 		productError = '';
 	}
@@ -398,6 +406,7 @@ $effect(() => {
 		}
 		formSaving = true;
 		const variants = parseVariants(formVariants);
+		const ask = formAsk.split('\n').map((l) => l.trim()).filter(Boolean);
 		const payload = {
 			name: formName.trim(),
 			description: formDescription.trim() || null,
@@ -410,6 +419,7 @@ $effect(() => {
 			variants: variants as unknown as import('$lib/database.types').Json,
 			images: formImages,
 			image: formImages[0] ?? null,
+			...(hasAskColumn ? { ask } : {}),
 		};
 
 		let result;
@@ -487,6 +497,7 @@ $effect(() => {
 			...p,
 			variants: Array.isArray(p.variants) ? p.variants : [],
 			images: Array.isArray(p.images) ? p.images : [],
+			ask: Array.isArray(p.ask) ? p.ask : [],
 		})) ?? [];
 	}
 
@@ -725,6 +736,7 @@ async function duplicateProduct(p: Product) {
 										image: src.image,
 									images: Array.isArray(src.images) ? src.images : [],
 									variants: Array.isArray(src.variants) ? (src.variants as unknown as Database['public']['Tables']['products']['Row']['variants']) : [],
+									ask: Array.isArray(src.ask) ? src.ask : [],
 									});
 									if (error) return;
 									await reloadProducts();
@@ -767,7 +779,7 @@ async function duplicateProduct(p: Product) {
 		<div class="text-center py-20">
 			<i class="ri-error-warning-line text-4xl text-muted-soft mb-4 block"></i>
 			<p class="text-body">{error}</p>
-			<a href="/dash" class="inline-block mt-4 text-ember text-sm font-medium no-underline">Volver a mis tiendas</a>
+			<a href="/dashboard" class="inline-block mt-4 text-ember text-sm font-medium no-underline">Volver a mis tiendas</a>
 		</div>
 	{:else if loading || !store}
 		<div class="space-y-3">
@@ -1289,17 +1301,26 @@ async function duplicateProduct(p: Product) {
 
 							<div class="bg-canvas rounded-btn px-4 py-3 mb-3 divide-y divide-hairline-soft">
 								{#each order.items as item}
-									<div class="flex items-center justify-between gap-3 py-1 text-sm first:pt-0 last:pb-0">
-										<span class="text-body min-w-0 flex items-center gap-2">
-											<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 flex-shrink-0">x{item.quantity}</span>
-											<span class="truncate">
-												{item.productName}
-												{#if item.label}
-													<span class="text-ember"> — {item.label}</span>
-												{/if}
+									<div class="py-1 first:pt-0 last:pb-0 text-sm">
+										<div class="flex items-center justify-between gap-3">
+											<span class="text-body min-w-0 flex items-center gap-2">
+												<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 flex-shrink-0">x{item.quantity}</span>
+												<span class="truncate">
+													{item.productName}
+													{#if item.label}
+														<span class="text-ember"> — {item.label}</span>
+													{/if}
+												</span>
 											</span>
-										</span>
-										<span class="text-ink font-medium flex-shrink-0 tabular-nums">{formatPrice(item.price * item.quantity, item.currency)}</span>
+											<span class="text-ink font-medium flex-shrink-0 tabular-nums">{formatPrice(item.price * item.quantity, item.currency)}</span>
+										</div>
+										{#if item.ask && Object.keys(item.ask).length > 0}
+											<div class="ml-6 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+												{#each Object.entries(item.ask) as [label, value]}
+													<span class="text-[11px] text-muted"><span class="font-medium text-body">{label}:</span> {value}</span>
+												{/each}
+											</div>
+										{/if}
 									</div>
 								{/each}
 							</div>
@@ -1617,13 +1638,14 @@ async function duplicateProduct(p: Product) {
 								</div>
 								<h4 class="font-bold text-ink mb-1">Límite de productos alcanzado</h4>
 								<p class="text-sm text-body mb-6">{productError}</p>
-								<a
-									href="/pricing"
-									class="inline-flex items-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+								<button
+									type="button"
+									onclick={() => (productModalOpen = false)}
+									class="inline-flex items-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline cursor-pointer"
 								>
-									<i class="ri-arrow-left-line"></i>
-									Ver planes
-								</a>
+									<i class="ri-close-line"></i>
+									Cerrar
+								</button>
 							</div>
 						{:else}
 						<div>
@@ -1706,9 +1728,25 @@ async function duplicateProduct(p: Product) {
 								id="p-variants"
 								bind:value={formVariants}
 								rows="3"
-								placeholder="1 unidad=500&#10;2 unidades=900"
+								placeholder="1 unidad=500&#10;2 unidades=900&#10;  Con envío=100"
 								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
 							></textarea>
+							<p class="text-xs text-muted-soft mt-1.5">
+								Cada línea es una variante. Las líneas con 2 espacios al inicio son sub-opciones de la variante anterior (precio que se suma). Usa <span class="font-mono">*</span> al final para marcar agotada.
+							</p>
+						</div>
+						<div>
+							<label for="p-ask" class="block text-sm font-medium text-body mb-1.5">
+								Datos que pides al cliente <span class="text-muted-soft">(opcional, uno por línea)</span>
+							</label>
+							<textarea
+								id="p-ask"
+								bind:value={formAsk}
+								rows="2"
+								placeholder="ID de Free Fire&#10;Correo de PayPal"
+								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+							></textarea>
+							<p class="text-xs text-muted-soft mt-1.5">Se pedirán en el checkout y se incluyen en el mensaje de WhatsApp.</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-body mb-1.5">Fotos <span class="text-muted-soft">({formImages.length})</span></label>

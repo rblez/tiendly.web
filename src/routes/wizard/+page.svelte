@@ -149,7 +149,7 @@
 					if (productsError) throw productsError;
 				}
 
-				goto(`/dash/store/${store.code}?created=1`);
+				goto(`/dashboard/s/${store.code}?created=1`);
 			} else {
 				const token = crypto.randomUUID();
 				const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -200,9 +200,9 @@
 			</div>
 			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Gratis</h1>
 			<p class="text-body mb-2">El plan Gratis incluye 1 tienda. Ya tienes una en Tiendly.</p>
-			<p class="text-xs text-muted-soft mb-8">Actualiza a Estándar o Negocios para crear más tiendas.</p>
+			<p class="text-xs text-muted-soft mb-8">Puedes eliminar o duplicar tus tiendas desde el menú ⋮ en tu panel.</p>
 			<a
-				href="/dash"
+				href="/dashboard"
 				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
 				<i class="ri-arrow-left-line"></i>

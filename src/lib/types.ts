@@ -1,8 +1,16 @@
+export interface VariantOption {
+	id: string;
+	label: string;
+	price: number;
+	agotado?: boolean;
+}
+
 export interface Variant {
 	id: string;
 	label: string;
 	price: number;
 	agotado?: boolean;
+	options?: VariantOption[];
 }
 
 export interface Product {
@@ -16,6 +24,7 @@ export interface Product {
 	currency: string;
 	category: string;
 	variants: Variant[];
+	ask: string[];
 	agotado: boolean;
 	bajo_pedido: boolean;
 	active: boolean;
@@ -26,11 +35,13 @@ export interface Product {
 export interface OrderItem {
 	productId: string;
 	variantId?: string;
+	optionId?: string;
 	quantity: number;
 	productName: string;
 	label?: string | null;
 	price: number;
 	currency: string;
+	ask?: Record<string, string>;
 }
 
 export interface Order {
@@ -91,5 +102,6 @@ export interface CartLine {
 	storeSlug: string;
 	productId: string;
 	variantId?: string;
+	optionId?: string;
 	quantity: number;
 }

@@ -133,26 +133,51 @@ function variantId(label: string, price: number): string {
 }
 
 export function parseVariants(text: string): Variant[] {
-	return text
-		.split('\n')
-		.map((line) => line.trim())
-		.filter(Boolean)
-		.map((line) => {
-			const agotado = line.endsWith('*');
-			const clean = agotado ? line.slice(0, -1).trim() : line;
-			const [label, rawPrice] = clean.split(/[=:]/);
-			const price = parsePrice(rawPrice ?? '');
-			return {
-				id: variantId(label, price),
-				label: label.trim(),
-				price,
-				...{ agotado },
-			};
-		});
+	const variants: Variant[] = [];
+	for (const raw of text.split('\n')) {
+		const trimmed = raw.trim();
+		if (!trimmed) continue;
+		const agotado = trimmed.endsWith('*');
+		const clean = agotado ? trimmed.slice(0, -1).trim() : trimmed;
+		const [label, rawPrice] = clean.split(/[=:]/);
+		const price = parsePrice(rawPrice ?? '');
+		const item = { id: variantId(label, price), label: label.trim(), price, agotado };
+		if (/^\s/.test(raw)) {
+			const parent = variants[variants.length - 1];
+			if (parent) {
+				if (!parent.options) parent.options = [];
+				parent.options.push({ ...item, price, label: item.label });
+			}
+		} else {
+			variants.push(item);
+		}
+	}
+	return variants;
 }
 
 export function variantsToText(variants: Variant[]): string {
-	return variants.map((v) => `${v.label}=${v.price}${v.agotado ? '*' : ''}`).join('\n');
+	return variants
+		.map(
+			(v) =>
+				`${v.label}=${v.price}${v.agotado ? '*' : ''}` +
+				((v.options ?? []).map((o) => `\n  ${o.label}=${o.price}${o.agotado ? '*' : ''}`).join('')),
+		)
+		.join('\n');
+}
+
+export function variantLabel(variant: Variant | null | undefined, optionId?: string | null): string | null {
+	if (!variant) return null;
+	if (optionId) {
+		const opt = (variant.options ?? []).find((o) => o.id === optionId);
+		if (opt) return `${variant.label} · ${opt.label}`;
+	}
+	return variant.label;
+}
+
+export function variantPrice(variant: Variant | null | undefined, optionId?: string | null): number {
+	if (!variant) return 0;
+	const opt = optionId ? (variant.options ?? []).find((o) => o.id === optionId) : null;
+	return variant.price + (opt?.price ?? 0);
 }
 
 export function fileToDataUrl(file: File): Promise<string> {

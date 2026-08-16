@@ -62,9 +62,6 @@
 						<a href="/" class="text-sm text-body hover:text-ember transition-colors no-underline">Inicio</a>
 					</li>
 					<li>
-						<a href="/pricing" class="text-sm text-body hover:text-ember transition-colors no-underline">Planes y precios</a>
-					</li>
-					<li>
 						<a href="/wizard" class="text-sm text-body hover:text-ember transition-colors no-underline">Crea tu tienda</a>
 					</li>
 					<li>

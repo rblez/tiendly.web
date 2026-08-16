@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, convertPrice, vendorCurrency } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, convertPrice, vendorCurrency, variantPrice } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -12,7 +12,12 @@
 	let product = $state(data.product);
 
 	function firstAvailable(): Variant | null {
-		return product.variants.find((v) => !v.agotado) ?? product.variants[0] ?? null;
+		return (
+			product.variants.find((v) => {
+				const options = v.options ?? [];
+				return !v.agotado && !(options.length > 0 && options.every((o) => o.agotado));
+			}) ?? product.variants[0] ?? null
+		);
 	}
 
 	onMount(() => {
@@ -30,7 +35,7 @@
 				(payload) => {
 					if (payload.new && typeof payload.new === 'object') {
 						const p = payload.new as Product;
-						product = { ...p, variants: Array.isArray(p.variants) ? p.variants : [], images: Array.isArray(p.images) ? p.images : [] };
+						product = { ...p, variants: Array.isArray(p.variants) ? p.variants : [], images: Array.isArray(p.images) ? p.images : [], ask: Array.isArray(p.ask) ? p.ask : [] };
 					}
 				},
 			)
@@ -41,11 +46,17 @@
 	});
 
 	let selectedVariant = $state(firstAvailable());
+	let selectedOption = $state<string | null>(null);
 	let imgError = $state(false);
 	let activeIndex = $state(0);
 	let added = $state(false);
 
-	let currentPrice = $derived(selectedVariant ? selectedVariant.price : product.price);
+	const selectedOptions = $derived(selectedVariant ? (selectedVariant.options ?? []) : []);
+	const selectedOptionObj = $derived(
+		selectedOption && selectedVariant ? (selectedVariant.options ?? []).find((o) => o.id === selectedOption) ?? null : null
+	);
+
+	let currentPrice = $derived(variantPrice(selectedVariant, selectedOption));
 
 	const catalogMode = $derived(isCatalogMode(data.store));
 	const action = $derived(storeAction(data.store));
@@ -55,7 +66,7 @@
 		price: convertPrice(currentPrice, data.store),
 		currency: vendorCurrency(data.store),
 	});
-	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, displayProduct, selectedVariant)));
+	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, displayProduct, selectedVariant, selectedOption)));
 
 	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
@@ -63,6 +74,9 @@
 		product.agotado ||
 		(product.variants.length > 0 && product.variants.every((v) => v.agotado)) ||
 		selectedVariant?.agotado ||
+		(selectedOptions.length > 0
+			? selectedOptions.every((o) => o.agotado) || (selectedOptionObj?.agotado ?? false)
+			: false) ||
 		false
 	);
 
@@ -100,7 +114,7 @@
 	);
 
 	function addToCart() {
-		cart.addItem(data.store.slug, product.id, selectedVariant?.id);
+		cart.addItem(data.store.slug, product.id, selectedVariant?.id, selectedOption ?? undefined);
 		track('add_to_cart', {
 			value: displayPrice,
 			currency: displayCurrency,
@@ -177,6 +191,17 @@
 				<p class="text-sm sm:text-base text-body leading-relaxed">{product.description}</p>
 			{/if}
 
+			{#if (product.ask ?? []).length > 0 && !catalogMode}
+				<div class="bg-bone rounded-btn p-3 sm:p-4">
+					<p class="text-xs font-semibold text-muted mb-1.5">Al pedir tendrás que indicar:</p>
+					<ul class="flex flex-wrap gap-1.5">
+						{#each product.ask as a}
+							<li class="text-xs font-medium text-body bg-card border border-hairline rounded-full px-2.5 py-1">{a}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
 			{#if product.variants.length > 0}
 			<div>
 				<div class="flex items-center justify-between gap-2 mb-2">
@@ -190,7 +215,7 @@
 						<button
 							role="radio"
 							aria-checked={selectedVariant?.id === variant.id}
-							onclick={() => { selectedVariant = variant; }}
+							onclick={() => { selectedVariant = variant; selectedOption = null; }}
 							disabled={variant.agotado}
 							class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left
 								{variant.agotado
@@ -212,6 +237,42 @@
 					{/each}
 				</div>
 			</div>
+				{#if selectedOptions.length > 0}
+					<div>
+						<div class="flex items-center justify-between gap-2 mb-2">
+							<p class="text-xs sm:text-sm text-muted">Elige una opción de {selectedVariant?.label}:</p>
+						</div>
+						<div class="flex flex-wrap gap-2 sm:grid sm:grid-cols-3">
+							{#each selectedOptions as opt}
+								<button
+									role="radio"
+									aria-checked={selectedOption === opt.id}
+									onclick={() => (selectedOption = opt.id)}
+									disabled={opt.agotado}
+									class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left
+										{opt.agotado
+											? 'border-hairline bg-canvas/50 text-muted-soft cursor-not-allowed'
+											: selectedOption === opt.id
+												? 'border-ember bg-ember/10 text-ink cursor-pointer'
+												: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
+								>
+									<span class="min-w-0 flex items-center gap-1.5">
+										<span class="leading-tight {opt.agotado ? 'line-through' : ''}">{opt.label}</span>
+										{#if opt.price > 0}
+											<span class="text-[11px] font-semibold text-muted-soft tabular-nums">+{formatPrice(convertPrice(opt.price, data.store), displayCurrency)}</span>
+										{/if}
+										{#if opt.agotado}
+											<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
+										{/if}
+									</span>
+									{#if selectedOption === opt.id}
+										<i class="ri-check-line text-sm flex-shrink-0 text-ember"></i>
+									{/if}
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
 		{/if}
 
 			{#if !isAgotado}
