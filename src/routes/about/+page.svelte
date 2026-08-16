@@ -28,7 +28,7 @@
 			<h2 class="text-xl font-bold text-ink mb-2">Cómo trabajamos</h2>
 			<p class="text-body leading-relaxed">
 				Tiendly es software libre de comisiones: no cobramos por venta ni retenemos el dinero de nadie. Tú cobras a tus clientes como
-				siempre lo has hecho — efectivo, transferencia, Transfermóvil, EnZona — y nosotros nos encargamos del catálogo, del carrito y
+				siempre lo has hecho — efectivo, transferencia, BANDEC, BPA, Metropolitano o MiTransfer — y nosotros nos encargamos del catálogo, del carrito y
 				de que el pedido llegue bien armado a tu WhatsApp.
 			</p>
 			<p class="text-body leading-relaxed mt-3">

@@ -59,7 +59,7 @@ El cliente arma el carrito, deja sus datos y el pedido te llega completo: produc
 
 ## ¿Te piden un comprobante?
 
-Puedes configurar tus cuentas de Transfermóvil o EnZona y que el cliente suba el comprobante en el propio pedido. Lo tienes todo en un lugar.
+Puedes configurar tus cuentas bancarias o monederos (BANDEC, BPA, Metropolitano, MiTransfer) y que el cliente suba el comprobante en el propio pedido. Lo tienes todo en un lugar.
 
 ## Sin comisiones, sin cheques a nadie
 

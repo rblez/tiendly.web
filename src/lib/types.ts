@@ -81,13 +81,10 @@ export interface Profile {
 	created_at: string;
 }
 
-export type PaymentType = "transfermovil" | "enzona";
-
 export type BankId = "bpa" | "bandec" | "metropolitano" | "monedero";
 
 export interface PaymentMethod {
 	id: string;
-	type: PaymentType;
 	bank: BankId;
 	account: string;
 	phone: string;

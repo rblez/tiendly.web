@@ -50,7 +50,7 @@
 
 	const features = [
 		{ icon: 'ri-whatsapp-line', title: 'Pedidos por WhatsApp', text: 'Cada pedido llega a tu WhatsApp con productos, cantidades, datos del cliente y método de pago elegido.' },
-		{ icon: 'ri-smartphone-line', title: 'Transfermóvil y EnZona', text: 'Ofrece tus cuentas de banco y el cliente sube el comprobante del pago en el propio checkout.' },
+		{ icon: 'ri-bank-line', title: 'Pago por transferencia', text: 'Ofrece tus cuentas (BANDEC, BPA, Metropolitano o MiTransfer) y el cliente sube el comprobante del pago en el propio checkout.' },
 		{ icon: 'ri-exchange-dollar-line', title: 'Multimoneda', text: 'Pon precios en tu moneda base y muestra tus propios tipos de cambio para las otras.' },
 		{ icon: 'ri-package-search-line', title: 'Rastreo de pedidos', text: 'Tus clientes ven el estado de su pedido con el número que les das, sin tener que preguntarte.' },
 		{ icon: 'ri-bar-chart-line', title: 'Estadísticas', text: 'Visitas diarias, pedidos y productos agotados: sabes qué vende y cuándo te visitan.' },
@@ -64,7 +64,7 @@
 		},
 		{
 			q: '¿Cómo recibo el pago de mis clientes?',
-			a: 'Directo, por fuera de Tiendly: efectivo, transferencia, Transfermóvil, EnZona o lo que tú elijas. Nunca tocamos tu dinero ni cobramos por venta.',
+			a: 'Directo, por fuera de Tiendly: efectivo, transferencia a tus cuentas o lo que tú elijas. Nunca tocamos tu dinero ni cobramos por venta.',
 		},
 		{
 			q: '¿Necesito saber de tecnología?',

@@ -455,15 +455,15 @@ $effect(() => {
 	}
 
 	const BANKS = [
-		{ id: 'bpa', label: 'Banco Popular de Ahorro (BPA)' },
 		{ id: 'bandec', label: 'Banco de Crédito y Comercio (BANDEC)' },
+		{ id: 'bpa', label: 'Banco Popular de Ahorro (BPA)' },
 		{ id: 'metropolitano', label: 'Banco Metropolitano' },
 		{ id: 'monedero', label: 'Monedero MiTransfer' },
 	] as const;
 
 	const BANK_LABELS: Record<string, string> = {
-		bpa: 'Banco Popular de Ahorro',
 		bandec: 'Banco de Crédito y Comercio',
+		bpa: 'Banco Popular de Ahorro',
 		metropolitano: 'Banco Metropolitano',
 		monedero: 'Monedero MiTransfer',
 	};
@@ -476,7 +476,7 @@ $effect(() => {
 		return `pm-${Date.now().toString(36)}-${pmNewId++}`;
 	}
 	function addPaymentMethod() {
-		settings.payments.push({ id: newPmId(), type: 'transfermovil', bank: 'bpa', account: '', phone: '', name: '' });
+		settings.payments.push({ id: newPmId(), bank: 'bandec', account: '', phone: '', name: '' });
 	}
 	function removePaymentMethod(i: number) {
 		settings.payments.splice(i, 1);
@@ -856,11 +856,10 @@ $effect(() => {
 				payments: settings.payments
 					.filter((p) => {
 						const ok = p.bank === 'monedero' ? p.phone.trim() : p.account.trim();
-						return ok && p.type && p.bank;
+						return ok && p.bank;
 					})
 					.map((p) => ({
 						id: p.id,
-						type: p.type,
 						bank: p.bank,
 						account: p.bank === 'monedero' ? p.phone.trim() : formatCardNumber(p.account),
 						phone: p.phone.trim(),
@@ -1522,8 +1521,7 @@ async function duplicateProduct(p: Product) {
 									<div class="flex items-center gap-2.5 mb-1.5">
 										<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 uppercase">Pago</span>
 										<span class="text-sm font-semibold text-ink truncate">
-											{order.payment.type === 'transfermovil' ? 'Transfermóvil' : 'EnZona'}
-											· {bankLabel(order.payment.bank)}
+											{bankLabel(order.payment.bank)}
 										</span>
 									</div>
 									<p class="text-xs font-mono text-body truncate">
@@ -1805,13 +1803,6 @@ async function duplicateProduct(p: Product) {
 									{#each settings.payments as pm, i}
 										<div class="border border-hairline rounded-btn p-3">
 											<div class="flex items-center gap-2 flex-wrap">
-												<select
-													bind:value={pm.type}
-													class="px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-												>
-													<option value="transfermovil">Transfermóvil</option>
-													<option value="enzona">EnZona</option>
-												</select>
 												<select
 													bind:value={pm.bank}
 													class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"

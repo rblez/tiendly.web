@@ -211,7 +211,7 @@
 			`📱 ${phone}`,
 			...(selectedPayment
 				? [
-						`💳 Pago: ${selectedPayment.type === 'transfermovil' ? 'Transfermóvil' : 'EnZona'} (${bankLabel(selectedPayment.bank)})${receiptUrl ? `\n   Comprobante: ${receiptUrl}` : ''}`,
+						`💳 Pago: ${bankLabel(selectedPayment.bank)}${receiptUrl ? `\n   Comprobante: ${receiptUrl}` : ''}`,
 						``,
 					]
 				: []),
@@ -579,7 +579,7 @@
 												</span>
 												<div class="min-w-0">
 													<p class="text-sm font-semibold text-ink truncate">
-														{pm.type === 'transfermovil' ? 'Transfermóvil' : 'EnZona'} · {bankLabel(pm.bank)}
+														{bankLabel(pm.bank)}
 													</p>
 													{#if pm.name}
 														<p class="text-xs text-muted-soft truncate">{pm.name}</p>
