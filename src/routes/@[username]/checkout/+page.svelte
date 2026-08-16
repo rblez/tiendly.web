@@ -41,9 +41,6 @@
 	function bankLabel(id: string): string {
 		return BANK_LABELS[id] ?? id;
 	}
-	function bankImageUrl(id: string): string {
-		return `/banks/${id}.png`;
-	}
 
 	async function copyText(text: string, label: string) {
 		try {
@@ -569,13 +566,6 @@
 											<div class="flex items-center gap-2.5">
 												<span class="relative h-10 w-10 rounded-btn overflow-hidden border border-hairline bg-bone flex items-center justify-center text-[9px] font-bold text-muted uppercase flex-shrink-0">
 													{bankLabel(pm.bank).slice(0, 6)}
-													<img
-														src={bankImageUrl(pm.bank)}
-														alt={bankLabel(pm.bank)}
-														class="absolute inset-0 h-full w-full object-cover"
-														loading="lazy"
-														onerror={(e) => e.currentTarget.remove()}
-													/>
 												</span>
 												<div class="min-w-0">
 													<p class="text-sm font-semibold text-ink truncate">
