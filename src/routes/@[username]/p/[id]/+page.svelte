@@ -5,7 +5,6 @@
 	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, variantPrice } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice as toDisplayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
-	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
@@ -58,16 +57,6 @@
 	);
 
 	let currentPrice = $derived(variantPrice(selectedVariant, selectedOption, product.price));
-
-	const catalogMode = $derived(isCatalogMode(data.store));
-	const action = $derived(storeAction(data.store));
-	const actionBtn = $derived(actionConfig(action));
-	const displayProduct = $derived({
-		name: product.name,
-		price: toDisplayPrice(currentPrice, data.store),
-		currency: viewCurrency(data.store),
-	});
-	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, displayProduct, selectedVariant, selectedOption)));
 
 	const photos = $derived(productImages(product));
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
@@ -187,7 +176,7 @@
 				<p class="text-sm sm:text-base text-body leading-relaxed">{product.description}</p>
 			{/if}
 
-			{#if (product.ask ?? []).length > 0 && !catalogMode}
+			{#if (product.ask ?? []).length > 0}
 				<div class="bg-bone rounded-btn p-3 sm:p-4">
 					<p class="text-xs font-semibold text-muted mb-1.5">Al pedir tendrás que indicar:</p>
 					<ul class="flex flex-wrap gap-1.5">
@@ -296,19 +285,6 @@
 					>
 						Agotado
 					</button>
-				{:else if catalogMode}
-					<a
-						href={ctaHref ?? '#'}
-						target="_blank"
-						rel="noopener noreferrer"
-						onclick={(e) => {
-							if (!ctaHref) e.preventDefault();
-						}}
-						class="btn-3d w-full px-5 py-3 text-sm sm:text-base font-bold no-underline flex items-center justify-center gap-2"
-					>
-						<i class={actionBtn.icon}></i>
-						{actionBtn.label}
-					</a>
 				{:else}
 					<button
 						onclick={addToCart}

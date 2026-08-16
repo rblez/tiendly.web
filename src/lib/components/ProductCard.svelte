@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
 	import { productImage } from '$lib/utils';
-	import { displayPrice, displayCurrency, displayFormat } from '$lib/stores/currency.svelte';
-	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
+	import { displayFormat } from '$lib/stores/currency.svelte';
 
 	let { product, store }: { product: Product; store: Store } = $props();
 
@@ -34,16 +33,6 @@
 
 	const img = $derived(productImage(product));
 	const productUrl = $derived(`/@${store.slug}/p/${product.id}`);
-
-	const catalogMode = $derived(isCatalogMode(store));
-	const action = $derived(storeAction(store));
-	const displayProduct = $derived({
-		name: product.name,
-		price: displayPrice(product.price, store),
-		currency: displayCurrency(store),
-	});
-	const ctaHref = $derived(actionLink(action, store, productOrderMessage(store, displayProduct, null)));
-	const direct = $derived(catalogMode && !isAgotado && product.variants.length === 0);
 </script>
 
 <a
@@ -86,36 +75,13 @@
 		{/if}
 	</p>
 
-		{#if direct}
-			<span
-				role="button"
-				tabindex="0"
-				onclick={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					if (ctaHref) window.open(ctaHref, '_blank');
-				}}
-				onkeydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-						e.stopPropagation();
-						if (ctaHref) window.open(ctaHref, '_blank');
-					}
-				}}
-				class="btn-3d w-full mt-2 px-4 py-2.5 text-sm font-semibold inline-flex items-center justify-center gap-2 select-none"
-			>
-				<i class={actionConfig(action).icon}></i>
-				{actionConfig(action).label}
-			</span>
-		{:else}
-			<span
-				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
-					{isAgotado
-						? 'bg-bone text-muted-soft cursor-not-allowed'
-						: 'btn-3d font-semibold'}"
-			>
-				{isAgotado ? 'Agotado' : 'Ver producto'}
-			</span>
-		{/if}
+		<span
+			class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
+				{isAgotado
+					? 'bg-bone text-muted-soft cursor-not-allowed'
+					: 'btn-3d font-semibold'}"
+		>
+			{isAgotado ? 'Agotado' : 'Ver producto'}
+		</span>
 	</div>
 </a>

@@ -3,13 +3,11 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { filters } from '$lib/stores/filters.svelte';
 	import { productImage } from '$lib/utils';
-	import { isCatalogMode } from '$lib/storeActions';
 	import { currency, availableCurrencies, mainCurrency } from '$lib/stores/currency.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store, previewMode = false }: { store: Store; previewMode?: boolean } = $props();
 
-	const catalogMode = $derived(isCatalogMode(store));
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
 	let currencies = $derived(availableCurrencies(store));
@@ -76,7 +74,7 @@
 						{/each}
 					</select>
 				{/if}
-				{#if !catalogMode && $page.url.pathname !== cartPath}
+				{#if $page.url.pathname !== cartPath}
 					<a
 						href={cartPath}
 						class="relative flex items-center transition-colors duration-200 no-underline

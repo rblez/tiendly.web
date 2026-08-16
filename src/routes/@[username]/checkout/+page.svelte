@@ -28,7 +28,7 @@
 		mode === 'sin_contactar' && Array.isArray(data.store.payments) ? data.store.payments : [],
 	);
 	const deliveryZones = $derived(
-		mode === 'sin_contactar' && data.store.delivery?.enabled ? (data.store.delivery?.zones ?? []) : [],
+		data.store.delivery?.enabled ? (data.store.delivery?.zones ?? []) : [],
 	);
 	const deliveryCost = $derived(deliveryZone?.price ?? 0);
 
