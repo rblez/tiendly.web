@@ -98,6 +98,24 @@ export function productImages(p: { image: string | null; images?: string[] }): s
 	return raw.map((src) => (src.startsWith('http') ? src : `/images/${src}`));
 }
 
+export function productStock(p: { stock?: number | null; variants?: Variant[] } | null | undefined, variantId?: string | null, optionId?: string | null): number | null {
+	if (!p) return null;
+	if (variantId) {
+		const v = Array.isArray(p.variants) ? p.variants.find((x) => x.id === variantId) : undefined;
+		if (!v) return p.stock ?? null;
+		if (optionId) {
+			const o = (v.options ?? []).find((x) => x.id === optionId);
+			return o ? (o.stock ?? null) : (v.stock ?? null);
+		}
+		return v.stock ?? null;
+	}
+	return p.stock ?? null;
+}
+
+export function isOutOfStock(stock: number | null | undefined): boolean {
+	return stock !== null && stock !== undefined && stock <= 0;
+}
+
 // srcset para imágenes subidas con /api/upload-image (formato img-<ts>-<ancho>.webp);
 // imágenes antiguas sin sufijo devuelven null y el <img> cae al src simple.
 export function imageSrcset(src: string | null | undefined): string | null {

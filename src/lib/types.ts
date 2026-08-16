@@ -3,6 +3,7 @@ export interface VariantOption {
 	label: string;
 	price: number;
 	agotado?: boolean;
+	stock?: number | null;
 }
 
 export interface Variant {
@@ -10,6 +11,7 @@ export interface Variant {
 	label: string;
 	price: number;
 	agotado?: boolean;
+	stock?: number | null;
 	options?: VariantOption[];
 }
 
@@ -28,6 +30,7 @@ export interface Product {
 	agotado: boolean;
 	bajo_pedido: boolean;
 	active: boolean;
+	stock?: number | null;
 	position: number;
 	created_at: string;
 }

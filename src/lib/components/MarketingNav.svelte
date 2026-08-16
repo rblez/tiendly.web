@@ -26,8 +26,7 @@
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16 gap-4">
 			<a href="/" class="flex items-center gap-2.5 text-ink no-underline shrink-0">
-				<img src="/isotipo.png" alt="" class="h-8 w-8 object-contain" />
-				<span class="text-lg font-black tracking-tight">Tiendly</span>
+				<img src="/tiendly-logo-completo.png" alt="Tiendly" class="h-9 object-contain" />
 			</a>
 
 			<div class="hidden md:flex items-center gap-6">

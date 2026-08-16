@@ -202,6 +202,11 @@
 </svelte:head>
 
 <section class="max-w-lg mx-auto px-4 sm:px-6 py-12 sm:py-16">
+	<div class="flex justify-center mb-10">
+		<a href="/" aria-label="Tiendly">
+			<img src="/tiendly-logo-completo.png" alt="Tiendly" class="h-9 object-contain" />
+		</a>
+	</div>
 	{#if atLimit}
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
 			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, SITE_URL, variantPrice } from '$lib/utils';
+	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, SITE_URL, variantPrice, productStock, isOutOfStock } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice as toDisplayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -16,7 +16,11 @@
 		return (
 			product.variants.find((v) => {
 				const options = v.options ?? [];
-				return !v.agotado && !(options.length > 0 && options.every((o) => o.agotado));
+				return (
+					!v.agotado &&
+					!isOutOfStock(productStock(product, v.id)) &&
+					!(options.length > 0 && options.every((o) => o.agotado || isOutOfStock(o.stock)))
+				);
 			}) ?? product.variants[0] ?? null
 		);
 	}
@@ -63,13 +67,17 @@
 	const activePhoto = $derived(photos[Math.min(activeIndex, photos.length - 1)] ?? null);
 	let isAgotado = $derived(
 		product.agotado ||
-		(product.variants.length > 0 && product.variants.every((v) => v.agotado)) ||
+		isOutOfStock(productStock(product)) ||
+		(product.variants.length > 0 && product.variants.every((v) => v.agotado || isOutOfStock(productStock(product, v.id)))) ||
 		selectedVariant?.agotado ||
+		isOutOfStock(productStock(product, selectedVariant?.id ?? null)) ||
 		(selectedOptions.length > 0
-			? selectedOptions.every((o) => o.agotado) || (selectedOptionObj?.agotado ?? false)
+			? selectedOptions.every((o) => o.agotado || isOutOfStock(o.stock)) || (selectedOptionObj?.agotado ?? false) || isOutOfStock(selectedOptionObj?.stock)
 			: false) ||
 		false
 	);
+
+	const curStock = $derived(productStock(product, selectedVariant?.id ?? null, selectedOption));
 
 	const img = $derived(productImage(product));
 	const shareUrl = $derived(`${storeUrl(data.store.slug)}/p/${product.id}`);
@@ -202,17 +210,17 @@
 							role="radio"
 							aria-checked={selectedVariant?.id === variant.id}
 							onclick={() => { selectedVariant = variant; selectedOption = null; }}
-							disabled={variant.agotado}
+							disabled={variant.agotado || isOutOfStock(productStock(product, variant.id))}
 							class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left
-								{variant.agotado
+								{variant.agotado || isOutOfStock(productStock(product, variant.id))
 									? 'border-hairline bg-canvas/50 text-muted-soft cursor-not-allowed'
 									: selectedVariant?.id === variant.id
 										? 'border-ember bg-ember/10 text-ink cursor-pointer'
 										: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
 						>
 							<span class="min-w-0 flex items-center gap-1.5">
-								<span class="leading-tight {variant.agotado ? 'line-through' : ''}">{variant.label}</span>
-								{#if variant.agotado}
+								<span class="leading-tight {variant.agotado || isOutOfStock(productStock(product, variant.id)) ? 'line-through' : ''}">{variant.label}</span>
+								{#if variant.agotado || isOutOfStock(productStock(product, variant.id))}
 									<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
 								{/if}
 							</span>
@@ -234,20 +242,20 @@
 									role="radio"
 									aria-checked={selectedOption === opt.id}
 									onclick={() => (selectedOption = opt.id)}
-									disabled={opt.agotado}
+									disabled={opt.agotado || isOutOfStock(opt.stock)}
 									class="inline-flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-full border transition-all duration-200 text-left
-										{opt.agotado
+										{opt.agotado || isOutOfStock(opt.stock)
 											? 'border-hairline bg-canvas/50 text-muted-soft cursor-not-allowed'
 											: selectedOption === opt.id
 												? 'border-ember bg-ember/10 text-ink cursor-pointer'
 												: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ink cursor-pointer'}"
 								>
 									<span class="min-w-0 flex items-center gap-1.5">
-										<span class="leading-tight {opt.agotado ? 'line-through' : ''}">{opt.label}</span>
+										<span class="leading-tight {opt.agotado || isOutOfStock(opt.stock) ? 'line-through' : ''}">{opt.label}</span>
 										{#if opt.price > 0}
 											<span class="text-[11px] font-semibold text-muted-soft tabular-nums">+{formatPrice(toDisplayPrice(opt.price, data.store), displayCurrency)}</span>
 										{/if}
-										{#if opt.agotado}
+										{#if opt.agotado || isOutOfStock(opt.stock)}
 											<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
 										{/if}
 									</span>
@@ -272,6 +280,12 @@
 							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning text-xs font-semibold flex-shrink-0">
 								<i class="ri-time-line"></i>
 								Bajo pedido
+							</span>
+						{/if}
+						{#if curStock != null && !isAgotado}
+							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ember/10 text-ember text-xs font-semibold flex-shrink-0">
+								<i class="ri-truck-line"></i>
+								Quedan {curStock}
 							</span>
 						{/if}
 					</div>

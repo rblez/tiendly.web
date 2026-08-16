@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
-	import { productImage, imageSrcset } from '$lib/utils';
+	import { productImage, imageSrcset, productStock, isOutOfStock } from '$lib/utils';
 	import { displayFormat } from '$lib/stores/currency.svelte';
 
 	let { product, store }: { product: Product; store: Store } = $props();
@@ -9,10 +9,11 @@
 
 	let isAgotado = $derived(
 		product.agotado ||
+		isOutOfStock(productStock(product)) ||
 		(product.variants.length > 0 &&
 			product.variants.every((v) => {
 				const options = v.options ?? [];
-				return v.agotado || (options.length > 0 && options.every((o) => o.agotado));
+				return v.agotado || isOutOfStock(productStock(product, v.id)) || (options.length > 0 && options.every((o) => o.agotado || isOutOfStock(o.stock)));
 			}))
 	);
 
@@ -20,16 +21,18 @@
 		product.variants.length > 0
 			? Math.min(
 					...product.variants
-						.filter((v) => !v.agotado)
+						.filter((v) => !v.agotado && !isOutOfStock(productStock(product, v.id)))
 						.map((v) => {
 							const options = v.options ?? [];
-							const live = options.filter((o) => !o.agotado);
+							const live = options.filter((o) => !o.agotado && !isOutOfStock(o.stock));
 							if (options.length > 0 && live.length === 0) return Infinity;
 							return v.price + (live.length > 0 ? Math.min(...live.map((o) => o.price)) : 0);
 						}),
 				)
 			: product.price
 	);
+
+	const curStock = $derived(product.variants.length === 0 ? productStock(product) : null);
 
 	const img = $derived(productImage(product));
 	const productUrl = $derived(`/@${store.slug}/p/${product.id}`);
@@ -73,6 +76,12 @@
 			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-[10px] font-semibold">
 				<i class="ri-time-line"></i>
 				Bajo pedido
+			</span>
+		{/if}
+		{#if !isAgotado && curStock != null}
+			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-ember/10 text-ember text-[10px] font-semibold">
+				<i class="ri-truck-line"></i>
+				Quedan {curStock}
 			</span>
 		{/if}
 	</p>

@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, variantPrice } from '$lib/utils';
+	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, variantPrice, productStock, isOutOfStock } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
 	import type { DeliveryZone, PaymentMethod, Product, Store, Variant } from '$lib/types';
@@ -236,6 +236,17 @@
 
 		if (askMissing.length > 0) {
 			orderError = `Falta completar: ${askMissing.map((f) => f.label).join(', ')}.`;
+			return;
+		}
+
+		const sinStock = cartLines.find((cp) => {
+			const stock = productStock(cp.product, cp.variantId ?? null, cp.optionId ?? null);
+			return isOutOfStock(stock) || (typeof stock === 'number' && stock < cp.quantity);
+		});
+		if (sinStock) {
+			const stock = productStock(sinStock.product, sinStock.variantId ?? null, sinStock.optionId ?? null);
+			const txt = stock != null && stock > 0 ? `solo quedan ${stock} y pediste ${sinStock.quantity}.` : 'se agotó.';
+			orderError = `«${sinStock.product.name}»${sinStock.label ? ` (${sinStock.label})` : ''} ${txt} Quítalo del carrito o reduce la cantidad.`;
 			return;
 		}
 

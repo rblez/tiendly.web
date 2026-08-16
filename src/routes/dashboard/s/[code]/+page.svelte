@@ -104,6 +104,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formName = $state('');
 	let formDescription = $state('');
 	let formPrice = $state('');
+	let formStock = $state('');
 	let formCurrency = $state('CUP');
 	let formCategory = $state('General');
 	let formAgotado = $state(false);
@@ -180,6 +181,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let hasActionColumn = $state(true);
 	let hasCurrencyColumn = $state(false);
 	let hasAskColumn = $state(false);
+	let hasStockColumn = $state(false);
 	let usdRateParsed = $derived.by(() => {
 		const raw = settings.usd_rate.trim();
 		if (!raw) return null;
@@ -310,6 +312,9 @@ $effect(() => {
 			if (!hasAskColumn && (productsData ?? []).length > 0) {
 				hasAskColumn = 'ask' in (productsData as object[])[0];
 			}
+			if (!hasStockColumn && (productsData ?? []).length > 0) {
+				hasStockColumn = 'stock' in (productsData as object[])[0];
+			}
 			const openPid = $page.url.searchParams.get('producto');
 			if (openPid) {
 				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
@@ -368,6 +373,7 @@ $effect(() => {
 		formName = '';
 		formDescription = '';
 		formPrice = '';
+		formStock = '';
 		formCurrency = 'CUP';
 		formCategory = 'General';
 		formCreatingCategory = false;
@@ -389,6 +395,7 @@ $effect(() => {
 		formName = p.name;
 		formDescription = p.description ?? '';
 		formPrice = String(p.price);
+		formStock = p.stock == null ? '' : String(p.stock);
 		formCurrency = p.currency;
 		formCategory = p.category;
 		formCreatingCategory = false;
@@ -487,6 +494,11 @@ $effect(() => {
 			productError = 'El nombre es obligatorio.';
 			return;
 		}
+		const stockNum = formStock.trim() === '' ? null : Number(formStock);
+		if (formStock.trim() !== '' && (Number.isNaN(stockNum) || stockNum === null || (stockNum as number) < 0)) {
+			productError = 'El stock debe ser un número mayor o igual que 0 (o déjalo vacío para no controlarlo).';
+			return;
+		}
 		formSaving = true;
 		const variants = formVariantsList
 			.filter((v) => v.label.trim())
@@ -515,6 +527,7 @@ $effect(() => {
 			variants: variants as unknown as import('$lib/database.types').Json,
 			images: formImages,
 			image: formImages[0] ?? null,
+			...(hasStockColumn ? { stock: stockNum } : {}),
 			...(hasAskColumn ? { ask } : {}),
 		};
 
@@ -2067,10 +2080,26 @@ async function duplicateProduct(p: Product) {
 								<span>{formCurrency}</span>
 								<i class="ri-arrow-down-s-line text-muted"></i>
 							</button>
-						</div>
-						</div>
+</div>
+					</div>
+					{#if hasStockColumn}
 						<div>
-							<label for="p-category" class="block text-sm font-medium text-body mb-1.5">Categoría</label>
+							<label for="p-stock" class="block text-sm font-medium text-body mb-1.5">Stock <span class="text-muted-soft">(opcional)</span></label>
+							<input
+								id="p-stock"
+								type="number"
+								min="0"
+								step="1"
+								inputmode="numeric"
+								bind:value={formStock}
+								placeholder="Vacío = sin control"
+								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+							/>
+							<p class="text-xs text-muted-soft mt-1.5">Si llega a 0, el producto se marca como agotado.</p>
+						</div>
+					{/if}
+					<div>
+						<label for="p-category" class="block text-sm font-medium text-body mb-1.5">Categoría</label>
 							{#if formCreatingCategory}
 								<div class="flex gap-2">
 									<input
@@ -2125,6 +2154,17 @@ async function duplicateProduct(p: Product) {
 														<input type="checkbox" bind:checked={variant.agotado} class="w-3.5 h-3.5 accent-ember cursor-pointer" />
 														Agotada
 													</label>
+													{#if hasStockColumn}
+														<input
+															type="number"
+															min="0"
+															step="1"
+															bind:value={variant.stock}
+															placeholder="Stock"
+															title="Stock de esta variante (vacío = sin control)"
+															class="w-24 px-2 py-1 bg-bone border border-hairline rounded-btn text-xs text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+														/>
+													{/if}
 													<button
 														type="button"
 														onclick={() => removeVariant(i)}
@@ -2185,15 +2225,26 @@ async function duplicateProduct(p: Product) {
 																	/>
 																</div>
 															</div>
-															<div class="flex items-center justify-between gap-2 mt-2">
+															<div class="flex items-center gap-2 mt-2">
 																<label class="flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none">
 																	<input type="checkbox" bind:checked={opt.agotado} class="w-3.5 h-3.5 accent-ember cursor-pointer" />
 																	Agotada
 																</label>
+																{#if hasStockColumn}
+																	<input
+																		type="number"
+																		min="0"
+																		step="1"
+																		bind:value={opt.stock}
+																		placeholder="Stock"
+																		title="Stock de esta opción (vacío = sin control)"
+																		class="w-24 px-2 py-1 bg-bone border border-hairline rounded-btn text-xs text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+																	/>
+																{/if}
 																<button
 																	type="button"
 																	onclick={() => removeOption(i, j)}
-																	class="text-xs font-medium text-muted hover:text-error transition-colors cursor-pointer"
+																	class="ml-auto text-xs font-medium text-muted hover:text-error transition-colors cursor-pointer"
 																>
 																	Quitar
 																</button>

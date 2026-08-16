@@ -87,8 +87,7 @@
 		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-8">
 			<div>
 				<p class="flex items-center gap-2.5">
-					<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-md object-contain" />
-					<span class="font-black text-xl tracking-tight text-ink">Tiendly</span>
+					<img src="/tiendly-logo.png" alt="Tiendly" class="h-8 object-contain" />
 				</p>
 				<p class="text-sm text-muted mt-3 leading-relaxed max-w-xs">
 					Crea tu tienda online en minutos y vende directo: pedidos a tu WhatsApp, tus precios, tus clientes. Sin comisiones ni plataformas de pago ajenas.
