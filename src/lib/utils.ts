@@ -98,6 +98,18 @@ export function productImages(p: { image: string | null; images?: string[] }): s
 	return raw.map((src) => (src.startsWith('http') ? src : `/images/${src}`));
 }
 
+// srcset para imágenes subidas con /api/upload-image (formato img-<ts>-<ancho>.webp);
+// imágenes antiguas sin sufijo devuelven null y el <img> cae al src simple.
+export function imageSrcset(src: string | null | undefined): string | null {
+	if (!src) return null;
+	const m = src.match(/^(.*-)(\d{3,4})(\.webp)$/);
+	if (!m) return null;
+	const current = Number(m[2]);
+	const sizes = [400, 800, 1600].filter((n) => n !== current);
+	if (sizes.length === 0) return null;
+	return sizes.map((n) => `${m[1]}${n}${m[3]} ${n}w`).join(', ');
+}
+
 export type UploadKind = 'logo' | 'product';
 
 export async function uploadImage(file: File, kind: UploadKind = 'product'): Promise<string> {

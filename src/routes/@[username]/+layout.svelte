@@ -5,6 +5,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import CreateStoreToast from '$lib/components/CreateStoreToast.svelte';
 	import { supabase } from '$lib/supabase/client';
+	import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
@@ -13,7 +14,9 @@
 		data: { store: Store; ownerPlan: string | null; preview: { token: string; expiresAt: string | null } | null };
 	} = $props();
 
+	// svelte-ignore state_referenced_locally
 	let store = $state(data.store);
+	// svelte-ignore state_referenced_locally
 	let previewToken = $state(data.preview?.token ?? null);
 	let secondsLeft = $state(0);
 	let previewExpired = $state(false);
@@ -151,6 +154,7 @@
 
 <svelte:head>
 	<title>{store.name} | Tiendly</title>
+	<link rel="preconnect" href={`https://${new URL(PUBLIC_SUPABASE_URL).host}`} crossorigin="anonymous" />
 	<link rel="icon" type="image/png" href={favicon ?? ''} />
 	<meta name="description" content={store.description ?? `Compra en ${store.name} con Tiendly.`} />
 	<meta property="og:type" content="website" />

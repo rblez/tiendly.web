@@ -422,6 +422,9 @@ $effect(() => {
 	function newVariantId(): string {
 		return `v-${Date.now().toString(36)}-${variantNewId++}`;
 	}
+	function inputId(kind: string, i: number, j?: number): string {
+		return j === undefined ? `${kind}-${i}` : `${kind}-${i}-${j}`;
+	}
 	function addVariant() {
 		formVariantsList.push({ id: newVariantId(), label: '', price: 0, agotado: false });
 	}
@@ -1334,7 +1337,7 @@ async function duplicateProduct(p: Product) {
 					{/each}
 				</div>
 				{#if openProductMenu !== null}
-					<div class="fixed inset-0 z-20" onclick={() => (openProductMenu = null)}></div>
+					<div class="fixed inset-0 z-20" role="presentation" aria-hidden="true" tabindex="-1" onclick={() => (openProductMenu = null)} onkeydown={() => (openProductMenu = null)}></div>
 				{/if}
 			{/if}
 
@@ -1584,7 +1587,7 @@ async function duplicateProduct(p: Product) {
 					{/each}
 				</div>
 			{#if openStatusMenu !== null}
-				<div class="fixed inset-0 z-20" onclick={() => (openStatusMenu = null)}></div>
+				<div class="fixed inset-0 z-20" role="presentation" aria-hidden="true" tabindex="-1" onclick={() => (openStatusMenu = null)} onkeydown={() => (openStatusMenu = null)}></div>
 			{/if}
 		{/if}
 
@@ -1620,7 +1623,7 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</div>
 					<div>
-						<label class="block text-sm font-medium text-body mb-1.5">Color de la tienda</label>
+						<p class="block text-sm font-medium text-body">Color de la tienda</p>
 						<div class="flex flex-wrap items-center gap-3">
 							{#each PRESET_COLORS as color}
 								<button
@@ -1735,7 +1738,7 @@ async function duplicateProduct(p: Product) {
 						</div>
 						{#if hasCurrencyColumn}
 							<div class="mt-4 pt-4 border-t border-hairline">
-								<label class="block text-sm font-medium text-body mb-1.5">Multimoneda</label>
+								<p class="block text-sm font-medium text-body mb-1.5">Multimoneda</p>
 								<p class="text-xs text-muted-soft mb-3">
 									El catálogo se muestra en <span class="font-semibold text-ink">USD</span>, tu moneda principal. Elige las otras monedas que tus clientes podrán ver.
 								</p>
@@ -1774,7 +1777,7 @@ async function duplicateProduct(p: Product) {
 						{/if}
 						<div class="mt-4 pt-4 border-t border-hairline">
 							<div class="flex items-center justify-between mb-1.5">
-								<label class="block text-sm font-medium text-body">Métodos de pago</label>
+								<p class="block text-sm font-medium text-body">Métodos de pago</p>
 								{#if settings.payments.length > 0}
 									<button type="button" onclick={addPaymentMethod} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer">
 										+ Agregar método
@@ -2098,9 +2101,9 @@ async function duplicateProduct(p: Product) {
 						</div>
 						<div>
 							<div class="flex items-center justify-between mb-1.5">
-								<label class="block text-sm font-medium text-body">
+								<p class="block text-sm font-medium text-body">
 									Variantes <span class="text-muted-soft">(opcional)</span>
-								</label>
+								</p>
 								{#if formVariantsList.length > 0}
 									<button
 										type="button"
@@ -2133,8 +2136,9 @@ async function duplicateProduct(p: Product) {
 												</div>
 											</div>
 											<div class="mb-2.5">
-												<label class="block text-[11px] font-medium text-muted-soft mb-1">Nombre</label>
+												<label for={inputId('vname', i)} class="block text-[11px] font-medium text-muted-soft mb-1">Nombre</label>
 												<input
+													id={inputId('vname', i)}
 													type="text"
 													bind:value={variant.label}
 													placeholder="Ej: Grande, 500 g, Azul..."
@@ -2142,8 +2146,9 @@ async function duplicateProduct(p: Product) {
 												/>
 											</div>
 											<div>
-												<label class="block text-[11px] font-medium text-muted-soft mb-1">Precio (reemplaza el precio base)</label>
+												<label for={inputId('vprice', i)} class="block text-[11px] font-medium text-muted-soft mb-1">Precio (reemplaza el precio base)</label>
 												<input
+													id={inputId('vprice', i)}
 													type="number"
 													step="any"
 													min="0"
@@ -2158,8 +2163,9 @@ async function duplicateProduct(p: Product) {
 														<div class="border border-hairline rounded-btn p-2.5 bg-card">
 															<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 																<div>
-																	<label class="block text-[11px] font-medium text-muted-soft mb-1">Opción</label>
+																	<label for={inputId('oname', i, j)} class="block text-[11px] font-medium text-muted-soft mb-1">Opción</label>
 																	<input
+																		id={inputId('oname', i, j)}
 																		type="text"
 																		bind:value={opt.label}
 																		placeholder="Ej: Con envío"
@@ -2167,8 +2173,9 @@ async function duplicateProduct(p: Product) {
 																	/>
 																</div>
 																<div>
-																	<label class="block text-[11px] font-medium text-muted-soft mb-1">Precio extra (se suma)</label>
+																	<label for={inputId('oprice', i, j)} class="block text-[11px] font-medium text-muted-soft mb-1">Precio extra (se suma)</label>
 																	<input
+																		id={inputId('oprice', i, j)}
 																		type="number"
 																		step="any"
 																		min="0"
@@ -2219,9 +2226,9 @@ async function duplicateProduct(p: Product) {
 						</div>
 						<div>
 							<div class="flex items-center justify-between mb-1.5">
-								<label class="block text-sm font-medium text-body">
+								<p class="block text-sm font-medium text-body">
 									Datos que pides al cliente <span class="text-muted-soft">(opcional)</span>
-								</label>
+								</p>
 							</div>
 							{#if formAskList.length > 0}
 								<div class="space-y-1.5 mb-2">
@@ -2265,7 +2272,7 @@ async function duplicateProduct(p: Product) {
 							<p class="text-xs text-muted-soft mt-1.5">Se pedirán en el checkout y se incluyen en el mensaje del pedido.</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-body mb-1.5">Fotos <span class="text-muted-soft">({formImages.length})</span></label>
+							<p class="block text-sm font-medium text-body mb-1.5">Fotos <span class="text-muted-soft">({formImages.length})</span></p>
 							{#if formImages.length > 0}
 								<div class="flex flex-wrap gap-2 mb-3">
 									{#each formImages as url, i}

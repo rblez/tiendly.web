@@ -266,6 +266,7 @@
 			<div class="space-y-5">
 				<div>
 					<label for="store-name" class="block text-sm font-medium text-body mb-1.5">Nombre de la tienda</label>
+					<!-- svelte-ignore a11y_autofocus -->
 					<input
 						id="store-name"
 						type="text"
@@ -322,6 +323,7 @@
 	{:else if step === 3}
 		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
 			<label for="store-wa" class="block text-sm font-medium text-body mb-1.5">Número de WhatsApp</label>
+			<!-- svelte-ignore a11y_autofocus -->
 			<input
 				id="store-wa"
 				type="tel"

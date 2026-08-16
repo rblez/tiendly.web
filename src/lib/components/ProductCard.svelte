@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
-	import { productImage } from '$lib/utils';
+	import { productImage, imageSrcset } from '$lib/utils';
 	import { displayFormat } from '$lib/stores/currency.svelte';
 
 	let { product, store }: { product: Product; store: Store } = $props();
@@ -41,16 +41,18 @@
 >
 	<div class="aspect-[4/3] bg-canvas overflow-hidden">
 		{#if img && !imgError}
-			<img
-				src={img}
-				alt={product.name}
-				width="640"
-				height="480"
-				class="w-full h-full object-cover"
-				loading="lazy"
-				decoding="async"
-				onerror={() => imgError = true}
-			/>
+<img
+					src={img}
+					srcset={imageSrcset(img) ?? undefined}
+					sizes="(min-width: 1024px) 25vw, 50vw"
+					alt={product.name}
+					width="640"
+					height="480"
+					class="w-full h-full object-cover"
+					loading="lazy"
+					decoding="async"
+					onerror={() => imgError = true}
+				/>
 		{/if}
 	</div>
 	<div class="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3">

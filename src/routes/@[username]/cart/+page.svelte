@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, variantPrice } from '$lib/utils';
+	import { formatPrice, imageSrcset, productImage, variantPrice } from '$lib/utils';
 	import { displayCurrency, displayPrice } from '$lib/stores/currency.svelte';
 	import { onMount } from 'svelte';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -96,6 +96,8 @@
 					{#if productImage(cp.product)}
 						<img
 							src={productImage(cp.product)!}
+							srcset={imageSrcset(productImage(cp.product)) ?? undefined}
+							sizes="96px"
 							alt={cp.product.name}
 							width="96"
 							height="96"

@@ -6,6 +6,7 @@
 
 	let { data }: { data: { post: Post } } = $props();
 
+	// svelte-ignore state_referenced_locally
 	const { post } = data;
 
 	const dateLabel = new Date(`${post.date}T00:00:00`).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });

@@ -2,13 +2,14 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, variantPrice } from '$lib/utils';
+	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, SITE_URL, variantPrice } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice as toDisplayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store; product: Product } } = $props();
 
+	// svelte-ignore state_referenced_locally
 	let product = $state(data.product);
 
 	function firstAvailable(): Variant | null {
@@ -146,7 +147,7 @@
 			<div class="bg-card border border-hairline rounded-card overflow-hidden">
 				<div class="aspect-[4/3] bg-canvas">
 					{#if activePhoto && !imgError}
-						<img src={activePhoto} alt={product.name} width="1024" height="768" class="w-full h-full object-cover" decoding="async" onerror={() => imgError = true} />
+						<img src={activePhoto} srcset={imageSrcset(activePhoto) ?? undefined} sizes="(min-width: 640px) 50vw, 100vw" fetchpriority="high" alt={product.name} width="1024" height="768" class="w-full h-full object-cover" decoding="async" onerror={() => imgError = true} />
 					{/if}
 				</div>
 			</div>

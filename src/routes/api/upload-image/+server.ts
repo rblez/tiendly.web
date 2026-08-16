@@ -26,29 +26,38 @@ export const POST = async (event) => {
 
 		let pipeline = sharp(Buffer.from(await file.arrayBuffer())).rotate();
 		if (kind === 'logo') {
-			pipeline = pipeline.resize(512, 512, { fit: 'cover', withoutEnlargement: true });
-		} else {
-			pipeline = pipeline.resize(1600, 1600, { fit: 'inside', withoutEnlargement: true });
+			const logo = await pipeline.resize(512, 512, { fit: 'cover', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
+			return json({ url: await uploadMedia(logo, `${user.id}/logo-${Date.now()}.webp`) });
 		}
-		const webp = await pipeline.webp({ quality: 80 }).toBuffer();
-
-		const serviceClient = createClient<Database>(
-			PUBLIC_SUPABASE_URL,
-			SUPABASE_SERVICE_ROLE_KEY,
-			{ auth: { persistSession: false } },
-		);
-		const path = `${user.id}/img-${Date.now()}.webp`;
-		const { error } = await serviceClient.storage.from('media').upload(path, webp, {
-			contentType: 'image/webp',
-			upsert: false,
-		});
-		if (error) return json({ error: error.message }, { status: 500 });
-
-		return json({
-			url: serviceClient.storage.from('media').getPublicUrl(path).data.publicUrl,
-		});
+		const base = pipeline.resize(1600, 1600, { fit: 'inside', withoutEnlargement: true });
+		const [big, mid, small] = await Promise.all([
+			base.clone().webp({ quality: 80 }).toBuffer(),
+			base.clone().resize(800, 800, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 78 }).toBuffer(),
+			base.clone().resize(400, 400, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 72 }).toBuffer(),
+		]);
+		const ts = Date.now();
+		const [urlBig] = await Promise.all([
+			uploadMedia(big, `${user.id}/img-${ts}-1600.webp`),
+			uploadMedia(mid, `${user.id}/img-${ts}-800.webp`),
+			uploadMedia(small, `${user.id}/img-${ts}-400.webp`),
+		]);
+		return json({ url: urlBig });
 	} catch (err) {
 		console.error('upload-image', err);
 		return json({ error: 'No se pudo procesar la imagen' }, { status: 500 });
 	}
 };
+
+async function uploadMedia(buffer: Buffer, path: string): Promise<string> {
+	const serviceClient = createClient<Database>(
+		PUBLIC_SUPABASE_URL,
+		SUPABASE_SERVICE_ROLE_KEY,
+		{ auth: { persistSession: false } },
+	);
+	const { error } = await serviceClient.storage.from('media').upload(path, buffer, {
+		contentType: 'image/webp',
+		upsert: false,
+	});
+	if (error) throw new Error(error.message);
+	return serviceClient.storage.from('media').getPublicUrl(path).data.publicUrl;
+}

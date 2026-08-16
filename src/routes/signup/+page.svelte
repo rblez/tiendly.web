@@ -11,6 +11,7 @@
 			? `Tu tienda «${storeName || 'sin nombre'}» te espera. Crea tu cuenta para activarla.`
 			: 'Gratis, sin tarjeta. Tu tienda lista en 5 minutos.'
 	);
+	// svelte-ignore state_referenced_locally
 	let name = $state(storeName);
 	let email = $state('');
 	let password = $state('');

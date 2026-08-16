@@ -14,6 +14,7 @@
 		cancelado: { label: 'Cancelado', cls: 'bg-error/15 text-error', desc: 'Este pedido fue cancelado.' },
 	};
 
+	// svelte-ignore state_referenced_locally
 	let code = $state((initialCode ?? '').trim().toLowerCase());
 	let searching = $state(false);
 	let error = $state('');
@@ -62,6 +63,10 @@
 	role="dialog"
 	aria-modal="true"
 	aria-label="Rastrear pedido"
+	tabindex="-1"
+	onkeydown={(e) => {
+		if (e.key === 'Escape') onClose();
+	}}
 	onclick={(e) => {
 		if (e.target === e.currentTarget) onClose();
 	}}

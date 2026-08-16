@@ -8,7 +8,9 @@
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
 
+	// svelte-ignore state_referenced_locally
 	let store = $state(data.store);
+	// svelte-ignore state_referenced_locally
 	let products = $state<Product[]>(data.products);
 
 	function syncFiltersFromUrl() {
