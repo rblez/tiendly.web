@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import '@fontsource-variable/inter-tight';
 	import '$lib/remixicon.css';
 	import { page } from '$app/stores';
 	import { afterNavigate } from '$app/navigation';
