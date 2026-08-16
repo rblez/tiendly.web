@@ -2,7 +2,7 @@
 
 ## Project
 
-SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/t/[slug]`, authenticated owner dashboard at `/dashboard` (store panel at `/dashboard/s/[code]`, 8-char store code), auth at `/login` and `/signup`. Old routes `/dash*` and `/app*` 301-redirect to `/dashboard*`. Only one plan: **Gratis** (1 tienda, 10 productos por tienda). UI text is in Spanish.
+SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/@[username]`, authenticated owner dashboard at `/dashboard` (store panel at `/dashboard/s/[code]`, 8-char store code), auth at `/login` and `/signup`. Old routes `/dash*` and `/app*` 301-redirect to `/dashboard*`. Only one plan: **Gratis** (1 tienda, 10 productos por tienda). UI text is in Spanish.
 
 ## Commands
 
@@ -22,7 +22,7 @@ SvelteKit app for **Tiendly** — a multi-store storefront platform. Public stor
 
 ## Structure
 
-- `src/routes/t/[slug]/` — public storefront (product list, product detail, cart, checkout)
+- `src/routes/@[username]/` — public storefront (product list, product detail, cart, checkout)
 - `src/routes/dashboard/` — owner dashboard (requires auth); `s/[code]/` store panel, `profile/` cuenta
 - `src/lib/components/` — shared UI components
 - `src/lib/stores/` — Svelte 5 rune-based stores (auth, cart, filters, modal)
