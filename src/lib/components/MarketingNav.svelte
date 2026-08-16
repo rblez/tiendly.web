@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { auth } from '$lib/stores/auth.svelte';
 
 	const links: Array<{ href: string; label: string }> = [
 		{ href: '/tiendas', label: 'Tiendas' },
@@ -9,6 +10,10 @@
 
 	let open = $state(false);
 	let scrolled = $state(false);
+
+	$effect(() => {
+		auth.init();
+	});
 
 	function onScroll() {
 		scrolled = window.scrollY > 8;
@@ -37,7 +42,11 @@
 			</div>
 
 			<div class="hidden md:flex items-center gap-2.5">
-				<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Entrar</a>
+				{#if auth.session}
+					<a href="/dashboard" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Mi panel</a>
+				{:else}
+					<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Entrar</a>
+				{/if}
 				<a href="/wizard" class="btn-3d px-5 py-2.5 text-sm font-semibold no-underline">Crear mi tienda</a>
 			</div>
 
@@ -64,13 +73,23 @@
 				</a>
 			{/each}
 			<div class="flex flex-col gap-2 pt-3">
-				<a
-					href="/login"
-					class="block text-center border border-hairline text-body font-medium px-5 py-3 rounded-btn text-sm no-underline"
-					onclick={() => (open = false)}
-				>
-					Iniciar sesión
-				</a>
+				{#if auth.session}
+					<a
+						href="/dashboard"
+						class="block text-center border border-hairline text-body font-medium px-5 py-3 rounded-btn text-sm no-underline"
+						onclick={() => (open = false)}
+					>
+						Mi panel
+					</a>
+				{:else}
+					<a
+						href="/login"
+						class="block text-center border border-hairline text-body font-medium px-5 py-3 rounded-btn text-sm no-underline"
+						onclick={() => (open = false)}
+					>
+						Iniciar sesión
+					</a>
+				{/if}
 				<a
 					href="/wizard"
 					class="block text-center bg-ember text-white font-bold px-5 py-3 rounded-btn text-sm no-underline"

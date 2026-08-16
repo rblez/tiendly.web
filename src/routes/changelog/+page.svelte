@@ -5,6 +5,19 @@
 	const releases = [
 		{
 			date: '2026-08-16',
+			title: '3.1.2-beta — Landing, directorio por categorías y panel renovado',
+			items: [
+				'Landing y páginas institucionales: sobre Tiendly, términos, privacidad, blog y registro de cambios.',
+				'Directorio de tiendas por categoría de negocio: servicios digitales, alimentos, ferretería, moda y más.',
+				'Cada tienda elige su categoría al crearla y puede cambiarla desde Configuración en el panel.',
+				'Wizard en 4 pasos, más claro y sin iconos: nombre, categoría, WhatsApp y primeros productos.',
+				'Editor de variantes rediseñado para que funcione bien en el móvil.',
+				'Página de inicio propia para sesiones (la landing ya no te manda al panel de golpe).',
+				'Se acabó la sección de precios: Tiendly es gratis para todos, sin comisiones.',
+			],
+		},
+		{
+			date: '2026-08-16',
 			title: 'Rastreo de pedidos y mejoras de tienda',
 			items: [
 				'Los clientes pueden rastrear su pedido desde el pie de la tienda con el número que reciben.',

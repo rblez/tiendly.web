@@ -10,6 +10,31 @@ export interface Post {
 
 export const POSTS: Post[] = [
 	{
+		slug: 'directorio-de-tiendas-por-categorias',
+		title: 'El directorio de Tiendly: encuentra negocios por categoría',
+		date: '2026-08-16',
+		excerpt: 'Servicios digitales, ferretería, comida, moda... Ahora las tiendas de Tiendly se organizan por rubro y se listan en un directorio público.',
+		tags: ['directorio', 'tiendas'],
+		minutes: 3,
+		content: `## Tiendas ordenadas como un mapa de tu ciudad
+
+Antes, si querías encontrar un negocio en Tiendly, tenías que saber su link exacto. Desde hoy, [el directorio](/tiendas) agrupa todas las tiendas activas por **categoría de negocio**: servicios digitales, alimentos y bebidas, ferretería, moda, belleza, tecnología y más.
+
+## Cada tienda elige su rubro
+
+Al crear una tienda, el wizard te pregunta **a qué se dedica tu negocio** y te sugiere la categoría exacta para que te encuentren (recargas digitales, repostería, herramientas...). Puedes cambiarla cuando quieras desde **Configuración** en el panel.
+
+## La landing también muestra categorías
+
+La página principal de Tiendly ahora enseña los rubros con más tiendas activas y te lleva directo al directorio filtrado por categoría.
+
+## ¿Tu rubro no está en la lista?
+
+Hay un hueco para "Otros": cada negocio es distinto y el directorio se adapta. ¿Buscas algo puntual? La búsqueda con filtros del [directorio](/tiendas) encuentra por nombre, usuario o rubro.
+
+[Agrega tu tienda gratis](/wizard) y empieza a salir en tu categoría.`,
+	},
+	{
 		slug: 'que-es-tiendly',
 		title: 'Qué es Tiendly y por qué tu catálogo merece un link propio',
 		date: '2026-08-12',

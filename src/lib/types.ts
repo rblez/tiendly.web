@@ -117,6 +117,7 @@ export interface Store {
 	location?: string | null;
 	schedule?: string | null;
 	active: boolean;
+	category?: string | null;
 	action?: string;
 	currency?: string | null;
 	exchange_rate?: number | null;

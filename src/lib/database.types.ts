@@ -217,6 +217,7 @@ export type Database = {
           action: string
           active: boolean
           banner: string | null
+          category: string | null
           code: string
           created_at: string
           currency: string | null
@@ -244,6 +245,7 @@ export type Database = {
           action?: string
           active?: boolean
           banner?: string | null
+          category?: string | null
           code: string
           created_at?: string
           currency?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           action?: string
           active?: boolean
           banner?: string | null
+          category?: string | null
           code?: string
           created_at?: string
           currency?: string | null

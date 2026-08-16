@@ -86,7 +86,7 @@
 	<aside class="mt-12 bg-card border border-hairline rounded-card p-6 text-center">
 		<p class="font-bold text-ink mb-2">¿Te gustó este artículo?</p>
 		<p class="text-sm text-muted mb-4">Crea tu tienda gratis y ponlo en práctica hoy mismo.</p>
-		<a href="/wizard" class="btn-3d text-sm no-underline">Crear mi tienda gratis</a>
+		<a href="/wizard" class="cta-primary w-full">Crear mi tienda gratis</a>
 	</aside>
 </main>
 
