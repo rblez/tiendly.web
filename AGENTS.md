@@ -29,12 +29,11 @@ SvelteKit app for **Tiendly** — a multi-store storefront platform. Public stor
 
 ## DB Schema (key points)
 
-- `stores` (slug is the public URL identifier, `currency`/`exchange_rate` para multimoneda), `products` (belongs to store, has `variants` JSON — variantes de 2 niveles: variante + `options[]` con precio que se suma, `ask` JSON con datos que se piden al cliente en checkout, `active`/`agotado` flags), `profiles` (auth users), `store_visits` (visitas diarias por tienda, se muestran en panel y en `/dashboard`)
+- `stores` (slug is the public URL identifier, `currency`/`exchange_rate` para multimoneda, `action` para el tipo de pedido), `products` (belongs to store, has `variants` JSON — variantes de 2 niveles: variante + `options[]` con precio que se suma, `ask` JSON con datos que se piden al cliente en checkout, `active`/`agotado` flags), `profiles` (auth users), `store_visits` (visitas diarias por tienda, se muestran en panel y en `/dashboard`)
 - Server-side ownership check via `is_store_owner(store_id)` function
-- Migraciones pendientes por aplicar en producción (el código ya las guarda condicionalmente): `stores.action`, `stores.currency`, `stores.exchange_rate`, `products.ask`
 
 ## Notes
 
 - Do not commit `.env`
 - Product `variants` may be `null` — always normalize with `Array.isArray(...) ? ... : []`
-- Product `ask` also may be missing (migración pendiente) — normalízalo con `Array.isArray(...) ? ... : []`
+- Product `ask` may be missing en datos antiguos — normalízalo con `Array.isArray(...) ? ... : []`
