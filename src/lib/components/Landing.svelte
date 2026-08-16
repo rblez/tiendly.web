@@ -78,7 +78,10 @@
 </script>
 
 <main>
-	<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
+	<section class="relative overflow-hidden max-w-full">
+	<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/hero.webp')" aria-hidden="true"></div>
+	<div class="absolute inset-0 bg-gradient-to-b from-canvas/85 via-canvas/60 to-canvas/85" aria-hidden="true"></div>
+	<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
 		<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-ember bg-ember/10 border border-ember/20 rounded-full px-3 py-1.5 mb-6">
 			<i class="ri-vip-crown-2-line"></i>
 			Plan Gratis para siempre, sin tarjeta
@@ -101,6 +104,7 @@
 		{#if topCategories.length > 0}
 			<p class="text-xs text-muted-soft mt-6">Tiendas activas en {topCategories.map((c) => c.category).slice(0, 3).join(', ')} y más categorías.</p>
 		{/if}
+	</div>
 	</section>
 
 	<section class="border-y border-hairline bg-card/40">
@@ -193,8 +197,10 @@
 		</div>
 	</section>
 
-	<section class="border-t border-hairline bg-card/40">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+	<section class="relative overflow-hidden border-t border-hairline">
+		<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/hero.webp')" aria-hidden="true"></div>
+		<div class="absolute inset-0 bg-gradient-to-b from-canvas/90 via-canvas/65 to-canvas/90" aria-hidden="true"></div>
+		<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
 			<h2 class="text-2xl sm:text-3xl font-black tracking-tight text-ink mb-3">Tu catálogo está a unos minutos</h2>
 			<p class="text-body max-w-md mx-auto mb-8">Crea tu tienda gratis hoy y comparte tu primer link esta misma tarde.</p>
 			<a href="/wizard" class="cta-primary">Crear mi tienda gratis</a>
