@@ -25,6 +25,12 @@ export const GET = async () => {
 	const paths: Array<[string, string, string]> = [
 		['/', 'monthly', '1.0'],
 		['/wizard', 'monthly', '0.9'],
+		['/tiendas', 'weekly', '0.8'],
+		['/about', 'monthly', '0.4'],
+		['/terms-of-use', 'monthly', '0.3'],
+		['/privacy', 'monthly', '0.3'],
+		['/blog', 'weekly', '0.6'],
+		['/changelog', 'monthly', '0.3'],
 		['/login', 'monthly', '0.3'],
 		['/signup', 'monthly', '0.3'],
 	];

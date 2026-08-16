@@ -21,7 +21,7 @@
 			return;
 		}
 		trackError = '';
-		goto(`/@${store?.slug}/rastrear/${encodeURIComponent(code)}`);
+		goto(`/@${store?.slug}?track_order=${encodeURIComponent(code)}`);
 	}
 </script>
 
@@ -84,7 +84,7 @@
 			</div>
 		</div>
 	{:else}
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-8">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-8">
 			<div>
 				<p class="flex items-center gap-2.5">
 					<img src="/isotipo.png" alt="" class="h-7 w-7 rounded-md object-contain" />
@@ -101,10 +101,33 @@
 						<a href="/" class="text-sm text-body hover:text-ember transition-colors no-underline">Inicio</a>
 					</li>
 					<li>
+						<a href="/tiendas" class="text-sm text-body hover:text-ember transition-colors no-underline">Explorar tiendas</a>
+					</li>
+					<li>
+						<a href="/blog" class="text-sm text-body hover:text-ember transition-colors no-underline">Blog</a>
+					</li>
+					<li>
+						<a href="/changelog" class="text-sm text-body hover:text-ember transition-colors no-underline">Cambios</a>
+					</li>
+					<li>
 						<a href="/wizard" class="text-sm text-body hover:text-ember transition-colors no-underline">Crea tu tienda</a>
 					</li>
 					<li>
 						<a href="/login" class="text-sm text-body hover:text-ember transition-colors no-underline">Iniciar sesión</a>
+					</li>
+				</ul>
+			</div>
+			<div>
+				<p class="text-sm font-semibold text-ink mb-3">Legal</p>
+				<ul class="space-y-2">
+					<li>
+						<a href="/about" class="text-sm text-body hover:text-ember transition-colors no-underline">Sobre Tiendly</a>
+					</li>
+					<li>
+						<a href="/terms-of-use" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
+					</li>
+					<li>
+						<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
 					</li>
 				</ul>
 			</div>

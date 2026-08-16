@@ -42,6 +42,10 @@
 			saveUtm(utm);
 			const qs = utmQuery(utm);
 			fetch(`/api/track-visit/${store.slug}${qs ? `?${qs}` : ''}`, { method: 'POST' }).catch(() => {});
+			const recentKey = 'tiendly-recent-stores';
+			const recents = JSON.parse(localStorage.getItem(recentKey) ?? '[]') as Array<{ slug: string; name: string; logo: string | null }>;
+			const next = [{ slug: data.store.slug, name: data.store.name, logo: data.store.logo }, ...recents.filter((r) => r.slug !== data.store.slug)].slice(0, 6);
+			localStorage.setItem(recentKey, JSON.stringify(next));
 		} catch {
 			// privado: no se registra la visita
 		}
