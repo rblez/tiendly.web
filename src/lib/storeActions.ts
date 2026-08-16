@@ -42,7 +42,7 @@ export function productOrderMessage(
 ): string {
 	const label = variantLabel(variant ?? null, optionId);
 	const labelPart = label ? ` (${label})` : '';
-	const price = formatPrice(variantPrice(variant, optionId), product.currency);
+	const price = formatPrice(variant ? variantPrice(variant, optionId) : product.price, product.currency);
 	return `Hola ${store.name} 👋\nQuiero pedir: ${product.name}${labelPart} — ${price}`;
 }
 

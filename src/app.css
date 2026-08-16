@@ -182,3 +182,39 @@ select option {
 	background-color: var(--color-card);
 	color: var(--color-ink);
 }
+
+/* Botón 3D con gradiente: sin sombras, profundidad solo con bordes */
+.btn-3d {
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--accent) 84%, #ffffff 16%) 0%,
+			var(--accent) 48%,
+			var(--accent-active) 100%
+		);
+	border: 1px solid color-mix(in srgb, var(--accent-active) 65%, #000000 35%);
+	border-top-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
+	border-bottom-width: 4px;
+	border-radius: var(--radius-btn);
+	color: #ffffff;
+	cursor: pointer;
+	transition:
+		border-bottom-width 0.08s ease,
+		transform 0.08s ease,
+		filter 0.15s ease;
+}
+
+.btn-3d:hover {
+	filter: brightness(1.07);
+}
+
+.btn-3d:active {
+	border-bottom-width: 2px;
+	transform: translateY(2px);
+}
+
+.btn-3d:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+	filter: none;
+}

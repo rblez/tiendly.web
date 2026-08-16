@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Product, Store } from '$lib/types';
-	import { formatPrice, productImage, convertPrice, vendorCurrency } from '$lib/utils';
+	import { productImage } from '$lib/utils';
+	import { displayPrice, displayCurrency, displayFormat } from '$lib/stores/currency.svelte';
 	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 
 	let { product, store }: { product: Product; store: Store } = $props();
@@ -38,8 +39,8 @@
 	const action = $derived(storeAction(store));
 	const displayProduct = $derived({
 		name: product.name,
-		price: convertPrice(product.price, store),
-		currency: vendorCurrency(store),
+		price: displayPrice(product.price, store),
+		currency: displayCurrency(store),
 	});
 	const ctaHref = $derived(actionLink(action, store, productOrderMessage(store, displayProduct, null)));
 	const direct = $derived(catalogMode && !isAgotado && product.variants.length === 0);
@@ -73,9 +74,9 @@
 		{#if isAgotado}
 			<span class="text-muted-soft">Agotado</span>
 		{:else if product.variants.length > 0}
-			Desde {formatPrice(convertPrice(minPrice, store), vendorCurrency(store))}
+			Desde {displayFormat(minPrice, store)}
 		{:else}
-			{formatPrice(convertPrice(product.price, store), vendorCurrency(store))}
+			{displayFormat(product.price, store)}
 		{/if}
 		{#if !isAgotado && product.bajo_pedido}
 			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-[10px] font-semibold">
@@ -101,7 +102,7 @@
 						if (ctaHref) window.open(ctaHref, '_blank');
 					}
 				}}
-				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium bg-ember text-white hover:bg-ember-active transition-all duration-200 inline-flex items-center justify-center gap-2 cursor-pointer select-none"
+				class="btn-3d w-full mt-2 px-4 py-2.5 text-sm font-semibold inline-flex items-center justify-center gap-2 select-none"
 			>
 				<i class={actionConfig(action).icon}></i>
 				{actionConfig(action).label}
@@ -111,7 +112,7 @@
 				class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
 					{isAgotado
 						? 'bg-bone text-muted-soft cursor-not-allowed'
-						: 'bg-ember text-white hover:bg-ember-active'}"
+						: 'btn-3d font-semibold'}"
 			>
 				{isAgotado ? 'Agotado' : 'Ver producto'}
 			</span>

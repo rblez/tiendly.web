@@ -5,6 +5,13 @@
   font-display: swap;
 }
 
+[class^="ri-"], [class*=" ri-"] {
+  font-family: 'remixicon' !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .ri-lg { font-size: 1.3333em; line-height: 0.75em; vertical-align: -.0667em; }
 .ri-xl { font-size: 1.5em; line-height: 0.6666em; vertical-align: -.075em; }
 .ri-xxs { font-size: .5em; }

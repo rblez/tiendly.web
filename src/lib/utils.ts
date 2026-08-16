@@ -14,7 +14,7 @@ export function storeUrl(slug: string): string {
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
 	CUP: '$',
-	USD: 'US$',
+	USD: '$',
 	EUR: '€',
 	MXN: 'MX$',
 	ARS: 'ARS$',
@@ -26,15 +26,27 @@ export function formatPrice(price: number, currency: string): string {
 	return currency === 'CUP' ? `${sym}${n} CUP` : `${sym}${n} ${currency}`;
 }
 
-type RateStore = { currency?: string | null; exchange_rate?: number | null };
+type RateStore = { currency?: string | null; exchange_rate?: number | null; exchange_rates?: Record<string, number> | null };
 
 export function vendorCurrency(store: RateStore | null | undefined): string {
 	return store?.currency?.trim() || 'CUP';
 }
 
-export function convertPrice(price: number, store: RateStore | null | undefined): number {
-	const rate = store?.exchange_rate;
-	if (!Number.isFinite(rate) || !rate || rate <= 0) return price;
+export function currencyRate(store: RateStore | null | undefined, currency: string): number | null {
+	const c = currency?.trim() || 'CUP';
+	if (c === 'CUP') return 1;
+	const map = store?.exchange_rates;
+	if (map && typeof map === 'object' && Number.isFinite(map[c]) && (map[c] ?? 0) > 0) return map[c] as number;
+	if (c === store?.currency?.trim()) {
+		const r = store?.exchange_rate;
+		if (Number.isFinite(r) && r && r > 0) return r;
+	}
+	return null;
+}
+
+export function convertPrice(price: number, store: RateStore | null | undefined, currency?: string): number {
+	const rate = currencyRate(store, currency ?? vendorCurrency(store));
+	if (!rate || rate <= 0) return price;
 	return price / rate;
 }
 
@@ -57,7 +69,7 @@ export function uniqueProductId(name: string, existingIds: Iterable<string> = []
 	return id;
 }
 
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
 export function generateStoreCode(length = 8): string {
 	const bytes = crypto.getRandomValues(new Uint8Array(length));
@@ -174,8 +186,8 @@ export function variantLabel(variant: Variant | null | undefined, optionId?: str
 	return variant.label;
 }
 
-export function variantPrice(variant: Variant | null | undefined, optionId?: string | null): number {
-	if (!variant) return 0;
+export function variantPrice(variant: Variant | null | undefined, optionId?: string | null, base?: number): number {
+	if (!variant) return base ?? 0;
 	const opt = optionId ? (variant.options ?? []).find((o) => o.id === optionId) : null;
 	return variant.price + (opt?.price ?? 0);
 }

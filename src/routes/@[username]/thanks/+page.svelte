@@ -52,7 +52,6 @@
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	{#if !order || !storeMatches}
 		<div class="text-center py-16 bg-card border border-hairline rounded-card">
-			<i class="ri-store-2-line text-3xl text-muted-soft mb-4 block"></i>
 			<p class="text-lg text-muted mb-6">No encontramos ningún pedido reciente de esta tienda.</p>
 			<a
 				href={`/@${data.store.slug}`}
@@ -63,9 +62,6 @@
 		</div>
 	{:else}
 		<div class="text-center mb-10">
-			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-5">
-				<i class="ri-check-line text-3xl text-ember"></i>
-			</div>
 			<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-2">¡Gracias, {order.name}!</h1>
 			<p class="text-body">
 				Tu pedido fue enviado a
@@ -106,7 +102,6 @@
 				href={`/@${data.store.slug}`}
 				class="inline-flex items-center justify-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
 			>
-				<i class="ri-shopping-bag-line"></i>
 				Seguir comprando
 			</a>
 			<a

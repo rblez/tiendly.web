@@ -22,7 +22,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let loading = $state(true);
 	let unreadOrders = $state(0);
 	let openStatusMenu = $state<string | null>(null);
-	let shareOpen = $state(false);
 
 	type NotifPrefs = { sound: boolean; browser: boolean; badge: boolean };
 
@@ -83,12 +82,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		document.title = documentTitle;
 	});
 
-	$effect(() => {
-		const handler = () => (shareOpen = true);
-		window.addEventListener('tiendly:share-store', handler);
-		return () => window.removeEventListener('tiendly:share-store', handler);
-	});
-
 	function urlTab(fallback: Tab): Tab {
 		const t = $page.url.searchParams.get('tab');
 		if (t === 'general') return 'configuracion';
@@ -102,8 +95,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	});
 
 	let error = $state('');
-	let savedFlash = $state(false);
-	let savedMessage = $state('');
 
 	// Product form
 	let productModalOpen = $state(false);
@@ -157,6 +148,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		action: 'comprar' as string,
 		currency: 'CUP' as string,
 		exchange_rate: '',
+		usd_rate: '',
+		show_cup: true,
 		extra_links: [] as { title: string; url: string }[],
 		location: '',
 		schedule: '',
@@ -179,14 +172,12 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
 	const CURRENCIES = ['CUP', 'USD', 'MXN', 'ARS', 'EUR'];
 
-	let shareUrl = $derived(store ? storeUrl(store.slug) : '');
-
-let formCreatingCategory = $state(false);
+	let formCreatingCategory = $state(false);
 	let hasActionColumn = $state(true);
 	let hasCurrencyColumn = $state(false);
 	let hasAskColumn = $state(false);
-	let exchangeRateParsed = $derived.by(() => {
-		const raw = settings.exchange_rate.trim();
+	let usdRateParsed = $derived.by(() => {
+		const raw = settings.usd_rate.trim();
 		if (!raw) return null;
 		const n = Number(raw.replace(',', '.'));
 		return Number.isFinite(n) && n > 0 ? n : NaN;
@@ -224,6 +215,20 @@ let formCreatingCategory = $state(false);
 		{ label: 'Añade una red social', doneLabel: 'Redes listas', done: hasSocials, action: 'configuracion' },
 	]);
 	const score = $derived(Math.round((tasks.filter((t) => t.done).length / tasks.length) * 100));
+
+	function loadUsdRate(row: Record<string, unknown>): string {
+		const rates = (row.exchange_rates as Record<string, number> | null | undefined) ?? null;
+		if (rates && typeof rates === 'object' && Number.isFinite(rates.USD) && (rates.USD ?? 0) > 0) return String(rates.USD);
+		const legacy = (row as { exchange_rate?: number | null }).exchange_rate;
+		if (Number.isFinite(legacy) && legacy && legacy > 0) return String(legacy);
+		return '';
+	}
+
+	function loadShowCup(row: Record<string, unknown>): boolean {
+		const rates = (row.exchange_rates as Record<string, number> | null | undefined) ?? null;
+		if (rates && typeof rates === 'object' && Object.keys(rates).length > 0) return 'CUP' in rates;
+		return true;
+	}
 
 	function startNewCategory() {
 		formCreatingCategory = true;
@@ -265,6 +270,8 @@ $effect(() => {
 				action: ((storeData as { action?: string }).action ?? 'comprar') as string,
 				currency: ((storeData as { currency?: string | null }).currency ?? 'CUP') as string,
 				exchange_rate: ((storeData as { exchange_rate?: number | null }).exchange_rate ?? '') === '' ? '' : String((storeData as { exchange_rate?: number | null }).exchange_rate ?? ''),
+				usd_rate: loadUsdRate(storeData),
+				show_cup: loadShowCup(storeData),
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
 				schedule: storeData.schedule ?? '',
@@ -458,34 +465,65 @@ $effect(() => {
 		await reloadProducts();
 	}
 
-	function exportOrdersCSV() {
-		if (orders.length === 0) return;
-		const esc = (v: string | null | undefined) => `"${(v ?? '').replace(/"/g, '""')}"`;
-		const rows = [
-			['Fecha', 'Código', 'Cliente', 'Teléfono', 'Estado', 'Productos', 'Total', 'Moneda', 'Notas'],
-			...orders.map((o) => [
-				new Date(o.created_at).toLocaleString('es-CU'),
-				o.code ?? '',
-				o.customer_name,
-				o.customer_phone,
-				o.status,
-				o.items.map((i) => `${i.productName}${i.label ? ` (${i.label})` : ''} x${i.quantity}`).join('; '),
-				String(o.total),
-				o.currency,
-				o.notes ?? '',
-			]),
-		];
-		const csv = rows.map((r) => r.map(esc).join(',')).join('\n');
-		const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `pedidos-${store!.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
-		document.body.appendChild(a);
-		a.click();
-		a.remove();
-		URL.revokeObjectURL(url);
+	async function exportOrdersPDF() {
+	if (orders.length === 0) return;
+	const { jsPDF } = await import('jspdf');
+	const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+	const pageW = doc.internal.pageSize.getWidth();
+	const pageH = doc.internal.pageSize.getHeight();
+	const margin = 40;
+	let y = 72;
+
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(16);
+	doc.setTextColor(17, 24, 39);
+	doc.text(`Pedidos — ${store?.name ?? ''}`, margin, 48);
+	doc.setFont('helvetica', 'normal');
+	doc.setFontSize(9);
+	doc.setTextColor(120);
+	doc.text(
+		`Exportado: ${new Date().toLocaleString('es-CU')} · ${orders.length} pedidos · @${store?.slug ?? ''}`,
+		margin,
+		62,
+	);
+
+	for (const o of orders) {
+		if (y > pageH - 120) {
+			doc.addPage();
+			y = 72;
+		}
+		doc.setDrawColor(229, 231, 235);
+		doc.setFillColor(249, 250, 251);
+		doc.roundedRect(margin, y, pageW - margin * 2, 0, 0, 0, 'S');
+		doc.setFont('helvetica', 'bold');
+		doc.setFontSize(11);
+		doc.setTextColor(34, 197, 94);
+		doc.text(`Nº ${o.code ?? ''}`, margin, y + 18);
+		doc.setFont('helvetica', 'normal');
+		doc.setFontSize(9);
+		doc.setTextColor(107, 114, 128);
+		doc.text(new Date(o.created_at).toLocaleString('es-CU'), pageW - margin, y + 18, { align: 'right' });
+		y += 34;
+		doc.setTextColor(17, 24, 39);
+		doc.text(`${o.customer_name} — ${o.customer_phone}`, margin, y);
+		doc.setTextColor(120);
+		doc.text(`Estado: ${o.status}`, pageW - margin, y, { align: 'right' });
+		y += 18;
+		for (const item of o.items) {
+			doc.setTextColor(75);
+			const label = item.label ? ` (${item.label})` : '';
+			doc.text(`• ${item.productName}${label} x${item.quantity}`, margin + 8, y);
+			y += 14;
+		}
+		y += 4;
+		doc.setFont('helvetica', 'bold');
+		doc.setTextColor(17, 24, 39);
+		doc.text(`Total: ${formatPrice(o.total, o.currency)}`, margin, y);
+		y += 26;
 	}
+
+	doc.save(`pedidos-${store!.slug}-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
 
 	async function reloadProducts() {
 		const { data } = await supabase
@@ -563,6 +601,16 @@ $effect(() => {
 					if (row.action !== undefined) settings.action = row.action ?? 'comprar';
 					if (row.currency !== undefined) settings.currency = row.currency ?? 'CUP';
 					if (row.exchange_rate !== undefined) settings.exchange_rate = row.exchange_rate === null ? '' : String(row.exchange_rate);
+					if (row.exchange_rates !== undefined) {
+						const rates = (row.exchange_rates as Record<string, number> | null) ?? null;
+						if (rates && typeof rates === 'object' && Object.keys(rates).length > 0) {
+							settings.usd_rate = Number.isFinite(rates.USD) && (rates.USD ?? 0) > 0 ? String(rates.USD) : '';
+							settings.show_cup = 'CUP' in rates;
+						} else {
+							settings.usd_rate = row.exchange_rate !== undefined && row.exchange_rate !== null ? String(row.exchange_rate) : '';
+							settings.show_cup = true;
+						}
+					}
 					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
 					if (row.location !== undefined) settings.location = row.location ?? '';
 					if (row.schedule !== undefined) settings.schedule = row.schedule ?? '';
@@ -666,13 +714,16 @@ $effect(() => {
 			.map((l) => ({ title: l.title.trim(), url: l.url.trim() }))
 			.filter((l) => l.title && l.url);
 		let rateNum: number | null = null;
+		let rates: Record<string, number> = {};
 		if (hasCurrencyColumn) {
-			if (settings.exchange_rate.trim() && (exchangeRateParsed === null || Number.isNaN(exchangeRateParsed))) {
+			if (settings.usd_rate.trim() && (usdRateParsed === null || Number.isNaN(usdRateParsed))) {
 				settingsError = 'La tasa de cambio debe ser un número mayor que 0.';
 				settingsSaving = false;
 				return;
 			}
-			rateNum = exchangeRateParsed;
+			rateNum = usdRateParsed;
+			if (rateNum !== null && !Number.isNaN(rateNum)) rates.USD = rateNum;
+			if (settings.show_cup) rates.CUP = 1;
 		}
 		const { error: err } = await supabase
 			.from('stores')
@@ -684,7 +735,7 @@ $effect(() => {
 				theme_color: settings.theme_color,
 				active: settings.active,
 				...(hasActionColumn ? { action: settings.action } : {}),
-				...(hasCurrencyColumn ? { currency: settings.currency, exchange_rate: rateNum } : {}),
+				...(hasCurrencyColumn ? { currency: settings.currency, exchange_rate: rateNum, exchange_rates: rates } : {}),
 				social: clean,
 				extra_links: cleanLinks,
 				location: settings.location.trim() || null,
@@ -708,12 +759,6 @@ $effect(() => {
 		if (data) store = data as unknown as Store;
 	}
 
-	async function copyLink() {
-		await navigator.clipboard.writeText(shareUrl);
-		savedFlash = true;
-		savedMessage = 'Enlace copiado';
-		setTimeout(() => (savedFlash = false), 2500);
-	}
 async function duplicateProduct(p: Product) {
 									if (products.length >= productLimit) {
 										openNewProduct();
@@ -992,7 +1037,12 @@ async function duplicateProduct(p: Product) {
 
 			<div class="bg-card border border-hairline rounded-card p-5 mb-5">
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-sm font-semibold text-ink">Visitas por día · 7 días</h2>
+					<div class="flex items-center gap-3">
+						<h2 class="text-sm font-semibold text-ink">Visitas por día · 7 días</h2>
+						<button onclick={openQrModal} class="text-xs font-medium text-ember hover:text-ember-active cursor-pointer">
+							Código QR
+						</button>
+					</div>
 					<span class="text-sm font-bold text-ink tabular-nums">{visitTotal}</span>
 				</div>
 				<div class="flex items-end gap-1.5 h-20">
@@ -1031,7 +1081,7 @@ async function duplicateProduct(p: Product) {
 				</div>
 				<button
 					onclick={openNewProduct}
-					class="inline-flex items-center justify-center bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					class="btn-3d inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
 				>
 					Nuevo producto
 				</button>
@@ -1066,7 +1116,7 @@ async function duplicateProduct(p: Product) {
 					</div>
 					<p class="text-sm text-body mb-1">Aún no tienes productos</p>
 					<p class="text-xs text-muted-soft mb-4">Agrega tu primer producto y empieza a recibir pedidos.</p>
-					<button onclick={openNewProduct} class="bg-ember text-white px-5 py-2 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer">
+					<button onclick={openNewProduct} class="btn-3d px-5 py-2 text-sm font-semibold">
 						Agregar producto
 					</button>
 				</div>
@@ -1151,7 +1201,7 @@ async function duplicateProduct(p: Product) {
 							<div class="p-3.5">
 								<h3 class="font-semibold text-ink text-sm truncate leading-snug">{product.name}</h3>
 								<p class="text-sm text-ember font-semibold mt-1 tabular-nums">
-									${Number(product.price).toLocaleString('es-CU')} {product.currency}
+									{formatPrice(product.price, product.currency)}
 								</p>
 								<div class="flex items-center gap-1.5 mt-2">
 									<span class="text-[10px] text-muted-soft bg-bone rounded-full px-2 py-0.5">{product.category}</span>
@@ -1193,11 +1243,11 @@ async function duplicateProduct(p: Product) {
 							/>
 						</div>
 						<button
-							onclick={() => exportOrdersCSV()}
+							onclick={() => exportOrdersPDF()}
 							class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-							title="Exportar CSV"
+							title="Exportar PDF"
 						>
-							CSV
+							PDF
 						</button>
 						<button
 							onclick={() => loadOrders()}
@@ -1501,41 +1551,38 @@ async function duplicateProduct(p: Product) {
 							<div class="mt-4 pt-4 border-t border-hairline">
 								<label class="block text-sm font-medium text-body mb-1.5">Multimoneda</label>
 								<p class="text-xs text-muted-soft mb-3">
-									Los clientes ven los precios convertidos a tu moneda de venta con tu propia tasa. Deja la tasa vacía para vender en la moneda en que publicas.
+									El catálogo se muestra en <span class="font-semibold text-ink">USD</span>, tu moneda principal. Elige las otras monedas que tus clientes podrán ver.
 								</p>
-								<div class="grid gap-4 sm:grid-cols-2">
-									<div>
-										<label for="s-currency" class="block text-sm font-medium text-body mb-1.5">Moneda de venta</label>
-										<select
-											id="s-currency"
-											bind:value={settings.currency}
-											class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-										>
-											{#each CURRENCIES as c}
-												<option value={c}>{c}</option>
-											{/each}
-										</select>
-									</div>
-									<div>
-										<label for="s-rate" class="block text-sm font-medium text-body mb-1.5">Tasa de cambio</label>
-										<input
-											id="s-rate"
-											type="text"
-											inputmode="decimal"
-											bind:value={settings.exchange_rate}
-											placeholder="Ej: 125"
-											class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-										/>
-									</div>
+								<div class="flex items-center gap-2 mb-3">
+<span class="inline-flex items-center px-3 py-1.5 rounded-full bg-ember/10 text-ember border border-ember/30 text-xs font-semibold">
+									USD · Moneda principal
+								</span>
 								</div>
-								{#if settings.exchange_rate.trim() && (exchangeRateParsed === null || Number.isNaN(exchangeRateParsed))}
+								<label class="flex items-center gap-2 cursor-pointer select-none mb-3">
+									<input
+										type="checkbox"
+										bind:checked={settings.show_cup}
+										class="w-4 h-4 accent-ember cursor-pointer"
+									/>
+									<span class="text-sm text-ink font-medium">Mostrar también CUP</span>
+								</label>
+								<label for="s-usd-rate" class="block text-sm font-medium text-body mb-1.5">Tasa de cambio (1 USD = ___ CUP)</label>
+								<input
+									id="s-usd-rate"
+									type="text"
+									inputmode="decimal"
+									bind:value={settings.usd_rate}
+									placeholder="Ej: 670"
+									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+								{#if settings.usd_rate.trim() && (usdRateParsed === null || Number.isNaN(usdRateParsed))}
 									<p class="text-xs text-error mt-1.5">La tasa debe ser un número mayor que 0.</p>
-								{:else if exchangeRateParsed !== null && !Number.isNaN(exchangeRateParsed)}
+								{:else if usdRateParsed !== null && !Number.isNaN(usdRateParsed)}
 									<p class="text-xs text-muted-soft mt-1.5">
-										1 {settings.currency} = {exchangeRateParsed} en la moneda de tus precios · Ej: {formatPrice(100000, 'CUP')} ≈ {formatPrice(100000 / exchangeRateParsed, settings.currency)}
+										1 USD = {usdRateParsed} CUP · Ej: un precio de {formatPrice(100000, 'CUP')} ≈ {formatPrice(100000 / usdRateParsed, 'USD')}
 									</p>
 								{:else}
-									<p class="text-xs text-muted-soft mt-1.5">Sin tasa: el catálogo se muestra tal como publicas los precios.</p>
+									<p class="text-xs text-muted-soft mt-1.5">Sin tasa: tus precios se muestran tal como los publicas (en CUP).</p>
 								{/if}
 							</div>
 						{/if}
@@ -1796,7 +1843,7 @@ async function duplicateProduct(p: Product) {
 						<button
 							onclick={saveProduct}
 							disabled={formSaving}
-							class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
+							class="btn-3d w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold"
 						>
 							{#if formSaving}
 								<i class="ri-loader-4-line animate-spin"></i>
@@ -1862,62 +1909,6 @@ async function duplicateProduct(p: Product) {
 					</button>
 				</div>
 			</OptionModal>
-		{/if}
-
-		{#if shareOpen}
-			<div class="fixed inset-0 z-[90] flex items-center justify-center p-4" role="presentation">
-				<button type="button" class="fixed inset-0 bg-black/60 cursor-default" onclick={() => (shareOpen = false)} aria-label="Cerrar"></button>
-				<div class="relative w-full max-w-sm bg-card border border-hairline shadow-2xl rounded-card p-6">
-					<button onclick={() => (shareOpen = false)} class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-muted-soft hover:text-ink transition-colors cursor-pointer" aria-label="Cerrar">
-						<i class="ri-close-line text-xl"></i>
-					</button>
-					<h3 class="font-bold text-ink mb-1">Comparte tu tienda</h3>
-					<p class="text-xs text-muted mb-5">Envía el enlace a tus clientes para que vean tu catálogo y hagan pedidos.</p>
-					<input
-						readonly
-						value={shareUrl}
-						onclick={(e) => (e.target as HTMLInputElement).select()}
-						class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-xs text-ink focus:outline-none focus:border-ember mb-3"
-					/>
-					{#if savedFlash}
-						<p class="text-xs text-ember mb-3 flex items-center gap-1.5"><i class="ri-check-line"></i> {savedMessage}</p>
-					{/if}
-					<div class="grid grid-cols-2 gap-2">
-						<button
-							onclick={copyLink}
-							class="inline-flex items-center justify-center gap-2 bg-ember text-white px-4 py-3 rounded-btn text-sm font-medium hover:bg-ember-active transition-colors cursor-pointer"
-						>
-							<i class="ri-link"></i>
-							Copiar
-						</button>
-						<a
-							href={`https://wa.me/?text=${encodeURIComponent(`Mira mi tienda en Tiendly: ${shareUrl}`)}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center justify-center gap-2 px-4 py-3 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-ember/10 hover:text-ember transition-colors no-underline"
-						>
-							<i class="ri-whatsapp-line text-ember"></i>
-							WhatsApp
-						</a>
-						<button
-							onclick={() => {
-								shareOpen = false;
-								openQrModal();
-							}}
-							class="inline-flex items-center justify-center gap-2 px-4 py-3 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors cursor-pointer"
-						>
-							<i class="ri-qr-code-line text-ember"></i>
-							Código QR
-						</button>
-						<button
-							onclick={() => (shareOpen = false)}
-							class="inline-flex items-center justify-center gap-2 px-4 py-3 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors cursor-pointer"
-						>
-							Cerrar
-						</button>
-					</div>
-				</div>
-			</div>
 		{/if}
 
 		{#if qrOpen}

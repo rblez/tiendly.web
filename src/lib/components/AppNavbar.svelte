@@ -11,10 +11,6 @@
 	let logoutOpen = $state(false);
 	let loggingOut = $state(false);
 
-	function openShare() {
-		window.dispatchEvent(new CustomEvent('tiendly:share-store'));
-	}
-
 	async function confirmLogout() {
 		loggingOut = true;
 		await auth.signOut();
@@ -25,25 +21,14 @@
 <nav class="sticky top-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-hairline">
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16">
-			<a href="/dashboard" class="flex items-center gap-2.5 no-underline group" aria-label="Mis tiendas" title="Mis tiendas">
+			<a href="/dashboard" class="flex items-center gap-2 no-underline group" aria-label="Mis tiendas" title="Mis tiendas">
 				{#if isStoreRoute}
 					<i class="ri-arrow-left-line text-muted group-hover:text-ink transition-colors"></i>
 				{/if}
-				<img src="/isotipo.png" alt="Tiendly" class="h-11 w-11 object-contain" />
-				<span class="font-black text-lg tracking-tight text-ink">Tiendly</span>
+				<img src="/isotipo.png" alt="Tiendly" class="h-10 w-10 object-contain" />
 			</a>
 
 			<div class="flex items-center gap-3">
-				{#if isStoreRoute}
-					<button
-						onclick={openShare}
-						class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-btn text-sm font-semibold bg-ember text-white hover:bg-ember-active transition-colors cursor-pointer whitespace-nowrap"
-					>
-						<i class="ri-share-forward-line"></i>
-						Compartir
-					</button>
-				{/if}
-
 				<div class="relative flex-shrink-0">
 					<button
 						onclick={() => (menuOpen = !menuOpen)}
@@ -76,7 +61,6 @@
 								}}
 								class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink hover:bg-bone transition-colors cursor-pointer"
 							>
-								<i class="ri-store-2-line text-ember"></i>
 								Mis tiendas
 							</button>
 							<button
@@ -86,7 +70,6 @@
 								}}
 								class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink hover:bg-bone transition-colors cursor-pointer"
 							>
-								<i class="ri-user-line text-ember"></i>
 								Perfil
 							</button>
 							<div class="border-t border-hairline"></div>
@@ -97,7 +80,6 @@
 								}}
 								class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-error hover:bg-error/10 transition-colors cursor-pointer"
 							>
-								<i class="ri-logout-box-r-line"></i>
 								Cerrar sesión
 							</button>
 						</div>

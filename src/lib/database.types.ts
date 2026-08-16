@@ -213,6 +213,7 @@ export type Database = {
           currency: string | null
           description: string | null
           exchange_rate: number | null
+          exchange_rates: Json
           extra_links: Json
           id: string
           location: string | null
@@ -237,6 +238,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           exchange_rate?: number | null
+          exchange_rates?: Json
           extra_links?: Json
           id?: string
           location?: string | null
@@ -261,6 +263,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           exchange_rate?: number | null
+          exchange_rates?: Json
           extra_links?: Json
           id?: string
           location?: string | null

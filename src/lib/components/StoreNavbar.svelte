@@ -4,6 +4,7 @@
 	import { filters } from '$lib/stores/filters.svelte';
 	import { productImage } from '$lib/utils';
 	import { isCatalogMode } from '$lib/storeActions';
+	import { currency, availableCurrencies, mainCurrency } from '$lib/stores/currency.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store, previewMode = false }: { store: Store; previewMode?: boolean } = $props();
@@ -11,6 +12,7 @@
 	const catalogMode = $derived(isCatalogMode(store));
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
+	let currencies = $derived(availableCurrencies(store));
 
 	const homePath = $derived(`/@${store.slug}`);
 	const cartPath = $derived(`/@${store.slug}/cart`);
@@ -62,6 +64,18 @@
 			{/if}
 
 			<div class="flex items-center gap-4 sm:gap-5">
+				{#if currencies.length > 1}
+					<select
+						aria-label="Cambiar moneda"
+						value={currency.display || mainCurrency(store)}
+						onchange={(e) => currency.set((e.target as HTMLSelectElement).value)}
+						class="bg-card border border-hairline rounded-full px-2.5 py-1.5 text-xs font-semibold text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+					>
+						{#each currencies as c}
+							<option value={c}>{c}</option>
+						{/each}
+					</select>
+				{/if}
 				{#if !catalogMode && $page.url.pathname !== cartPath}
 					<a
 						href={cartPath}

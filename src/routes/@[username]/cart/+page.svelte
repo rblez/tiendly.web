@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, productImage, convertPrice, vendorCurrency, variantPrice } from '$lib/utils';
+	import { formatPrice, productImage, variantPrice } from '$lib/utils';
+	import { displayCurrency, displayPrice } from '$lib/stores/currency.svelte';
 	import { onMount } from 'svelte';
 	import type { Product, Store, Variant } from '$lib/types';
 
@@ -36,16 +37,16 @@
 				const option = ci.optionId && variant
 					? (variant.options ?? []).find((o) => o.id === ci.optionId) ?? null
 					: null;
-				const price = variantPrice(variant, ci.optionId);
+				const price = variantPrice(variant, ci.optionId, product.price);
 				return { ...ci, product, variant, option, price, label: variant ? (option && variant.options?.length ? variant.label + ' — ' + option.label : variant.label) : null };
 			})
 			.filter((x): x is NonNullable<typeof x> => x !== null)
 	);
 
-	let total = $derived(cartLines.reduce((sum, cp) => sum + convertPrice(cp.price, data.store) * cp.quantity, 0));
+	let total = $derived(cartLines.reduce((sum, cp) => sum + displayPrice(cp.price, data.store) * cp.quantity, 0));
 	let cartEmpty = $derived(cart.items.filter((i) => i.storeSlug === data.store.slug).length === 0);
 	let itemCount = $derived(cartLines.reduce((sum, cp) => sum + cp.quantity, 0));
-	let currency = $derived(vendorCurrency(data.store));
+	let currency = $derived(displayCurrency(data.store));
 </script>
 
 <svelte:head>
@@ -146,9 +147,9 @@
 								</button>
 							</div>
 							<div class="text-right">
-								<p class="text-sm font-bold text-ink tabular-nums">{formatPrice(convertPrice(cp.price, data.store) * cp.quantity, currency)}</p>
+								<p class="text-sm font-bold text-ink tabular-nums">{formatPrice(displayPrice(cp.price, data.store) * cp.quantity, currency)}</p>
 								{#if cp.quantity > 1}
-									<p class="text-[11px] text-muted-soft tabular-nums">{formatPrice(convertPrice(cp.price, data.store), currency)} c/u</p>
+									<p class="text-[11px] text-muted-soft tabular-nums">{formatPrice(displayPrice(cp.price, data.store), currency)} c/u</p>
 								{/if}
 							</div>
 						</div>

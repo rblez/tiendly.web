@@ -23,10 +23,6 @@
 	let duplicating = $state(false);
 	let duplicateError = $state('');
 
-	function fmtDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-	}
-
 	async function copyStoreLink(store: Store) {
 		const url = storeUrl(store.slug);
 		try {
@@ -208,16 +204,12 @@
 			<p class="text-sm text-muted mt-1">Administra tus tiendas y compártelas</p>
 		</div>
 		<div class="flex items-center gap-2">
-			<div class="flex items-center gap-2 bg-card border border-hairline rounded-btn px-3.5 py-2">
-				<span class={`w-2 h-2 rounded-full ${plan.id === 'free' ? 'bg-muted' : 'bg-ember'}`}></span>
-				<span class="text-sm font-semibold text-ink">{plan.name}</span>
-				<span class="text-[10px] text-muted-soft font-medium">/ {plan.priceLabel}</span>
-			</div>
 			{#if atLimit}
 				<button
 					onclick={() => (upgradeOpen = true)}
 					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
 				>
+					<i class="ri-add-line"></i>
 					Nueva tienda
 				</button>
 			{:else}
@@ -225,6 +217,7 @@
 					href="/wizard"
 					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
 				>
+					<i class="ri-add-line"></i>
 					Nueva tienda
 				</a>
 			{/if}
@@ -294,139 +287,141 @@
 	{:else}
 		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 			{#each stores as store}
-				<a href={`/dashboard/s/${store.code}`} class="relative bg-card border border-hairline rounded-card p-6 sm:p-7 transition-all duration-200 hover:border-ember/50 hover:shadow-sm no-underline block group">
-					<div class="flex items-center gap-3 mb-4 pr-10">
-						{#if store.logo}
-							<img src={store.logo} alt={store.name} class="h-12 w-12 object-cover rounded-lg bg-canvas" />
-						{:else}
-							<span class="h-12 w-12 flex items-center justify-center rounded-lg bg-ember text-canvas font-black text-lg select-none">
-								{store.name.charAt(0).toUpperCase()}
-							</span>
-						{/if}
-						<div class="min-w-0">
-							<h3 class="font-bold text-ink truncate">{store.name}</h3>
-							<p class="text-xs text-muted truncate">@{store.slug}</p>
+				<a href={`/dashboard/s/${store.code}`} class="relative bg-card border border-hairline rounded-card transition-all duration-200 hover:border-ember/50 hover:shadow-lg hover:shadow-ink/5 hover:-translate-y-0.5 no-underline block group">
+					<div class="p-5 sm:p-6">
+						<div class="flex items-start gap-3 pr-10">
+							<div class="h-12 w-12 rounded-xl overflow-hidden bg-canvas border border-hairline flex-shrink-0">
+								{#if store.logo}
+									<img src={store.logo} alt={store.name} class="h-full w-full object-cover" />
+								{:else}
+									<span class="h-full w-full flex items-center justify-center bg-ember text-canvas font-black text-lg select-none">
+										{store.name.charAt(0).toUpperCase()}
+									</span>
+								{/if}
+							</div>
+							<div class="min-w-0 flex-1">
+								<h3 class="font-bold text-ink truncate leading-tight">{store.name}</h3>
+								<p class="text-xs text-muted truncate mt-0.5">@{store.slug}</p>
+								<p class="text-[11px] text-muted-soft mt-1.5 inline-flex items-center gap-1.5">
+									<span class={`w-1.5 h-1.5 rounded-full ${store.active ? 'bg-success' : 'bg-muted-soft'}`}></span>
+									{store.active ? 'Visible' : 'Oculta'}
+								</p>
+							</div>
 						</div>
-						{#if !store.active}
-							<span class="ml-auto inline-flex items-center px-2.5 py-1 rounded-full bg-error/10 text-error text-[11px] flex-shrink-0">
-								Oculta
-							</span>
-						{/if}
-					</div>
-					<div class="absolute top-4 right-4 z-30">
-						<button
-							onclick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								menuOpenId = menuOpenId === store.id ? null : store.id;
-							}}
-							class="h-8 w-8 flex items-center justify-center rounded-full bg-bone text-muted hover:text-ink hover:bg-bone/60 transition-colors cursor-pointer"
-							aria-label={`Opciones de ${store.name}`}
-							aria-expanded={menuOpenId === store.id}
-						>
-							<i class="ri-more-2-fill"></i>
-						</button>
-						{#if menuOpenId === store.id}
+						<div class="absolute top-4 right-4 z-30">
 							<button
-								type="button"
-								class="fixed inset-0 z-40 cursor-default"
 								onclick={(e) => {
 									e.preventDefault();
 									e.stopPropagation();
-									menuOpenId = null;
+									menuOpenId = menuOpenId === store.id ? null : store.id;
 								}}
-								aria-label="Cerrar menú"
-							></button>
-							<div class="absolute right-0 top-full mt-2 z-50 w-56 bg-card border border-hairline rounded-btn shadow-xl overflow-hidden">
+								class="h-8 w-8 flex items-center justify-center rounded-full bg-bone text-muted hover:text-ink hover:bg-bone/60 transition-colors cursor-pointer"
+								aria-label={`Opciones de ${store.name}`}
+								aria-expanded={menuOpenId === store.id}
+							>
+								<i class="ri-more-2-fill"></i>
+							</button>
+							{#if menuOpenId === store.id}
 								<button
-									onclick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										copyStoreLink(store);
-									}}
-									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
-								>
-									<i class="ri-link text-muted-soft"></i>
-									<span class="flex-1">Copiar enlace</span>
-									{#if copiedId === store.id}
-										<span class="text-[11px] font-bold text-ember inline-flex items-center gap-1">
-											<i class="ri-check-line"></i>
-											Copiado
-										</span>
-									{/if}
-								</button>
-								<button
-									onclick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										shareStore(store);
-									}}
-									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
-								>
-									<i class="ri-share-forward-line text-muted-soft"></i>
-									Compartir
-								</button>
-								<button
-									onclick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										duplicateStore(store);
-									}}
-									disabled={duplicatingId === store.id}
-									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left disabled:opacity-50"
-								>
-									<i class="ri-file-copy-line text-muted-soft"></i>
-									{duplicatingId === store.id ? 'Duplicando...' : 'Duplicar tienda'}
-								</button>
-								<div class="border-t border-hairline"></div>
-								<button
+									type="button"
+									class="fixed inset-0 z-40 cursor-default"
 									onclick={(e) => {
 										e.preventDefault();
 										e.stopPropagation();
 										menuOpenId = null;
-										deleteTarget = store;
 									}}
-									class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-error hover:bg-error/10 transition-colors cursor-pointer text-left"
-								>
-									<i class="ri-delete-bin-6-line"></i>
-									Eliminar
-								</button>
-							</div>
+									aria-label="Cerrar menú"
+								></button>
+								<div class="absolute right-0 top-full mt-2 z-50 w-56 bg-card border border-hairline rounded-btn shadow-xl overflow-hidden">
+									<button
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											copyStoreLink(store);
+										}}
+										class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
+									>
+										<i class="ri-link text-muted-soft"></i>
+										<span class="flex-1">Copiar enlace</span>
+										{#if copiedId === store.id}
+											<span class="text-[11px] font-bold text-ember inline-flex items-center gap-1">
+												<i class="ri-check-line"></i>
+												Copiado
+											</span>
+										{/if}
+									</button>
+									<button
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											shareStore(store);
+										}}
+										class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left"
+									>
+										<i class="ri-share-forward-line text-muted-soft"></i>
+										Compartir
+									</button>
+									<button
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											duplicateStore(store);
+										}}
+										disabled={duplicatingId === store.id}
+										class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-body hover:bg-bone transition-colors cursor-pointer text-left disabled:opacity-50"
+									>
+										<i class="ri-file-copy-line text-muted-soft"></i>
+										{duplicatingId === store.id ? 'Duplicando...' : 'Duplicar tienda'}
+									</button>
+									<div class="border-t border-hairline"></div>
+									<button
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											menuOpenId = null;
+											deleteTarget = store;
+										}}
+										class="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-error hover:bg-error/10 transition-colors cursor-pointer text-left"
+									>
+										<i class="ri-delete-bin-6-line"></i>
+										Eliminar
+									</button>
+								</div>
+							{/if}
+						</div>
+						{#if store.description}
+							<p class="text-xs text-body line-clamp-2 mt-4">{store.description}</p>
 						{/if}
-					</div>
-					{#if store.description}
-						<p class="text-xs text-body line-clamp-2 mb-4">{store.description}</p>
-					{/if}
-					<div class="grid grid-cols-3 gap-3 mb-5">
-						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
-							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.products ?? 0}</p>
-							<p class="text-[10px] text-muted">Productos</p>
-						</div>
-						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
-							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.orders ?? 0}</p>
-							<p class="text-[10px] text-muted">Pedidos</p>
-						</div>
-						<div class="bg-canvas rounded-btn px-3 py-3 text-center">
-							<p class="text-base font-bold text-ink tabular-nums">{stats[store.id]?.visits ?? 0}</p>
-							<p class="text-[10px] text-muted">Visitas</p>
+						<div class="grid grid-cols-3 bg-canvas border border-hairline rounded-btn divide-x divide-hairline mt-4 overflow-hidden">
+							<div class="px-2 py-3 text-center">
+								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.products ?? 0}</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Productos</p>
+							</div>
+							<div class="px-2 py-3 text-center">
+								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.orders ?? 0}</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Pedidos</p>
+							</div>
+							<div class="px-2 py-3 text-center">
+								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.visits ?? 0}</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Visitas</p>
+							</div>
 						</div>
 					</div>
-					<div class="flex items-center gap-2 text-xs">
-						<span class="inline-flex items-center px-4 py-1.5 rounded-full bg-ember text-white font-medium">
-							Gestionar
-						</span>
+					<div class="border-t border-hairline px-5 sm:px-6 py-3 flex items-center justify-between">
 						<button
 							onclick={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
 								toggleActive(store);
 							}}
-							class="relative w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0
-								{store.active ? 'bg-ember' : 'bg-bone border border-hairline'}"
-							title={store.active ? 'Apagar tienda' : 'Encender tienda'}
+							class="inline-flex items-center gap-2.5 cursor-pointer"
+							title={store.active ? 'Ocultar tienda' : 'Mostrar tienda'}
 							aria-label={store.active ? 'Ocultar tienda' : 'Mostrar tienda'}
 						>
-							<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {store.active ? 'left-[22px]' : 'left-0.5'}"></span>
+							<span class={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${store.active ? 'bg-ember' : 'bg-bone border border-hairline'}`}>
+								<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${store.active ? 'left-[18px]' : 'left-0.5'}"></span>
+							</span>
+							<span class={`text-xs font-medium ${store.active ? 'text-ink' : 'text-muted-soft'}`}>{store.active ? 'Visible' : 'Oculta'}</span>
 						</button>
 						<button
 							onclick={(e) => {
@@ -434,15 +429,11 @@
 								e.stopPropagation();
 								window.open(storeUrl(store.slug), '_blank', 'noopener,noreferrer');
 							}}
-							class="inline-flex items-center px-3 py-1.5 rounded-full bg-bone text-body hover:text-ember transition-colors cursor-pointer"
+							class="inline-flex items-center px-3 py-1.5 rounded-btn bg-bone text-body hover:text-ember hover:bg-ember/10 text-xs font-medium transition-colors cursor-pointer"
 						>
 							Ver
 						</button>
 					</div>
-					<p class="text-[11px] text-muted-soft mt-4 flex items-center gap-1">
-						<i class="ri-time-line text-[10px]"></i>
-						Creada el {fmtDate(store.created_at)}
-					</p>
 				</a>
 			{/each}
 		</div>

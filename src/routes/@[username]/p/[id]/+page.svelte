@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, convertPrice, vendorCurrency, variantPrice } from '$lib/utils';
+	import { formatPrice, productImage, productImages, storeUrl, SITE_URL, variantPrice } from '$lib/utils';
+	import { displayCurrency as viewCurrency, displayPrice as toDisplayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
 	import { isCatalogMode, storeAction, actionLink, actionConfig, productOrderMessage } from '$lib/storeActions';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -56,15 +57,15 @@
 		selectedOption && selectedVariant ? (selectedVariant.options ?? []).find((o) => o.id === selectedOption) ?? null : null
 	);
 
-	let currentPrice = $derived(variantPrice(selectedVariant, selectedOption));
+	let currentPrice = $derived(variantPrice(selectedVariant, selectedOption, product.price));
 
 	const catalogMode = $derived(isCatalogMode(data.store));
 	const action = $derived(storeAction(data.store));
 	const actionBtn = $derived(actionConfig(action));
 	const displayProduct = $derived({
 		name: product.name,
-		price: convertPrice(currentPrice, data.store),
-		currency: vendorCurrency(data.store),
+		price: toDisplayPrice(currentPrice, data.store),
+		currency: viewCurrency(data.store),
 	});
 	const ctaHref = $derived(actionLink(action, data.store, productOrderMessage(data.store, displayProduct, selectedVariant, selectedOption)));
 
@@ -82,8 +83,8 @@
 
 	const img = $derived(productImage(product));
 	const shareUrl = $derived(`${storeUrl(data.store.slug)}/p/${product.id}`);
-	const displayPrice = $derived(convertPrice(currentPrice, data.store));
-	const displayCurrency = $derived(vendorCurrency(data.store));
+	const displayPrice = $derived(toDisplayPrice(currentPrice, data.store));
+	const displayCurrency = $derived(viewCurrency(data.store));
 	const productLd = $derived(
 		JSON.stringify({
 			'@context': 'https://schema.org',
@@ -259,7 +260,7 @@
 									<span class="min-w-0 flex items-center gap-1.5">
 										<span class="leading-tight {opt.agotado ? 'line-through' : ''}">{opt.label}</span>
 										{#if opt.price > 0}
-											<span class="text-[11px] font-semibold text-muted-soft tabular-nums">+{formatPrice(convertPrice(opt.price, data.store), displayCurrency)}</span>
+											<span class="text-[11px] font-semibold text-muted-soft tabular-nums">+{formatPrice(toDisplayPrice(opt.price, data.store), displayCurrency)}</span>
 										{/if}
 										{#if opt.agotado}
 											<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
@@ -308,7 +309,7 @@
 						onclick={(e) => {
 							if (!ctaHref) e.preventDefault();
 						}}
-						class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline flex items-center justify-center gap-2"
+						class="btn-3d w-full px-5 py-3 text-sm sm:text-base font-bold no-underline flex items-center justify-center gap-2"
 					>
 						<i class={actionBtn.icon}></i>
 						{actionBtn.label}
@@ -316,7 +317,7 @@
 				{:else}
 					<button
 						onclick={addToCart}
-						class="w-full bg-ember text-white px-5 py-3 rounded-btn text-sm sm:text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2
+						class="btn-3d w-full px-5 py-3 text-sm sm:text-base font-bold flex items-center justify-center gap-2
 							{added ? 'bg-success' : ''}"
 					>
 						{added ? 'Añadido al carrito' : 'Añadir al carrito'}

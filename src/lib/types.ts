@@ -93,6 +93,7 @@ export interface Store {
 	action?: string;
 	currency?: string | null;
 	exchange_rate?: number | null;
+	exchange_rates?: Record<string, number> | null;
 	created_at: string;
 	visits?: number;
 	social?: StoreSocial;
