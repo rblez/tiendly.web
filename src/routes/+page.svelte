@@ -23,7 +23,7 @@
 			'@type': 'Organization',
 			name: 'Tiendly',
 			url: SITE_URL,
-			logo: `${SITE_URL}/isotipo.png`,
+			logo: `${SITE_URL}/isotipo.webp`,
 			sameAs: ['https://wa.me/5363807214'],
 		})}
 	</script>

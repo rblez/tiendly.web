@@ -5,6 +5,18 @@
 	const releases = [
 		{
 			date: '2026-08-16',
+			title: 'Marca en WebP, stock por variante y rendimiento',
+			items: [
+				'Imágenes de marca convertidas a WebP: isotipo, logo, logo completo y banner OG pesan ahora ~90% menos (el banner para compartir pasó de 1.3 MB a 55 KB).',
+				'Logo completo en login, registro, recuperar contraseña, wizard y página 404; wordmark en el pie de la landing.',
+				'Favicons e iconos de aplicación actualizados con el isotipo actual.',
+				'Banner oficial en las vistas previas de WhatsApp/Telegram/Facebook (Open Graph).',
+				'Control de stock nuevo: cantidad por producto, variante u opción, con aviso "quedan N" y bloqueo en el checkout si no alcanza.',
+				'Los pedidos descuentan stock automáticamente de la base de datos (trigger).',
+			],
+		},
+		{
+			date: '2026-08-16',
 			title: '3.1.2-beta — Landing, directorio por categorías y panel renovado',
 			items: [
 				'Landing y páginas institucionales: sobre Tiendly, términos, privacidad, blog y registro de cambios.',

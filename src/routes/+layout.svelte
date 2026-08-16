@@ -46,11 +46,11 @@
 	<meta property="og:description" content="Crea tu tienda online gratis, agrega productos y compártela por WhatsApp. Pedidos directos, sin comisiones ni intermediarios." />
 	<meta property="og:url" content={SITE_URL + $page.url.pathname} />
 	<meta property="og:locale" content="es_ES" />
-	<meta property="og:image" content={`${SITE_URL}/og-banner.png`} />
+	<meta property="og:image" content={`${SITE_URL}/og-banner.webp`} />
 	<meta property="og:image:width" content="1536" />
 	<meta property="og:image:height" content="1024" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:image" content={`${SITE_URL}/og-banner.png`} />
+	<meta name="twitter:image" content={`${SITE_URL}/og-banner.webp`} />
 </svelte:head>
 
 <ScrollToTop />

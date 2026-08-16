@@ -49,7 +49,7 @@
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
 	<div class="w-full max-w-sm fade-up" style="animation-delay: 0.05s">
 		<div class="flex flex-col items-center text-center mb-10">
-			<img src="/tiendly-logo-completo.png" alt="Tiendly" class="h-10 object-contain mb-6" />
+			<img src="/tiendly-logo-completo.webp" alt="Tiendly" class="h-10 object-contain mb-6" />
 			<h1 class="text-3xl font-black tracking-tight text-ink mb-2">Restablecer contraseña</h1>
 			<p class="text-sm text-muted">Te enviaremos un enlace al correo de tu cuenta.</p>
 		</div>

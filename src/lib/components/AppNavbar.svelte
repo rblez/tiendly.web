@@ -25,7 +25,7 @@
 				{#if isStoreRoute}
 					<i class="ri-arrow-left-line text-muted group-hover:text-ink transition-colors"></i>
 				{/if}
-				<img src="/isotipo.png" alt="Tiendly" class="h-10 w-10 object-contain" />
+				<img src="/isotipo.webp" alt="Tiendly" class="h-10 w-10 object-contain" />
 			</a>
 
 			<div class="flex items-center gap-3">
