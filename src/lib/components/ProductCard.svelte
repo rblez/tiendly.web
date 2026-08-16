@@ -54,8 +54,11 @@
 			<img
 				src={img}
 				alt={product.name}
+				width="640"
+				height="480"
 				class="w-full h-full object-cover"
 				loading="lazy"
+				decoding="async"
 				onerror={() => imgError = true}
 			/>
 		{/if}

@@ -96,7 +96,11 @@
 						<img
 							src={productImage(cp.product)!}
 							alt={cp.product.name}
+							width="96"
+							height="96"
 							class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-btn bg-canvas flex-shrink-0"
+							loading="lazy"
+							decoding="async"
 						/>
 					{:else}
 						<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-btn bg-canvas flex items-center justify-center flex-shrink-0">

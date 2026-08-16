@@ -161,7 +161,7 @@
 			<div class="bg-card border border-hairline rounded-card overflow-hidden">
 				<div class="aspect-[4/3] bg-canvas">
 					{#if activePhoto && !imgError}
-						<img src={activePhoto} alt={product.name} class="w-full h-full object-cover" onerror={() => imgError = true} />
+						<img src={activePhoto} alt={product.name} width="1024" height="768" class="w-full h-full object-cover" decoding="async" onerror={() => imgError = true} />
 					{/if}
 				</div>
 			</div>
@@ -174,7 +174,7 @@
 								{activeIndex === i ? 'border-ember' : 'border-hairline hover:border-ember/50'}"
 							aria-label={`Ver foto ${i + 1}`}
 						>
-							<img src={photo} alt={`${product.name} ${i + 1}`} class="w-full h-full object-cover" />
+							<img src={photo} alt={`${product.name} ${i + 1}`} width="64" height="64" class="w-full h-full object-cover" loading="lazy" decoding="async" />
 						</button>
 					{/each}
 				</div>

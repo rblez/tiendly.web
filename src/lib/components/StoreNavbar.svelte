@@ -36,7 +36,7 @@
 		<div class="flex items-center justify-between h-16 gap-4">
 			<a href={homePath} class="flex items-center gap-2.5 text-ink no-underline shrink-0 min-w-0">
 				{#if logo}
-					<img src={logo} alt={store.name} class="h-9 w-9 object-cover rounded-lg bg-canvas" />
+					<img src={logo} alt={store.name} width="36" height="36" class="h-9 w-9 object-cover rounded-lg bg-canvas" decoding="async" />
 				{:else}
 					<span class="h-9 w-9 flex items-center justify-center rounded-lg bg-ember text-canvas font-black select-none">
 						{store.name.charAt(0).toUpperCase()}

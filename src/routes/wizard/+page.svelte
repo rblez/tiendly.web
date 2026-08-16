@@ -315,7 +315,7 @@
 						<div class="flex-shrink-0">
 							<div class="h-20 w-20 rounded-btn overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
 								{#if product.images.length > 0}
-									<img src={product.images[0]} alt={`Foto de ${product.name || `producto ${i + 1}`}`} class="w-full h-full object-cover" />
+									<img src={product.images[0]} alt={`Foto de ${product.name || `producto ${i + 1}`}`} width="80" height="80" class="w-full h-full object-cover" loading="lazy" decoding="async" />
 								{:else}
 									<i class="ri-image-line text-2xl text-muted-soft"></i>
 								{/if}
