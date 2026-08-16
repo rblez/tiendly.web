@@ -2,7 +2,7 @@
 
 ## Project
 
-SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/t/[slug]`, authenticated owner dashboard at `/dash` (store panel at `/dash/store/[code]`, 8-char store code), auth at `/login` and `/signup`. UI text is in Spanish.
+SvelteKit app for **Tiendly** — a multi-store storefront platform. Public store pages at `/t/[slug]`, authenticated owner dashboard at `/dashboard` (store panel at `/dashboard/s/[code]`, 8-char store code), auth at `/login` and `/signup`. Old routes `/dash*` and `/app*` 301-redirect to `/dashboard*`. Only one plan: **Gratis** (1 tienda, 10 productos por tienda). UI text is in Spanish.
 
 ## Commands
 
@@ -23,16 +23,18 @@ SvelteKit app for **Tiendly** — a multi-store storefront platform. Public stor
 ## Structure
 
 - `src/routes/t/[slug]/` — public storefront (product list, product detail, cart, checkout)
-- `src/routes/app/` — owner dashboard (requires auth)
+- `src/routes/dashboard/` — owner dashboard (requires auth); `s/[code]/` store panel, `profile/` cuenta
 - `src/lib/components/` — shared UI components
 - `src/lib/stores/` — Svelte 5 rune-based stores (auth, cart, filters, modal)
 
 ## DB Schema (key points)
 
-- `stores` (slug is the public URL identifier), `products` (belongs to store, has `variants` JSON, `active`/`agotado` flags), `profiles` (auth users)
+- `stores` (slug is the public URL identifier, `currency`/`exchange_rate` para multimoneda), `products` (belongs to store, has `variants` JSON — variantes de 2 niveles: variante + `options[]` con precio que se suma, `ask` JSON con datos que se piden al cliente en checkout, `active`/`agotado` flags), `profiles` (auth users), `store_visits` (visitas diarias por tienda, se muestran en panel y en `/dashboard`)
 - Server-side ownership check via `is_store_owner(store_id)` function
+- Migraciones pendientes por aplicar en producción (el código ya las guarda condicionalmente): `stores.action`, `stores.currency`, `stores.exchange_rate`, `products.ask`
 
 ## Notes
 
 - Do not commit `.env`
 - Product `variants` may be `null` — always normalize with `Array.isArray(...) ? ... : []`
+- Product `ask` also may be missing (migración pendiente) — normalízalo con `Array.isArray(...) ? ... : []`
