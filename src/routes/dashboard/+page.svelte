@@ -81,7 +81,7 @@
 					whatsapp: store.whatsapp,
 					theme_color: store.theme_color,
 					active: store.active,
-					action: store.action ?? 'comprar',
+					action: store.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar',
 					currency: store.currency ?? 'CUP',
 					exchange_rate: store.exchange_rate ?? null,
 					extra_links: store.extra_links ?? [],

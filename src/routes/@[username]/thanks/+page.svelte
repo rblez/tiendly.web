@@ -26,6 +26,20 @@
 
 	let order = $state<OrderSummary | null>(null);
 	let orderId = $state('');
+	let copied = $state(false);
+
+	const orderNumber = $derived((orderId || (order?.id ?? '').slice(0, 8)).toLowerCase());
+
+	async function copyNumber() {
+		if (!orderNumber) return;
+		try {
+			await navigator.clipboard.writeText(orderNumber);
+			copied = true;
+			setTimeout(() => (copied = false), 1800);
+		} catch {
+			// sin permiso de portapapeles
+		}
+	}
 
 	$effect.pre(() => {
 		orderId = $page.url.searchParams.get('order_id') ?? '';
@@ -64,17 +78,33 @@
 		<div class="text-center mb-10">
 			<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-2">¡Gracias, {order.name}!</h1>
 			<p class="text-body">
-				Tu pedido fue enviado a
+				Tu pedido fue registrado en
 				<span class="font-semibold text-ink">{data.store.name}</span>
-				por WhatsApp. Te contactarán pronto para confirmar la entrega.
+				y ya está en proceso. Te contactarán pronto para confirmar la entrega.
 			</p>
+			{#if orderNumber}
+				<div class="mt-5 flex items-center justify-center gap-2">
+					<p class="text-sm text-muted-soft">Nº de pedido:</p>
+					<button
+						onclick={copyNumber}
+						class="inline-flex items-center gap-2 bg-bone border border-hairline rounded-btn px-3 py-1.5 text-sm font-mono font-semibold text-ink cursor-pointer transition-colors hover:border-ember/50 hover:text-ember"
+						aria-label="Copiar número de pedido"
+					>
+						{orderNumber}
+						<span class="text-xs font-sans font-medium text-ember">
+							{copied ? 'Copiado ✓' : 'Copiar'}
+						</span>
+					</button>
+				</div>
+				<p class="text-xs text-muted-soft mt-2">Guarda este número para rastrear tu pedido por la tienda.</p>
+			{/if}
 		</div>
 
 		<div class="bg-card border border-hairline rounded-card p-6 mb-6">
 			<div class="flex items-center justify-between mb-4 pb-4 border-b border-hairline">
 				<h2 class="text-lg font-semibold text-ink">Tu pedido</h2>
 				{#if orderId || order.id}
-					<span class="text-xs font-mono text-muted-soft">Nº {orderId || (order.id ?? '').slice(0, 8).toUpperCase()}</span>
+					<span class="text-xs font-mono text-muted-soft">Nº {orderNumber}</span>
 				{/if}
 			</div>
 			<div class="space-y-3">

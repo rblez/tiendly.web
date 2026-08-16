@@ -55,6 +55,9 @@ export interface Order {
 	total: number;
 	currency: string;
 	status: string;
+	payment?: PaymentMethod | null;
+	payment_receipt?: string | null;
+	delivery?: DeliveryZone | null;
 	created_at: string;
 }
 
@@ -73,6 +76,30 @@ export interface Profile {
 	avatar_url: string | null;
 	plan: string;
 	created_at: string;
+}
+
+export type PaymentType = "transfermovil" | "enzona";
+
+export type BankId = "bpa" | "bandec" | "metropolitano" | "monedero";
+
+export interface PaymentMethod {
+	id: string;
+	type: PaymentType;
+	bank: BankId;
+	account: string;
+	phone: string;
+	name?: string | null;
+}
+
+export interface DeliveryZone {
+	name: string;
+	price: number;
+}
+
+export interface DeliveryConfig {
+	zones: DeliveryZone[];
+	note?: string | null;
+	enabled: boolean;
 }
 
 export interface Store {
@@ -94,6 +121,8 @@ export interface Store {
 	currency?: string | null;
 	exchange_rate?: number | null;
 	exchange_rates?: Record<string, number> | null;
+	payments?: PaymentMethod[] | null;
+	delivery?: DeliveryConfig | null;
 	created_at: string;
 	visits?: number;
 	social?: StoreSocial;

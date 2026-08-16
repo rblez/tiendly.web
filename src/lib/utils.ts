@@ -117,6 +117,11 @@ export function themeStyle(store: { theme_color: string }): string {
 	return `--accent: ${store.theme_color}; --accent-active: color-mix(in srgb, ${store.theme_color} 82%, black);`;
 }
 
+export function formatCardNumber(raw: string): string {
+	const digits = raw.replace(/\D/g, '').slice(0, 16);
+	return digits.replace(/(\d{4})(?=\d)/g, '$1-');
+}
+
 export function parsePrice(raw: string): number {
 	const s = raw.trim().replace(/[^\d.,]/g, '');
 	if (!s) return 0;

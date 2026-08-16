@@ -152,12 +152,7 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-	<a href={`/@${data.store.slug}`} class="inline-flex items-center gap-1.5 text-sm text-body hover:text-ember transition-colors no-underline mb-6">
-		<i class="ri-arrow-left-line"></i>
-		Volver al catálogo
-	</a>
-
-	<div class="grid sm:grid-cols-2 gap-8 sm:gap-10 items-start">
+	<div class="grid sm:grid-cols-2 gap-8 sm:gap-10 items-start pt-4 sm:pt-0">
 		<div>
 			<div class="bg-card border border-hairline rounded-card overflow-hidden">
 				<div class="aspect-[4/3] bg-canvas">

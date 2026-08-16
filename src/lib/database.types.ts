@@ -21,9 +21,12 @@ export type Database = {
           currency: string
           customer_name: string
           customer_phone: string
+          delivery: Json | null
           id: string
           items: Json
           notes: string | null
+          payment: Json | null
+          payment_receipt: string | null
           status: string
           store_id: string
           total: number
@@ -37,9 +40,12 @@ export type Database = {
           currency?: string
           customer_name: string
           customer_phone: string
+          delivery?: Json | null
           id?: string
           items?: Json
           notes?: string | null
+          payment?: Json | null
+          payment_receipt?: string | null
           status?: string
           store_id: string
           total?: number
@@ -53,9 +59,12 @@ export type Database = {
           currency?: string
           customer_name?: string
           customer_phone?: string
+          delivery?: Json | null
           id?: string
           items?: Json
           notes?: string | null
+          payment?: Json | null
+          payment_receipt?: string | null
           status?: string
           store_id?: string
           total?: number
@@ -211,6 +220,7 @@ export type Database = {
           code: string
           created_at: string
           currency: string | null
+          delivery: Json | null
           description: string | null
           exchange_rate: number | null
           exchange_rates: Json
@@ -220,6 +230,7 @@ export type Database = {
           logo: string | null
           name: string
           owner_id: string | null
+          payments: Json | null
           preview_expires_at: string | null
           preview_token: string | null
           schedule: string | null
@@ -236,6 +247,7 @@ export type Database = {
           code: string
           created_at?: string
           currency?: string | null
+          delivery?: Json | null
           description?: string | null
           exchange_rate?: number | null
           exchange_rates?: Json
@@ -245,6 +257,7 @@ export type Database = {
           logo?: string | null
           name: string
           owner_id?: string | null
+          payments?: Json | null
           preview_expires_at?: string | null
           preview_token?: string | null
           schedule?: string | null
@@ -261,6 +274,7 @@ export type Database = {
           code?: string
           created_at?: string
           currency?: string | null
+          delivery?: Json | null
           description?: string | null
           exchange_rate?: number | null
           exchange_rates?: Json
@@ -270,6 +284,7 @@ export type Database = {
           logo?: string | null
           name?: string
           owner_id?: string | null
+          payments?: Json | null
           preview_expires_at?: string | null
           preview_token?: string | null
           schedule?: string | null
@@ -298,6 +313,7 @@ export type Database = {
       gen_store_code: { Args: never; Returns: string }
       increment_store_visit: { Args: { p_slug: string }; Returns: number }
       is_store_owner: { Args: { store_id: string }; Returns: boolean }
+      track_order: { Args: { p_slug: string; p_code: string }; Returns: Json }
       track_visit: {
         Args: {
           p_slug: string

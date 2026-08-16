@@ -4,8 +4,8 @@ import { supabase } from '$lib/supabase/client';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
-	import type { Order, Product, Store, Variant } from '$lib/types';
-	import { formatPrice, parsePrice, parseVariants, productImage, slugify, storeUrl, uniqueProductId, uploadImage, variantsToText, waLink } from '$lib/utils';
+	import type { DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
+	import { formatCardNumber, formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, waLink } from '$lib/utils';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
@@ -108,8 +108,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formAgotado = $state(false);
 	let formBajoPedido = $state(false);
 	let formActive = $state(true);
-	let formVariants = $state('');
-	let formAsk = $state('');
+	let formVariantsList = $state<Variant[]>([]);
+	let formAskList = $state<string[]>([]);
 	let formImages = $state<string[]>([]);
 	let formSaving = $state(false);
 	let productError = $state('');
@@ -145,7 +145,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		whatsapp: '',
 		theme_color: '#22c55e',
 		active: true,
-		action: 'comprar' as string,
+		action: 'sin_contactar' as string,
 		currency: 'CUP' as string,
 		exchange_rate: '',
 		usd_rate: '',
@@ -153,6 +153,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		extra_links: [] as { title: string; url: string }[],
 		location: '',
 		schedule: '',
+		payments: [] as PaymentMethod[],
+		delivery: { enabled: false, zones: [] as DeliveryZone[], note: '' },
 	});
 	let settingsSaving = $state(false);
 	let settingsError = $state('');
@@ -267,7 +269,7 @@ $effect(() => {
 				whatsapp: storeData.whatsapp ?? '',
 				theme_color: storeData.theme_color,
 				active: storeData.active,
-				action: ((storeData as { action?: string }).action ?? 'comprar') as string,
+				action: ((storeData as { action?: string }).action === 'whatsapp' ? 'whatsapp' : 'sin_contactar') as string,
 				currency: ((storeData as { currency?: string | null }).currency ?? 'CUP') as string,
 				exchange_rate: ((storeData as { exchange_rate?: number | null }).exchange_rate ?? '') === '' ? '' : String((storeData as { exchange_rate?: number | null }).exchange_rate ?? ''),
 				usd_rate: loadUsdRate(storeData),
@@ -275,6 +277,12 @@ $effect(() => {
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
 				schedule: storeData.schedule ?? '',
+				payments: ((storeData as { payments?: PaymentMethod[] | null }).payments ?? []).map((p) => ({ ...p })),
+				delivery: {
+					enabled: !!((storeData as { delivery?: DeliveryConfig | null }).delivery)?.enabled,
+					zones: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.zones ?? [],
+					note: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.note ?? '',
+				},
 			};
 			const rawSocial = (storeData as { social?: Record<string, unknown> | null }).social;
 			social = {};
@@ -363,8 +371,8 @@ $effect(() => {
 		formAgotado = false;
 		formBajoPedido = false;
 		formActive = true;
-		formVariants = '';
-		formAsk = '';
+		formVariantsList = [];
+		formAskList = [];
 		formImages = [];
 		productError = atLimit
 			? `Límite del plan ${plan.name}: máximo ${productLimit} productos. Mejora tu plan para agregar más.`
@@ -384,8 +392,10 @@ $effect(() => {
 		formAgotado = p.agotado;
 		formBajoPedido = p.bajo_pedido ?? false;
 		formActive = p.active;
-		formVariants = variantsToText(p.variants);
-		formAsk = (p.ask ?? []).join('\n');
+		formVariantsList = Array.isArray(p.variants)
+			? p.variants.map((v) => ({ ...v, options: (v.options ?? []).map((o) => ({ ...o })) }))
+			: [];
+		formAskList = (p.ask ?? []).filter(Boolean);
 		formImages = Array.isArray(p.images) ? p.images : [];
 		productError = '';
 	}
@@ -405,6 +415,66 @@ $effect(() => {
 		input.value = '';
 	}
 
+	let variantNewId = 0;
+	function newVariantId(): string {
+		return `v-${Date.now().toString(36)}-${variantNewId++}`;
+	}
+	function addVariant() {
+		formVariantsList.push({ id: newVariantId(), label: '', price: 0, agotado: false });
+	}
+	function removeVariant(i: number) {
+		formVariantsList.splice(i, 1);
+	}
+	function addOption(i: number) {
+		const v = formVariantsList[i];
+		if (!v) return;
+		if (!v.options) v.options = [];
+		v.options.push({ id: newVariantId(), label: '', price: 0, agotado: false });
+	}
+	function removeOption(i: number, j: number) {
+		formVariantsList[i]?.options?.splice(j, 1);
+	}
+	function addAsk() {
+		formAskList.push('');
+	}
+	function removeAsk(i: number) {
+		formAskList.splice(i, 1);
+	}
+
+	const BANKS = [
+		{ id: 'bpa', label: 'Banco Popular de Ahorro (BPA)' },
+		{ id: 'bandec', label: 'Banco de Crédito y Comercio (BANDEC)' },
+		{ id: 'metropolitano', label: 'Banco Metropolitano' },
+		{ id: 'monedero', label: 'Monedero MiTransfer' },
+	] as const;
+
+	const BANK_LABELS: Record<string, string> = {
+		bpa: 'Banco Popular de Ahorro',
+		bandec: 'Banco de Crédito y Comercio',
+		metropolitano: 'Banco Metropolitano',
+		monedero: 'Monedero MiTransfer',
+	};
+	function bankLabel(id: string): string {
+		return BANK_LABELS[id] ?? id;
+	}
+
+	let pmNewId = 0;
+	function newPmId(): string {
+		return `pm-${Date.now().toString(36)}-${pmNewId++}`;
+	}
+	function addPaymentMethod() {
+		settings.payments.push({ id: newPmId(), type: 'transfermovil', bank: 'bpa', account: '', phone: '', name: '' });
+	}
+	function removePaymentMethod(i: number) {
+		settings.payments.splice(i, 1);
+	}
+	function addZone() {
+		settings.delivery.zones.push({ name: '', price: 0 });
+	}
+	function removeZone(i: number) {
+		settings.delivery.zones.splice(i, 1);
+	}
+
 	async function saveProduct() {
 		productError = '';
 		if (!formName.trim()) {
@@ -412,8 +482,21 @@ $effect(() => {
 			return;
 		}
 		formSaving = true;
-		const variants = parseVariants(formVariants);
-		const ask = formAsk.split('\n').map((l) => l.trim()).filter(Boolean);
+		const variants = formVariantsList
+			.filter((v) => v.label.trim())
+			.map((v) => ({
+				...v,
+				label: v.label.trim(),
+				price: Number.isFinite(Number(v.price)) ? Number(v.price) : 0,
+				options: (v.options ?? [])
+					.filter((o) => o.label.trim())
+					.map((o) => ({
+						...o,
+						label: o.label.trim(),
+						price: Number.isFinite(Number(o.price)) ? Number(o.price) : 0,
+					})),
+			}));
+		const ask = formAskList.map((s) => s.trim()).filter(Boolean);
 		const payload = {
 			name: formName.trim(),
 			description: formDescription.trim() || null,
@@ -598,7 +681,7 @@ $effect(() => {
 					if (row.whatsapp !== undefined) settings.whatsapp = row.whatsapp ?? '';
 					if (row.theme_color !== undefined) settings.theme_color = row.theme_color;
 					if (row.active !== undefined) settings.active = row.active;
-					if (row.action !== undefined) settings.action = row.action ?? 'comprar';
+					if (row.action !== undefined) settings.action = row.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar';
 					if (row.currency !== undefined) settings.currency = row.currency ?? 'CUP';
 					if (row.exchange_rate !== undefined) settings.exchange_rate = row.exchange_rate === null ? '' : String(row.exchange_rate);
 					if (row.exchange_rates !== undefined) {
@@ -614,6 +697,15 @@ $effect(() => {
 					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
 					if (row.location !== undefined) settings.location = row.location ?? '';
 					if (row.schedule !== undefined) settings.schedule = row.schedule ?? '';
+					if (Array.isArray(row.payments)) settings.payments = row.payments as PaymentMethod[];
+					if (row.delivery && typeof row.delivery === 'object') {
+						const d = row.delivery as { enabled?: boolean; zones?: DeliveryZone[]; note?: string | null };
+						settings.delivery = {
+							enabled: !!d.enabled,
+							zones: Array.isArray(d.zones) ? d.zones : [],
+							note: typeof d.note === 'string' ? d.note : '',
+						};
+					}
 				},
 			)
 			.subscribe();
@@ -740,6 +832,29 @@ $effect(() => {
 				extra_links: cleanLinks,
 				location: settings.location.trim() || null,
 				schedule: settings.schedule.trim() || null,
+				payments: settings.payments
+					.filter((p) => {
+						const ok = p.bank === 'monedero' ? p.phone.trim() : p.account.trim();
+						return ok && p.type && p.bank;
+					})
+					.map((p) => ({
+						id: p.id,
+						type: p.type,
+						bank: p.bank,
+						account: p.bank === 'monedero' ? p.phone.trim() : formatCardNumber(p.account),
+						phone: p.phone.trim(),
+						name: p.name?.trim() || null,
+					})),
+				delivery: {
+					enabled: settings.delivery.enabled,
+					zones: settings.delivery.zones
+						.filter((z) => z.name.trim())
+						.map((z) => ({
+							name: z.name.trim(),
+							price: Number.isFinite(Number(z.price)) ? Number(z.price) : 0,
+						})),
+					note: settings.delivery.note?.trim() || null,
+				},
 			})
 			.eq('id', editingStoreId);
 		settingsSaving = false;
@@ -1344,7 +1459,7 @@ async function duplicateProduct(p: Product) {
 								<div class="flex flex-col items-end gap-1.5 flex-shrink-0">
 									<span class={`text-xs font-medium px-2.5 py-0.5 rounded-full ${status.cls}`}>{status.label}</span>
 									<span class="text-sm font-bold text-ink tabular-nums">
-										${Number(order.total).toLocaleString('es-CU')} {order.currency}
+										{formatPrice(Number(order.total), order.currency)}
 									</span>
 								</div>
 							</div>
@@ -1374,6 +1489,42 @@ async function duplicateProduct(p: Product) {
 									</div>
 								{/each}
 							</div>
+
+							{#if order.delivery}
+								<p class="text-sm text-body mb-3">
+									<span class="text-muted">Mensajería:</span> {order.delivery.name} — <span class="font-medium">{formatPrice(order.delivery.price, order.currency)}</span>
+								</p>
+							{/if}
+
+							{#if order.payment}
+								<div class="bg-bone rounded-btn px-4 py-3 mb-3 border border-hairline">
+									<div class="flex items-center gap-2.5 mb-1.5">
+										<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 uppercase">Pago</span>
+										<span class="text-sm font-semibold text-ink truncate">
+											{order.payment.type === 'transfermovil' ? 'Transfermóvil' : 'EnZona'}
+											· {bankLabel(order.payment.bank)}
+										</span>
+									</div>
+									<p class="text-xs font-mono text-body truncate">
+										{order.payment.account}
+										{#if order.payment.phone}
+											<span class="text-muted"> · {order.payment.phone}</span>
+										{/if}
+									</p>
+									{#if order.payment.name}
+										<p class="text-xs text-muted-soft truncate mt-0.5">{order.payment.name}</p>
+									{/if}
+								</div>
+							{/if}
+
+							{#if order.payment_receipt}
+								<div class="mb-3">
+									<p class="text-xs font-medium text-body mb-1.5">Comprobante de pago</p>
+									<a href={order.payment_receipt} target="_blank" rel="noopener noreferrer" class="block w-28 h-28 rounded-btn overflow-hidden border border-hairline">
+										<img src={order.payment_receipt} alt="Comprobante de pago" class="w-full h-full object-cover" loading="lazy" />
+									</a>
+								</div>
+							{/if}
 
 							{#if order.notes}
 								<p class="text-sm text-body mb-3">
@@ -1523,17 +1674,27 @@ async function duplicateProduct(p: Product) {
 						</div>
 						{#if hasActionColumn}
 							<div class="mt-4">
-								<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Acción principal al comprar</label>
-								<select
-									id="s-action"
-									bind:value={settings.action}
-									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-								>
-									{#each STORE_ACTIONS as a}
-										<option value={a.id}>{a.label}</option>
+								<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Cómo reciben los pedidos</label>
+								<div class="space-y-2">
+									{#each STORE_ACTIONS as a (a.id)}
+										<label
+											class="flex items-start gap-3 border border-hairline rounded-btn p-3.5 cursor-pointer transition-colors hover:border-ember/50 {settings.action === a.id ? 'border-ember/60 bg-ember/5' : ''}"
+										>
+											<input
+												type="radio"
+												name="store-action"
+												value={a.id}
+												checked={settings.action === a.id}
+												onchange={() => (settings.action = a.id)}
+												class="mt-1 w-4 h-4 accent-ember cursor-pointer"
+											/>
+											<div class="min-w-0">
+												<p class="text-sm font-semibold text-ink">{a.label}</p>
+												<p class="text-xs text-muted-soft mt-0.5">{a.hint}</p>
+											</div>
+										</label>
 									{/each}
-								</select>
-								<p class="text-xs text-muted-soft mt-1.5">Elige cómo los clientes hacen pedidos: con carrito y checkout, o directo por WhatsApp o Telegram sin checkout.</p>
+								</div>
 							</div>
 						{/if}
 						<div class="mt-4">
@@ -1586,6 +1747,149 @@ async function duplicateProduct(p: Product) {
 								{/if}
 							</div>
 						{/if}
+						<div class="mt-4 pt-4 border-t border-hairline">
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-sm font-medium text-body">Métodos de pago</label>
+								{#if settings.payments.length > 0}
+									<button type="button" onclick={addPaymentMethod} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer">
+										+ Agregar método
+									</button>
+								{/if}
+							</div>
+							<p class="text-xs text-muted-soft mb-3">
+								El cliente elige el método al pagar, copia tus datos y sube el comprobante del pago.
+							</p>
+							{#if settings.payments.length > 0}
+								<div class="space-y-2">
+									{#each settings.payments as pm, i}
+										<div class="border border-hairline rounded-btn p-3">
+											<div class="flex items-center gap-2 flex-wrap">
+												<select
+													bind:value={pm.type}
+													class="px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+												>
+													<option value="transfermovil">Transfermóvil</option>
+													<option value="enzona">EnZona</option>
+												</select>
+												<select
+													bind:value={pm.bank}
+													class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+												>
+													{#each BANKS as b}
+														<option value={b.id}>{b.label}</option>
+													{/each}
+												</select>
+												<button
+													type="button"
+													onclick={() => removePaymentMethod(i)}
+													class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
+													aria-label="Quitar método de pago"
+												>
+													<i class="ri-close-line"></i>
+												</button>
+											</div>
+											<div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+											{#if pm.bank === 'monedero'}
+												<div class="sm:col-span-2">
+													<input
+														type="tel"
+														bind:value={pm.phone}
+														placeholder="Número de MiTransfer (teléfono)"
+														class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													/>
+													<p class="text-xs text-muted-soft mt-1">El monedero se identifica solo con tu número.</p>
+												</div>
+											{:else}
+												<input
+													type="text"
+													inputmode="numeric"
+													value={pm.account}
+													oninput={(e) => (pm.account = formatCardNumber((e.currentTarget as HTMLInputElement).value))}
+													placeholder="9224-0000-0000-0000"
+													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
+												<input
+													type="tel"
+													bind:value={pm.phone}
+													placeholder="Teléfono (confirmar pago)"
+													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
+											{/if}
+										</div>
+											<input
+												type="text"
+												value={pm.name ?? ''}
+												oninput={(e) => (pm.name = (e.currentTarget as HTMLInputElement).value.trim() || null)}
+												placeholder="Nombre del titular (opcional)"
+												class="w-full mt-2 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+											/>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<button
+									type="button"
+									onclick={addPaymentMethod}
+									class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+								>
+									+ Agregar método de pago
+								</button>
+							{/if}
+						</div>
+						<div class="mt-4 pt-4 border-t border-hairline">
+							<label class="flex items-center gap-2 cursor-pointer select-none mb-3">
+								<input
+									type="checkbox"
+									bind:checked={settings.delivery.enabled}
+									class="w-4 h-4 accent-ember cursor-pointer"
+								/>
+								<span class="text-sm font-medium text-ink">Cobrar mensajería (envío)</span>
+							</label>
+							{#if settings.delivery.enabled}
+								<p class="text-xs text-muted-soft mb-3">
+									Define zonas con su costo de envío. El cliente elige una al pagar.
+								</p>
+								{#if settings.delivery.zones.length > 0}
+									<div class="space-y-1.5 mb-2">
+										{#each settings.delivery.zones as _, zi}
+											<div class="flex items-center gap-2">
+												<input
+													type="text"
+													bind:value={settings.delivery.zones[zi].name}
+													placeholder="Zona (ej: La Habana)"
+													class="flex-1 min-w-0 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
+												<input
+													type="number"
+													step="any"
+													min="0"
+													bind:value={settings.delivery.zones[zi].price}
+													placeholder="Costo"
+													class="w-28 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink text-right placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
+												<button
+													type="button"
+													onclick={() => removeZone(zi)}
+													class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
+													aria-label="Quitar zona"
+												>
+													<i class="ri-close-line"></i>
+												</button>
+											</div>
+										{/each}
+									</div>
+								{/if}
+								<button type="button" onclick={addZone} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer mb-2">
+									+ Agregar zona
+								</button>
+								<textarea
+									bind:value={settings.delivery.note}
+									rows="2"
+									placeholder="Nota de mensajería (opcional): días de entrega, gratis por compras mayores... (opcional)"
+									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+								></textarea>
+							{/if}
+						</div>
 					</div>
 				</div>
 
@@ -1768,32 +2072,157 @@ async function duplicateProduct(p: Product) {
 							{/if}
 						</div>
 						<div>
-							<label for="p-variants" class="block text-sm font-medium text-body mb-1.5">
-								Variantes <span class="text-muted-soft">(opcional, una por línea: etiqueta=precio)</span>
-							</label>
-							<textarea
-								id="p-variants"
-								bind:value={formVariants}
-								rows="3"
-								placeholder="1 unidad=500&#10;2 unidades=900&#10;  Con envío=100"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-							></textarea>
-							<p class="text-xs text-muted-soft mt-1.5">
-								Cada línea es una variante. Las líneas con 2 espacios al inicio son sub-opciones de la variante anterior (precio que se suma). Usa <span class="font-mono">*</span> al final para marcar agotada.
-							</p>
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-sm font-medium text-body">
+									Variantes <span class="text-muted-soft">(opcional)</span>
+								</label>
+								{#if formVariantsList.length > 0}
+									<button
+										type="button"
+										onclick={addVariant}
+										class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer"
+									>
+										+ Variante
+									</button>
+								{/if}
+							</div>
+							{#if formVariantsList.length > 0}
+								<div class="space-y-2 mb-2">
+									{#each formVariantsList as variant, i (variant.id)}
+										<div class="border border-hairline rounded-btn p-3 bg-canvas">
+											<div class="flex items-center gap-2 flex-wrap">
+												<input
+													type="text"
+													bind:value={variant.label}
+													placeholder="Nombre (ej: Grande)"
+													class="flex-1 min-w-0 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
+												<div class="flex items-center gap-1.5">
+													<span class="text-xs text-muted-soft">Precio</span>
+													<input
+														type="number"
+														step="any"
+														min="0"
+														bind:value={variant.price}
+														placeholder="0"
+														class="w-24 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink text-right placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													/>
+													<label class="flex items-center gap-1 text-xs text-muted cursor-pointer select-none px-1">
+														<input type="checkbox" bind:checked={variant.agotado} class="w-3.5 h-3.5 accent-ember cursor-pointer" />
+														Agotada
+													</label>
+													<button
+														type="button"
+														onclick={() => removeVariant(i)}
+														class="w-8 h-8 flex items-center justify-center text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
+														aria-label="Quitar variante"
+													>
+														<i class="ri-close-line"></i>
+													</button>
+												</div>
+											</div>
+											{#if (variant.options ?? []).length > 0}
+												<div class="mt-2 space-y-1.5">
+													{#each variant.options ?? [] as opt, j (opt.id)}
+														<div class="flex items-center gap-2 flex-wrap pl-3 border-l-2 border-hairline">
+															<input
+																type="text"
+																bind:value={opt.label}
+																placeholder="Opción (ej: Con envío)"
+																class="flex-1 min-w-0 px-3 py-1.5 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+															/>
+															<span class="text-xs text-muted-soft">+</span>
+															<input
+																type="number"
+																step="any"
+																min="0"
+																bind:value={opt.price}
+																placeholder="0"
+																class="w-24 px-3 py-1.5 bg-bone border border-hairline rounded-btn text-sm text-ink text-right placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+															/>
+															<label class="flex items-center gap-1 text-xs text-muted cursor-pointer select-none">
+																<input type="checkbox" bind:checked={opt.agotado} class="w-3.5 h-3.5 accent-ember cursor-pointer" />
+																Agotada
+															</label>
+															<button
+																type="button"
+																onclick={() => removeOption(i, j)}
+																class="w-7 h-7 flex items-center justify-center text-muted hover:text-error rounded-btn transition-colors cursor-pointer shrink-0"
+																aria-label="Quitar opción"
+															>
+																<i class="ri-close-line text-sm"></i>
+															</button>
+														</div>
+													{/each}
+												</div>
+											{/if}
+											<button
+												type="button"
+												onclick={() => addOption(i)}
+												class="mt-2 text-xs font-semibold text-muted hover:text-ember transition-colors cursor-pointer"
+											>
+												+ Agregar opción (precio que se suma)
+											</button>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<button
+									type="button"
+									onclick={addVariant}
+									class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer mb-2"
+								>
+									+ Agregar variante
+								</button>
+							{/if}
+							<p class="text-xs text-muted-soft">Las variantes se eligen al comprar y reemplazan el precio base. Las opciones suman su precio.</p>
 						</div>
 						<div>
-							<label for="p-ask" class="block text-sm font-medium text-body mb-1.5">
-								Datos que pides al cliente <span class="text-muted-soft">(opcional, uno por línea)</span>
-							</label>
-							<textarea
-								id="p-ask"
-								bind:value={formAsk}
-								rows="2"
-								placeholder="ID de Free Fire&#10;Correo de PayPal"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
-							></textarea>
-							<p class="text-xs text-muted-soft mt-1.5">Se pedirán en el checkout y se incluyen en el mensaje de WhatsApp.</p>
+							<div class="flex items-center justify-between mb-1.5">
+								<label class="block text-sm font-medium text-body">
+									Datos que pides al cliente <span class="text-muted-soft">(opcional)</span>
+								</label>
+							</div>
+							{#if formAskList.length > 0}
+								<div class="space-y-1.5 mb-2">
+									{#each formAskList as _, i}
+										<div class="flex items-center gap-2">
+											<input
+												type="text"
+												bind:value={formAskList[i]}
+												placeholder="Ej: ID de Free Fire"
+												class="flex-1 min-w-0 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+											/>
+											<button
+												type="button"
+												onclick={() => removeAsk(i)}
+												class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
+												aria-label="Quitar dato"
+											>
+												<i class="ri-close-line"></i>
+											</button>
+										</div>
+									{/each}
+								</div>
+								<div class="mb-2">
+									<button
+										type="button"
+										onclick={addAsk}
+										class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer"
+									>
+										+ Agregar dato
+									</button>
+								</div>
+							{:else}
+								<button
+									type="button"
+									onclick={addAsk}
+									class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer mb-2"
+								>
+									+ Agregar dato
+								</button>
+							{/if}
+							<p class="text-xs text-muted-soft mt-1.5">Se pedirán en el checkout y se incluyen en el mensaje del pedido.</p>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-body mb-1.5">Fotos <span class="text-muted-soft">({formImages.length})</span></label>

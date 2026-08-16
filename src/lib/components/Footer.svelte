@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { appendUtm } from '$lib/utils';
 	import { socialIcon, storeSocials } from '$lib/socials';
 	import { theme } from '$lib/stores/theme.svelte';
@@ -8,15 +9,53 @@
 
 	const socials = $derived(storeSocials(store));
 	const year = new Date().getFullYear();
+
+	let trackCode = $state('');
+	let trackError = $state('');
+
+	function handleTrack(e: SubmitEvent) {
+		e.preventDefault();
+		const code = trackCode.trim().toLowerCase();
+		if (!code) {
+			trackError = 'Escribe el número de tu pedido.';
+			return;
+		}
+		trackError = '';
+		goto(`/@${store?.slug}/rastrear/${encodeURIComponent(code)}`);
+	}
 </script>
 
 <footer class="border-t border-hairline bg-canvas/80 backdrop-blur-md">
 	{#if store}
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-3 md:gap-10 {socials.length === 0 ? 'md:grid-cols-2' : ''}">
 			<div>
 				<p class="font-black text-lg text-ink tracking-tight">{store.name}</p>
 				{#if store.description}
 					<p class="text-sm text-muted mt-2 leading-relaxed">{store.description}</p>
+				{/if}
+			</div>
+
+			<div>
+				<p class="text-sm font-semibold text-ink mb-3">Rastrear pedido</p>
+				<form onsubmit={handleTrack} class="flex gap-2">
+					<input
+						type="text"
+						bind:value={trackCode}
+						placeholder="Nº de pedido"
+						aria-label="Número de pedido"
+						class="flex-1 min-w-0 px-3.5 py-2.5 bg-card border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+					/>
+					<button
+						type="submit"
+						class="btn-3d px-4 py-2.5 text-sm font-semibold cursor-pointer"
+					>
+						Buscar
+					</button>
+				</form>
+				{#if trackError}
+					<p class="text-xs text-error mt-1.5">{trackError}</p>
+				{:else}
+					<p class="text-xs text-muted-soft mt-2">¿Compraste? Pon tu número de pedido para ver el estado.</p>
 				{/if}
 			</div>
 
