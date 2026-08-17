@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, clearUtm, loadUtm, utmQuery } from '$lib/utils';
+	import { formatPrice, clearUtm, loadUtm, utmQuery, waLink } from '$lib/utils';
 	import { track } from '$lib/analytics';
 	import { migratePayment, renderPayment } from '$lib/payments';
 	import type { PaymentMethod, Store } from '$lib/types';
@@ -138,9 +138,10 @@
 		sending = true;
 		orderError = '';
 
+		const draftItems = draft.items as PayDraftItem[];
+
 		try {
 			const { supabase } = await import('$lib/supabase/client');
-			const draftItems = draft.items as PayDraftItem[];
 			// sin .select(): anon no tiene policy de SELECT en orders, el RETURNING fallaría con RLS
 			const { error: err } = await supabase.from('orders').insert({
 				store_id: data.store.id,
@@ -185,7 +186,7 @@
 			value: draft.total,
 			currency: draft.currency,
 			transaction_id: draft.id ?? undefined,
-			content_ids: draft.items.map((i) => i.productId),
+			content_ids: draftItems.map((i) => i.productId),
 		});
 		try {
 			sessionStorage.removeItem(`tiendly-pay-${data.store.slug}`);
@@ -195,7 +196,7 @@
 					id: draft.id || null,
 					name: draft.name,
 					phone: draft.phone,
-					items: draft.items,
+					items: draftItems,
 					total: draft.total,
 					currency: draft.currency,
 					storeName: data.store.name,
@@ -208,8 +209,39 @@
 		cart.clear();
 		const qs = utmQuery(loadUtm());
 		clearUtm();
+		try {
+			window.open(waLink(data.store.whatsapp ?? '', sellerNotice()), '_blank');
+		} catch {
+			// popup bloqueado: al vendedor le llega el pedido por el panel igualmente
+		}
 		const thanks = `/@${data.store.slug}/thanks?order_id=${encodeURIComponent(draft.id ?? '')}`;
 		goto(qs ? `${thanks}&${qs}` : thanks);
+	}
+
+	function sellerNotice(): string {
+		if (!draft) return '';
+		const currency = draft.currency;
+		const items = draft.items
+			.map((it) => `▸ ${it.productName}${it.label ? ` (${it.label})` : ''}${it.quantity > 1 ? ` x${it.quantity}` : ''} — ${formatPrice(it.price * it.quantity, currency)}`)
+			.join('\n');
+		const pmTitle = rendered?.title;
+		return [
+			`Hola ${data.store.name} 👋`,
+			``,
+			`*El cliente acabó de pagar* y envió su comprobante:`,
+			``,
+			...(draft.id ? [`🧾 Nº pedido: *${draft.id}*`, ``] : []),
+			items,
+			``,
+			...(draft.delivery ? [`🚚 Mensajería: ${draft.delivery.name} — ${formatPrice(draft.delivery.price, currency)}`, ``] : []),
+			`📍 Total: *${formatPrice(draft.total, currency)}*`,
+			`👤 ${draft.name}`,
+			`📱 ${draft.phone}`,
+			...(pmTitle ? [`💳 Pagó con: ${pmTitle}`, ``] : []),
+			...(receiptUrl ? [`📎 Comprobante: ${receiptUrl}`, ``] : []),
+			...(draft.notes ? [`📝 ${draft.notes}`, ``] : [``]),
+			`Confírmalo en el panel de Tiendly ✅`,
+		].join('\n');
 	}
 </script>
 
