@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatPrice } from '$lib/utils';
 	import { supabase } from '$lib/supabase/client';
+	import { renderPayment } from '$lib/payments';
 	import type { Order, Store } from '$lib/types';
 
 	let { store, initialCode, onClose }: { store: Store; initialCode: string; onClose: () => void } = $props();
@@ -22,16 +23,6 @@
 	let loaded = $state(false);
 
 	const status = $derived(order ? (STATUS_INFO[order.status] ?? STATUS_INFO.nuevo) : null);
-
-	const BANK_LABELS: Record<string, string> = {
-		bpa: 'Banco Popular de Ahorro',
-		bandec: 'Banco de Crédito y Comercio',
-		metropolitano: 'Banco Metropolitano',
-		monedero: 'Monedero MiTransfer',
-	};
-	function bankLabel(id: unknown): string {
-		return typeof id === 'string' ? (BANK_LABELS[id] ?? id) : '';
-	}
 
 	async function findOrder(fromInput = false) {
 		const c = (code.trim().toLowerCase() || (initialCode ?? '').trim().toLowerCase());
@@ -163,13 +154,21 @@
 				</div>
 
 				{#if order.payment}
-					<div class="bg-bone border border-hairline rounded-btn px-4 py-3">
-						<p class="text-xs font-medium text-body mb-1">Método de pago</p>
-						<p class="text-sm font-semibold text-ink">
-							{bankLabel(order.payment.bank)}
-							<span class="text-muted font-normal"> · {order.payment.account}</span>
-						</p>
-					</div>
+					{@const pm = renderPayment(order.payment)}
+					{#if pm}
+						<div class="bg-bone border border-hairline rounded-btn px-4 py-3">
+							<p class="text-xs font-medium text-body mb-1">Método de pago</p>
+							<p class="text-sm font-semibold text-ink">{pm.title}</p>
+							{#each pm.fields as f}
+								<p class="text-xs text-body mt-1 truncate">
+									<span class="text-muted font-medium">{f.label}:</span> <span class="font-mono">{f.value}</span>
+								</p>
+							{/each}
+							{#if pm.instructions}
+								<p class="text-xs text-muted-soft mt-1.5 leading-relaxed">{pm.instructions}</p>
+							{/if}
+						</div>
+					{/if}
 				{/if}
 			</div>
 		{:else if loaded}

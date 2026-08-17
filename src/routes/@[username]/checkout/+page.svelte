@@ -5,7 +5,7 @@
 	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, variantPrice, productStock, isOutOfStock } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
-	import type { DeliveryZone, PaymentMethod, Product, Store, Variant } from '$lib/types';
+	import type { DeliveryZone, Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
 
@@ -16,73 +16,13 @@
 	let orderError = $state('');
 	let orderPlaced = $state(false);
 	let askValues = $state<Record<string, string>>({});
-	let selectedPayment = $state<PaymentMethod | null>(null);
 	let deliveryZone = $state<DeliveryZone | null>(null);
-	let receiptFile = $state<File | null>(null);
-	let receiptUrl = $state('');
-	let receiptUploading = $state(false);
-	let copyFeedback = $state<string | null>(null);
 
 	const mode = $derived(data.store.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar');
-	const payments = $derived(
-		mode === 'sin_contactar' && Array.isArray(data.store.payments) ? data.store.payments : [],
-	);
 	const deliveryZones = $derived(
 		data.store.delivery?.enabled ? (data.store.delivery?.zones ?? []) : [],
 	);
 	const deliveryCost = $derived(deliveryZone?.price ?? 0);
-
-	const BANK_LABELS: Record<string, string> = {
-		bpa: 'Banco Popular de Ahorro',
-		bandec: 'Banco de Crédito y Comercio',
-		metropolitano: 'Banco Metropolitano',
-		monedero: 'Monedero MiTransfer',
-	};
-	function bankLabel(id: string): string {
-		return BANK_LABELS[id] ?? id;
-	}
-
-	async function copyText(text: string, label: string) {
-		try {
-			await navigator.clipboard.writeText(text);
-			copyFeedback = label;
-			setTimeout(() => {
-				if (copyFeedback === label) copyFeedback = null;
-			}, 1500);
-		} catch {
-			// sin permiso de portapapeles
-		}
-	}
-
-	async function handleReceipt(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-		receiptUploading = true;
-		receiptFile = file;
-		orderError = '';
-		try {
-			const { supabase } = await import('$lib/supabase/client');
-			const ext = (file.name.split('.').pop() ?? 'jpg').toLowerCase();
-			const path = `${data.store.slug}/${orderId}-${Date.now()}.${ext}`;
-			const { error } = await supabase.storage
-				.from('comprobantes')
-				.upload(path, file, { upsert: false, contentType: file.type });
-			if (error) {
-				receiptFile = null;
-				receiptUrl = '';
-				orderError = 'No se pudo subir el comprobante. Intenta de nuevo.';
-				return;
-			}
-			receiptUrl = supabase.storage.from('comprobantes').getPublicUrl(path).data.publicUrl;
-		} catch {
-			receiptFile = null;
-			receiptUrl = '';
-			orderError = 'No se pudo subir el comprobante. Intenta de nuevo.';
-		} finally {
-			receiptUploading = false;
-		}
-	}
 
 	const askFields = $derived.by(() => {
 		const seen = new Set<string>();
@@ -206,12 +146,6 @@
 			`📍 Total: *${totalFormatted}*`,
 			`👤 ${name}`,
 			`📱 ${phone}`,
-			...(selectedPayment
-				? [
-						`💳 Pago: ${bankLabel(selectedPayment.bank)}${receiptUrl ? `\n   Comprobante: ${receiptUrl}` : ''}`,
-						``,
-					]
-				: []),
 			...(notes.trim() ? [`📝 ${notes.trim()}`, ``] : [``]),
 			...(utmLine() ? [utmLine(), ``] : [`¿Está disponible?`]),
 		];
@@ -247,25 +181,8 @@
 			return;
 		}
 
-		if (payments.length > 0 && !selectedPayment) {
-			orderError = 'Elige un método de pago para continuar.';
-			return;
-		}
-		if (payments.length > 0 && !receiptUrl) {
-			orderError = 'Falta subir el comprobante del pago.';
-			return;
-		}
-
 		sending = true;
 		orderError = '';
-		const msg = buildWhatsAppMessage();
-		const wa = data.store.whatsapp;
-
-		track('begin_checkout', {
-			value: total,
-			currency: orderCurrency,
-			num_items: cartLines.length,
-		});
 
 		const items = cartLines.map((cp) => {
 			const askObj: Record<string, string> = {};
@@ -286,8 +203,51 @@
 			};
 		});
 
-		let saved = true;
+		track('begin_checkout', {
+			value: total,
+			currency: orderCurrency,
+			num_items: cartLines.length,
+		});
+
 		const utm = loadUtm();
+
+		if (mode === 'sin_contactar') {
+			// el pedido se crea en el paso de pago, cuando el cliente confirme
+			try {
+				sessionStorage.setItem(
+					`tiendly-pay-${data.store.slug}`,
+					JSON.stringify({
+						id: orderId || null,
+						name: name.trim(),
+						phone: phone.trim(),
+						notes: notes.trim() || null,
+						items,
+						total,
+						currency: orderCurrency,
+						delivery: deliveryZone ?? null,
+						storeName: data.store.name,
+						storeSlug: data.store.slug,
+						utm: {
+							utm_source: utm.utm_source ?? null,
+							utm_medium: utm.utm_medium ?? null,
+							utm_campaign: utm.utm_campaign ?? null,
+						},
+					}),
+				);
+			} catch {
+				// sin sessionStorage (privado) → el paso de pago redirigirá de vuelta
+			}
+			const qs = utmQuery(utm);
+			clearUtm();
+			const pay = `/@${data.store.slug}/checkout/pay?id=${encodeURIComponent(orderId ?? '')}`;
+			goto(qs ? `${pay}&${qs}` : pay);
+			return;
+		}
+
+		const msg = buildWhatsAppMessage();
+		const wa = data.store.whatsapp;
+
+		let saved = true;
 		try {
 			const { supabase } = await import('$lib/supabase/client');
 			// sin .select(): anon no tiene policy de SELECT en orders, el RETURNING fallaría con RLS
@@ -305,8 +265,6 @@
 					utm_source: utm.utm_source ?? null,
 					utm_medium: utm.utm_medium ?? null,
 					utm_campaign: utm.utm_campaign ?? null,
-					...(selectedPayment ? { payment: selectedPayment as unknown as import('$lib/database.types').Json } : {}),
-					...(receiptUrl ? { payment_receipt: receiptUrl } : {}),
 					...(deliveryZone ? { delivery: deliveryZone as unknown as import('$lib/database.types').Json } : {}),
 				});
 			if (orderError2) {
@@ -537,142 +495,29 @@
 								</label>
 							{/each}
 						</div>
-						{#if data.store.delivery?.note}
-							<p class="text-xs text-muted-soft mt-1.5">{data.store.delivery.note}</p>
-						{/if}
-					</div>
-				{/if}
+{#if data.store.delivery?.note}
+						<p class="text-xs text-muted-soft mt-1.5">{data.store.delivery.note}</p>
+					{/if}
+				</div>
+			{/if}
 
-				{#if payments.length > 0}
-					<div>
-						<p class="text-sm font-medium text-body mb-2">Pago</p>
-						<p class="text-xs text-muted-soft mb-2.5">
-							Realiza la transferencia, copia tus datos y sube el comprobante (debe verse fecha, hora y nº de transacción).
-						</p>
-						<div class="space-y-2">
-							{#each payments as pm}
-								<label
-									class="block border border-hairline rounded-btn p-3 cursor-pointer transition-colors hover:border-ember/50 {selectedPayment?.id === pm.id ? 'border-ember/60 bg-ember/5' : ''}"
-								>
-									<div class="flex items-start gap-3">
-										<input
-											type="radio"
-											name="payment"
-											checked={selectedPayment?.id === pm.id}
-											onchange={() => (selectedPayment = pm)}
-											class="mt-1 w-4 h-4 accent-ember cursor-pointer"
-										/>
-										<div class="flex-1 min-w-0">
-											<div class="flex items-center gap-2.5">
-												<span class="relative h-10 w-10 rounded-btn overflow-hidden border border-hairline bg-bone flex items-center justify-center text-[9px] font-bold text-muted uppercase flex-shrink-0">
-													{bankLabel(pm.bank).slice(0, 6)}
-												</span>
-												<div class="min-w-0">
-													<p class="text-sm font-semibold text-ink truncate">
-														{bankLabel(pm.bank)}
-													</p>
-													{#if pm.name}
-														<p class="text-xs text-muted-soft truncate">{pm.name}</p>
-													{/if}
-												</div>
-											</div>
-											<div class="mt-2 space-y-1.5">
-												{#if pm.bank === 'monedero'}
-													<div class="flex items-center gap-2">
-														<p class="flex-1 min-w-0 text-xs font-mono text-ink bg-bone border border-hairline rounded-btn px-2.5 py-1.5 truncate">
-															📱 {pm.phone || pm.account}
-														</p>
-														<button
-															type="button"
-															onclick={(e) => {
-																e.preventDefault();
-																copyText(pm.phone || pm.account, `tel-${pm.id}`);
-															}}
-															class="flex-shrink-0 px-2.5 py-1.5 border border-hairline rounded-btn text-xs font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-														>
-															{copyFeedback === `tel-${pm.id}` ? 'Copiado' : 'Copiar'}
-														</button>
-													</div>
-												{:else}
-												<div class="flex items-center gap-2">
-													<p class="flex-1 min-w-0 text-xs font-mono text-ink bg-bone border border-hairline rounded-btn px-2.5 py-1.5 truncate">
-														{pm.account}
-													</p>
-													<button
-														type="button"
-														onclick={(e) => {
-															e.preventDefault();
-															copyText(pm.account, `cuenta-${pm.id}`);
-														}}
-														class="flex-shrink-0 px-2.5 py-1.5 border border-hairline rounded-btn text-xs font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-													>
-														{copyFeedback === `cuenta-${pm.id}` ? 'Copiado' : 'Copiar'}
-													</button>
-												</div>
-												{#if pm.phone}
-													<div class="flex items-center gap-2">
-														<p class="flex-1 min-w-0 text-xs font-mono text-ink bg-bone border border-hairline rounded-btn px-2.5 py-1.5 truncate">
-															{pm.phone}
-														</p>
-														<button
-															type="button"
-															onclick={(e) => {
-																e.preventDefault();
-																copyText(pm.phone, `tel-${pm.id}`);
-															}}
-															class="flex-shrink-0 px-2.5 py-1.5 border border-hairline rounded-btn text-xs font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-														>
-															{copyFeedback === `tel-${pm.id}` ? 'Copiado' : 'Copiar'}
-														</button>
-													</div>
-												{/if}
-												{/if}
-											</div>
-										</div>
-									</div>
-								</label>
-							{/each}
-						</div>
-
-						<div class="mt-3">
-							<p class="text-sm font-medium text-body mb-1.5">Comprobante de pago</p>
-							{#if receiptUrl}
-								<div class="flex items-center justify-between gap-2 border border-hairline rounded-btn px-3.5 py-2.5 bg-bone">
-									<span class="flex items-center gap-2 text-sm text-body min-w-0">
-										<i class="ri-checkbox-circle-line text-ember flex-shrink-0"></i>
-										<span class="truncate">{receiptFile?.name ?? 'Comprobante subido'}</span>
-									</span>
-									<button
-										type="button"
-										onclick={() => {
-											receiptFile = null;
-											receiptUrl = '';
-										}}
-										class="flex-shrink-0 text-xs font-medium text-muted hover:text-error transition-colors cursor-pointer"
-									>
-										Quitar
-									</button>
-								</div>
-							{:else}
-								<label
-									class="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-								>
-									{#if receiptUploading}
-										<i class="ri-loader-4-line animate-spin"></i>
-										Subiendo...
-									{:else}
-										<i class="ri-image-add-line"></i>
-										Subir foto del comprobante
-									{/if}
-									<input type="file" accept="image/*" class="hidden" disabled={receiptUploading} onchange={handleReceipt} />
-								</label>
-								<p class="text-xs text-muted-soft mt-1.5">Debe verse la fecha, la hora y el nº de transacción.</p>
-							{/if}
+			{#if mode === 'sin_contactar'}
+				<div class="bg-card border border-hairline rounded-card px-4 sm:px-5 py-4">
+					<div class="flex items-center gap-3">
+						<span class="h-10 w-10 flex items-center justify-center rounded-btn bg-ember/10 text-ember flex-shrink-0">
+							<i class="ri-qr-scan-line text-xl"></i>
+						</span>
+						<div class="min-w-0">
+							<p class="text-sm font-semibold text-ink">Siguiente paso: el pago</p>
+							<p class="text-xs text-muted-soft">
+								Elige tu método de pago, copia los datos, paga y sube el comprobante en el paso siguiente.
+							</p>
 						</div>
 					</div>
-				{/if}
+				</div>
+			{/if}
 
-				{#if orderError}
+			{#if orderError}
 					<div class="flex items-start gap-2 bg-error/10 text-error border border-error/30 rounded-btn px-4 py-3 text-sm">
 						<i class="ri-alert-line mt-0.5 flex-shrink-0"></i>
 						<span>{orderError}</span>
@@ -689,7 +534,7 @@
 					{:else if mode === 'whatsapp'}
 						<i class="ri-whatsapp-line text-lg"></i>
 					{/if}
-					{sending ? 'Preparando pedido...' : mode === 'whatsapp' ? 'Enviar pedido por WhatsApp' : 'Enviar pedido'}
+					{sending ? 'Preparando pedido...' : mode === 'whatsapp' ? 'Enviar pedido por WhatsApp' : 'Continuar al pago'}
 				</button>
 			</form>
 		</div>

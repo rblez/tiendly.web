@@ -5,7 +5,8 @@ import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
-	import { formatCardNumber, formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, waLink } from '$lib/utils';
+	import { formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, waLink } from '$lib/utils';
+	import { migratePayment, renderPayment } from '$lib/payments';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
@@ -282,7 +283,9 @@ $effect(() => {
 				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
 				location: storeData.location ?? '',
 				schedule: storeData.schedule ?? '',
-				payments: ((storeData as { payments?: PaymentMethod[] | null }).payments ?? []).map((p) => ({ ...p })),
+				payments: ((storeData as { payments?: PaymentMethod[] | null }).payments ?? [])
+				.map((p) => migratePayment(p))
+				.filter((p): p is PaymentMethod => p !== null),
 				delivery: {
 					enabled: !!((storeData as { delivery?: DeliveryConfig | null }).delivery)?.enabled,
 					zones: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.zones ?? [],
@@ -454,32 +457,25 @@ $effect(() => {
 		formAskList.splice(i, 1);
 	}
 
-	const BANKS = [
-		{ id: 'bandec', label: 'Banco de Crédito y Comercio (BANDEC)' },
-		{ id: 'bpa', label: 'Banco Popular de Ahorro (BPA)' },
-		{ id: 'metropolitano', label: 'Banco Metropolitano' },
-		{ id: 'monedero', label: 'Monedero MiTransfer' },
-	] as const;
-
-	const BANK_LABELS: Record<string, string> = {
-		bandec: 'Banco de Crédito y Comercio',
-		bpa: 'Banco Popular de Ahorro',
-		metropolitano: 'Banco Metropolitano',
-		monedero: 'Monedero MiTransfer',
-	};
-	function bankLabel(id: string): string {
-		return BANK_LABELS[id] ?? id;
-	}
-
 	let pmNewId = 0;
 	function newPmId(): string {
 		return `pm-${Date.now().toString(36)}-${pmNewId++}`;
 	}
+	let pfNewId = 0;
+	function newFieldId(): string {
+		return `pf-${Date.now().toString(36)}-${pfNewId++}`;
+	}
 	function addPaymentMethod() {
-		settings.payments.push({ id: newPmId(), bank: 'bandec', account: '', phone: '', name: '' });
+		settings.payments.push({ id: newPmId(), title: '', fields: [{ id: newFieldId(), label: '', value: '' }], instructions: null });
 	}
 	function removePaymentMethod(i: number) {
 		settings.payments.splice(i, 1);
+	}
+	function addPaymentField(i: number) {
+		settings.payments[i].fields.push({ id: newFieldId(), label: '', value: '' });
+	}
+	function removePaymentField(pm: PaymentMethod, fi: number) {
+		pm.fields.splice(fi, 1);
 	}
 	function addZone() {
 		settings.delivery.zones.push({ name: '', price: 0 });
@@ -717,7 +713,7 @@ $effect(() => {
 					if (Array.isArray(row.extra_links)) settings.extra_links = row.extra_links as { title: string; url: string }[];
 					if (row.location !== undefined) settings.location = row.location ?? '';
 					if (row.schedule !== undefined) settings.schedule = row.schedule ?? '';
-					if (Array.isArray(row.payments)) settings.payments = row.payments as PaymentMethod[];
+					if (Array.isArray(row.payments)) settings.payments = row.payments.map((p) => migratePayment(p)).filter((p): p is PaymentMethod => p !== null);
 					if (row.delivery && typeof row.delivery === 'object') {
 						const d = row.delivery as { enabled?: boolean; zones?: DeliveryZone[]; note?: string | null };
 						settings.delivery = {
@@ -854,16 +850,12 @@ $effect(() => {
 				location: settings.location.trim() || null,
 				schedule: settings.schedule.trim() || null,
 				payments: settings.payments
-					.filter((p) => {
-						const ok = p.bank === 'monedero' ? p.phone.trim() : p.account.trim();
-						return ok && p.bank;
-					})
+					.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
 					.map((p) => ({
 						id: p.id,
-						bank: p.bank,
-						account: p.bank === 'monedero' ? p.phone.trim() : formatCardNumber(p.account),
-						phone: p.phone.trim(),
-						name: p.name?.trim() || null,
+						title: p.title.trim(),
+						fields: p.fields.filter((f) => f.value.trim() || f.label.trim()).map((f) => ({ id: f.id, label: f.label.trim(), value: f.value.trim() })),
+						instructions: p.instructions?.trim() || null,
 					})),
 				delivery: {
 					enabled: settings.delivery.enabled,
@@ -1517,23 +1509,25 @@ async function duplicateProduct(p: Product) {
 							{/if}
 
 							{#if order.payment}
-								<div class="bg-bone rounded-btn px-4 py-3 mb-3 border border-hairline">
-									<div class="flex items-center gap-2.5 mb-1.5">
-										<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 uppercase">Pago</span>
-										<span class="text-sm font-semibold text-ink truncate">
-											{bankLabel(order.payment.bank)}
-										</span>
-									</div>
-									<p class="text-xs font-mono text-body truncate">
-										{order.payment.account}
-										{#if order.payment.phone}
-											<span class="text-muted"> · {order.payment.phone}</span>
+								{@const pm = renderPayment(order.payment)}
+								{#if pm}
+									<div class="bg-bone rounded-btn px-4 py-3 mb-3 border border-hairline">
+										<div class="flex items-center gap-2.5 mb-1.5">
+											<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 uppercase">Pago</span>
+											<span class="text-sm font-semibold text-ink truncate">
+												{pm.title}
+											</span>
+										</div>
+										{#each pm.fields as f}
+											<p class="text-xs text-body truncate">
+												<span class="text-muted font-medium">{f.label}:</span> <span class="font-mono">{f.value}</span>
+											</p>
+										{/each}
+										{#if pm.instructions}
+											<p class="text-xs text-muted-soft mt-1.5 leading-relaxed">{pm.instructions}</p>
 										{/if}
-									</p>
-									{#if order.payment.name}
-										<p class="text-xs text-muted-soft truncate mt-0.5">{order.payment.name}</p>
-									{/if}
-								</div>
+									</div>
+								{/if}
 							{/if}
 
 							{#if order.payment_receipt}
@@ -1788,7 +1782,7 @@ async function duplicateProduct(p: Product) {
 						{/if}
 						<div class="mt-4 pt-4 border-t border-hairline">
 							<div class="flex items-center justify-between mb-1.5">
-								<p class="block text-sm font-medium text-body">Métodos de pago</p>
+								<p class="block text-sm font-medium text-body">Métodos de pago manual</p>
 								{#if settings.payments.length > 0}
 									<button type="button" onclick={addPaymentMethod} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer">
 										+ Agregar método
@@ -1796,21 +1790,20 @@ async function duplicateProduct(p: Product) {
 								{/if}
 							</div>
 							<p class="text-xs text-muted-soft mb-3">
-								El cliente elige el método al pagar, copia tus datos y sube el comprobante del pago.
+								Cada método es libre: ponle un nombre (PayPal, Transfermóvil, BTC, tu banco...), filas copiables con tus datos
+								e instrucciones de cómo pagar. El cliente paga, sube el comprobante y el pedido se queda esperando tu confirmación.
 							</p>
 							{#if settings.payments.length > 0}
 								<div class="space-y-2">
 									{#each settings.payments as pm, i}
 										<div class="border border-hairline rounded-btn p-3">
-											<div class="flex items-center gap-2 flex-wrap">
-												<select
-													bind:value={pm.bank}
-													class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
-												>
-													{#each BANKS as b}
-														<option value={b.id}>{b.label}</option>
-													{/each}
-												</select>
+											<div class="flex items-center justify-between gap-2">
+												<input
+													type="text"
+													bind:value={pm.title}
+													placeholder="Nombre del método (ej. PayPal, Transfermóvil)"
+													class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												/>
 												<button
 													type="button"
 													onclick={() => removePaymentMethod(i)}
@@ -1820,41 +1813,45 @@ async function duplicateProduct(p: Product) {
 													<i class="ri-close-line"></i>
 												</button>
 											</div>
-											<div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-											{#if pm.bank === 'monedero'}
-												<div class="sm:col-span-2">
-													<input
-														type="tel"
-														bind:value={pm.phone}
-														placeholder="Número de MiTransfer (teléfono)"
-														class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-													/>
-													<p class="text-xs text-muted-soft mt-1">El monedero se identifica solo con tu número.</p>
-												</div>
-											{:else}
-												<input
-													type="text"
-													inputmode="numeric"
-													value={pm.account}
-													oninput={(e) => (pm.account = formatCardNumber((e.currentTarget as HTMLInputElement).value))}
-													placeholder="9224-0000-0000-0000"
-													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-												/>
-												<input
-													type="tel"
-													bind:value={pm.phone}
-													placeholder="Teléfono (confirmar pago)"
-													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-												/>
-											{/if}
-										</div>
-											<input
-												type="text"
-												value={pm.name ?? ''}
-												oninput={(e) => (pm.name = (e.currentTarget as HTMLInputElement).value.trim() || null)}
-												placeholder="Nombre del titular (opcional)"
-												class="w-full mt-2 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
-											/>
+											<div class="mt-2 space-y-2">
+												{#each pm.fields as f, fi}
+													<div class="flex items-center gap-2">
+														<input
+															type="text"
+															bind:value={f.label}
+															placeholder="Etiqueta (Nº de cuenta, correo, titular...)"
+															class="w-1/3 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+														/>
+														<input
+															type="text"
+															bind:value={f.value}
+															placeholder="Dato copiable"
+															class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+														/>
+														<button
+															type="button"
+															onclick={() => removePaymentField(pm, fi)}
+															class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
+															aria-label="Quitar fila"
+														>
+															<i class="ri-close-line"></i>
+														</button>
+													</div>
+												{/each}
+												<button
+													type="button"
+													onclick={() => addPaymentField(i)}
+													class="w-full px-3 py-1.5 bg-bone border border-dashed border-hairline rounded-btn text-xs font-medium text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+												>
+													+ Añadir fila
+												</button>
+												<textarea
+													bind:value={pm.instructions}
+													rows="2"
+													placeholder="Instrucciones de pago (opcional): 'Paga solo con tu nombre de usuario y envíame la foto del comprobante'..."
+													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+												></textarea>
+											</div>
 										</div>
 									{/each}
 								</div>
@@ -1864,7 +1861,7 @@ async function duplicateProduct(p: Product) {
 									onclick={addPaymentMethod}
 									class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
 								>
-									+ Agregar método de pago
+									+ Agregar método de pago manual
 								</button>
 							{/if}
 						</div>

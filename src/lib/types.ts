@@ -81,14 +81,17 @@ export interface Profile {
 	created_at: string;
 }
 
-export type BankId = "bpa" | "bandec" | "metropolitano" | "monedero";
+export interface PaymentField {
+	id: string;
+	label: string;
+	value: string;
+}
 
 export interface PaymentMethod {
 	id: string;
-	bank: BankId;
-	account: string;
-	phone: string;
-	name?: string | null;
+	title: string;
+	fields: PaymentField[];
+	instructions?: string | null;
 }
 
 export interface DeliveryZone {
