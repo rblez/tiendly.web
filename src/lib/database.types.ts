@@ -14,14 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          store_id: string
+          type: string
+          uses: number
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          store_id: string
+          type?: string
+          uses?: number
+          value: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          store_id?: string
+          type?: string
+          uses?: number
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           code: string | null
+          coupon_code: string | null
           created_at: string
           currency: string
           customer_name: string
           customer_phone: string
           delivery: Json | null
+          discount: number
           id: string
           items: Json
           notes: string | null
@@ -36,11 +85,13 @@ export type Database = {
         }
         Insert: {
           code?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           customer_name: string
           customer_phone: string
           delivery?: Json | null
+          discount?: number
           id?: string
           items?: Json
           notes?: string | null
@@ -55,11 +106,13 @@ export type Database = {
         }
         Update: {
           code?: string | null
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           customer_name?: string
           customer_phone?: string
           delivery?: Json | null
+          discount?: number
           id?: string
           items?: Json
           notes?: string | null
@@ -176,6 +229,38 @@ export type Database = {
           plan?: string
         }
         Relationships: []
+      }
+      store_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_visits: {
         Row: {
@@ -315,10 +400,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_preview_store: {
+        Args: {
+          p_name: string
+          p_slug: string
+          p_code: string
+          p_category: string | null
+          p_description: string | null
+          p_whatsapp: string | null
+          p_theme_color: string
+          p_preview_token: string
+          p_preview_expires_at: string
+          p_products: Json
+        }
+        Returns: Json
+      }
       delete_account: { Args: { p_user_id: string }; Returns: undefined }
       gen_store_code: { Args: never; Returns: string }
       increment_store_visit: { Args: { p_slug: string }; Returns: number }
       is_store_owner: { Args: { store_id: string }; Returns: boolean }
+      redeem_coupon: { Args: { p_store_slug: string; p_code: string }; Returns: Json }
+      validate_coupon: { Args: { p_store_slug: string; p_code: string }; Returns: Json }
       track_order: { Args: { p_slug: string; p_code: string }; Returns: Json }
       track_visit: {
         Args: {

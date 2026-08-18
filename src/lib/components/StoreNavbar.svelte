@@ -3,7 +3,7 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { filters } from '$lib/stores/filters.svelte';
 	import { productImage } from '$lib/utils';
-	import { currency, availableCurrencies, mainCurrency } from '$lib/stores/currency.svelte';
+	import { currency, availableCurrencies, displayCurrency } from '$lib/stores/currency.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store, previewMode = false }: { store: Store; previewMode?: boolean } = $props();
@@ -65,7 +65,7 @@
 				{#if currencies.length > 1}
 					<select
 						aria-label="Cambiar moneda"
-						value={currency.display || mainCurrency(store)}
+						value={displayCurrency(store)}
 						onchange={(e) => currency.set((e.target as HTMLSelectElement).value)}
 						class="bg-card border border-hairline rounded-full px-2.5 py-1.5 text-xs font-semibold text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
 					>

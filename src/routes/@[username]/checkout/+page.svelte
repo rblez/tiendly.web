@@ -4,6 +4,8 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { clearUtm, formatPrice, generateStoreCode, loadUtm, utmQuery, waLink, variantPrice, productStock, isOutOfStock } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice } from '$lib/stores/currency.svelte';
+	import { couponStore } from '$lib/stores/coupon.svelte';
+	import { couponDiscount, couponLabelText } from '$lib/coupons';
 	import { track } from '$lib/analytics';
 	import type { DeliveryZone, Product, Store, Variant } from '$lib/types';
 
@@ -50,9 +52,13 @@
 			orderId = existing;
 			return;
 		}
-		const code = generateStoreCode(6);
+		const code = generateStoreCode();
 		orderId = code;
 		goto(`/@${data.store.slug}/checkout?id=${code}`, { replaceState: true });
+	});
+
+	$effect(() => {
+		couponStore.sync(data.store.slug);
 	});
 
 	function findProduct(id: string): Product | null {
@@ -64,20 +70,34 @@
 	let cacheReady = $state(false);
 
 	$effect(() => {
-		const items = cart.items.filter((i) => i.storeSlug === data.store.slug);
+		const slug = data.store.slug;
+		cartProductsCache = {};
+		cacheReady = false;
+		const items = cart.items.filter((i) => i.storeSlug === slug);
 		if (items.length === 0) {
 			cacheReady = true;
 			return;
 		}
+		let cancelled = false;
 		(async () => {
 			const { supabase } = await import('$lib/supabase/client');
 			const ids = items.map((i) => i.productId);
-			const { data: rows } = await supabase.from('products').select('*').in('id', ids);
-			for (const row of rows ?? []) {
-				cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
+			try {
+				const { data: rows, error } = await supabase.from('products').select('*').in('id', ids);
+				if (error) throw error;
+				if (cancelled) return;
+				for (const row of rows ?? []) {
+					cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
+				}
+			} catch (e) {
+				console.error('checkout load:', e);
+			} finally {
+				if (!cancelled) cacheReady = true;
 			}
-			cacheReady = true;
 		})();
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	let cartLines = $derived.by(() => {
@@ -106,9 +126,11 @@
 			.filter((x): x is NonNullable<typeof x> => x !== null);
 	});
 
-	let total = $derived(
-		cartLines.reduce((sum, cp) => sum + cp.display * cp.quantity, 0) + displayPrice(deliveryCost, data.store),
-	);
+	let appliedCoupon = $derived(couponStore.state.coupon);
+
+	let subtotal = $derived(cartLines.reduce((sum, cp) => sum + cp.display * cp.quantity, 0));
+	let discount = $derived(couponDiscount(appliedCoupon, subtotal));
+	let total = $derived(subtotal + displayPrice(deliveryCost, data.store) - discount);
 	let totalFormatted = $derived(formatPrice(total, viewCurrency(data.store)));
 	let cartEmpty = $derived(cartLines.length === 0);
 	let orderCurrency = $derived(viewCurrency(data.store));
@@ -143,6 +165,7 @@
 			...(deliveryZone
 				? [`🚚 Mensajería: ${deliveryZone.name} — ${formatPrice(displayPrice(deliveryZone.price, data.store), currency)}`, ``]
 				: []),
+			...(appliedCoupon ? [`🎟️ Cupón ${appliedCoupon.code} (-${couponLabelText(appliedCoupon)})`, ``] : []),
 			`📍 Total: *${totalFormatted}*`,
 			`👤 ${name}`,
 			`📱 ${phone}`,
@@ -222,9 +245,12 @@
 						phone: phone.trim(),
 						notes: notes.trim() || null,
 						items,
+						subtotal,
+						discount,
 						total,
 						currency: orderCurrency,
 						delivery: deliveryZone ?? null,
+						coupon: appliedCoupon ? { code: appliedCoupon.code, type: appliedCoupon.type, value: appliedCoupon.value } : null,
 						storeName: data.store.name,
 						storeSlug: data.store.slug,
 						utm: {
@@ -251,6 +277,18 @@
 		try {
 			const { supabase } = await import('$lib/supabase/client');
 			// sin .select(): anon no tiene policy de SELECT en orders, el RETURNING fallaría con RLS
+			if (appliedCoupon) {
+				const { data: redeem, error: redeemError } = await supabase.rpc('redeem_coupon', {
+					p_store_slug: data.store.slug,
+					p_code: appliedCoupon.code,
+				});
+				const r = (redeem ?? {}) as { ok?: boolean; error?: string };
+				if (redeemError || !r.ok) {
+					orderError = `El cupón ${appliedCoupon.code} ya no es válido (${r.error ?? 'intenta de nuevo'}). Quítalo del carrito y vuelve a enviar.`;
+					sending = false;
+					return;
+				}
+			}
 			const { error: orderError2 } = await supabase
 				.from('orders')
 				.insert({
@@ -262,6 +300,8 @@
 					items,
 					total,
 					currency: orderCurrency,
+					coupon_code: appliedCoupon?.code ?? null,
+					discount,
 					utm_source: utm.utm_source ?? null,
 					utm_medium: utm.utm_medium ?? null,
 					utm_campaign: utm.utm_campaign ?? null,

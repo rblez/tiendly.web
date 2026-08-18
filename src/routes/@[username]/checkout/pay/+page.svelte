@@ -26,8 +26,10 @@
 		notes: string | null;
 		items: PayDraftItem[];
 		total: number;
+		discount?: number;
 		currency: string;
 		delivery: { name: string; price: number } | null;
+		coupon?: { code: string; type: string; value: number } | null;
 		storeName: string;
 		storeSlug: string;
 		utm: { utm_source: string | null; utm_medium: string | null; utm_campaign: string | null };
@@ -142,6 +144,18 @@
 
 		try {
 			const { supabase } = await import('$lib/supabase/client');
+			if (draft.coupon) {
+				const { data: redeem, error: redeemError } = await supabase.rpc('redeem_coupon', {
+					p_store_slug: data.store.slug,
+					p_code: draft.coupon.code,
+				});
+				const r = (redeem ?? {}) as { ok?: boolean; error?: string };
+				if (redeemError || !r.ok) {
+					orderError = `El cupón ${draft.coupon.code} ya no es válido (${r.error ?? 'intenta de nuevo'}). Vuelve al carrito y quítalo para continuar.`;
+					sending = false;
+					return;
+				}
+			}
 			// sin .select(): anon no tiene policy de SELECT en orders, el RETURNING fallaría con RLS
 			const { error: err } = await supabase.from('orders').insert({
 				store_id: data.store.id,
@@ -162,6 +176,8 @@
 				})) as unknown as import('$lib/database.types').Json,
 				total: draft.total,
 				currency: draft.currency,
+				coupon_code: draft.coupon?.code ?? null,
+				discount: draft.discount ?? 0,
 				utm_source: draft.utm.utm_source ?? null,
 				utm_medium: draft.utm.utm_medium ?? null,
 				utm_campaign: draft.utm.utm_campaign ?? null,
@@ -234,6 +250,7 @@
 			items,
 			``,
 			...(draft.delivery ? [`🚚 Mensajería: ${draft.delivery.name} — ${formatPrice(draft.delivery.price, currency)}`, ``] : []),
+			...(draft.coupon ? [`🎟️ Cupón ${draft.coupon.code} (-${formatPrice(draft.discount ?? 0, currency)})`, ``] : []),
 			`📍 Total: *${formatPrice(draft.total, currency)}*`,
 			`👤 ${draft.name}`,
 			`📱 ${draft.phone}`,
@@ -291,6 +308,12 @@
 				<div class="px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
 					<span class="text-sm text-body">Mensajería — {draft.delivery.name}</span>
 					<span class="text-sm font-medium text-ink tabular-nums">{formatPrice(draft.delivery.price, draft.currency)}</span>
+				</div>
+			{/if}
+			{#if draft.coupon}
+				<div class="px-4 sm:px-5 py-3 flex items-center justify-between gap-3">
+					<span class="text-sm text-success">Cupón <span class="font-mono font-semibold">{draft.coupon.code}</span></span>
+					<span class="text-sm font-medium text-success tabular-nums">-{formatPrice(draft.discount ?? 0, draft.currency)}</span>
 				</div>
 			{/if}
 			<div class="px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3">

@@ -34,7 +34,7 @@ function createCartStore() {
 		);
 	}
 
-	function addItem(slug: string, productId: string, variantId?: string, optionId?: string) {
+	function addItem(slug: string, productId: string, variantId?: string, optionId?: string, max?: number | null) {
 		if (items.length > 0 && items[0].storeSlug !== slug) {
 			if (
 				typeof window !== 'undefined' &&
@@ -46,6 +46,7 @@ function createCartStore() {
 		}
 		const existing = items.find((i) => sameLine(i, { productId, variantId, optionId }));
 		if (existing) {
+			if (max != null && existing.quantity >= max) return;
 			existing.quantity += 1;
 		} else {
 			items.push({
@@ -64,11 +65,12 @@ function createCartStore() {
 		saveCart(items);
 	}
 
-	function updateQuantity(productId: string, quantity: number, variantId?: string, optionId?: string) {
+	function updateQuantity(productId: string, quantity: number, variantId?: string, optionId?: string, max?: number | null) {
 		if (quantity <= 0) {
 			removeItem(productId, variantId, optionId);
 			return;
 		}
+		if (max != null && quantity > max) quantity = max;
 		const item = items.find((i) => sameLine(i, { productId, variantId, optionId }));
 		if (item) {
 			item.quantity = quantity;

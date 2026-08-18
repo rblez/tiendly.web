@@ -28,7 +28,7 @@
 	let orderId = $state('');
 	let copied = $state(false);
 
-	const orderNumber = $derived((orderId || (order?.id ?? '').slice(0, 8)).toLowerCase());
+	const orderNumber = $derived((order?.id || orderId).toLowerCase());
 
 	async function copyNumber() {
 		if (!orderNumber) return;

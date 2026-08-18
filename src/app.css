@@ -286,3 +286,35 @@ select option {
 	border-bottom-width: 2px;
 	transform: translateY(2px);
 }
+
+/* Scrollbar fina para áreas internas (wizard, listas) */
+.scroll-thin {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-hairline) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+	background: var(--color-hairline);
+	border-radius: 9999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Entrada de pasos del wizard */
+@keyframes step-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.step-enter {
+	animation: step-in 0.3s ease both;
+}

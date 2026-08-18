@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import StoreNavbar from '$lib/components/StoreNavbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import CreateStoreToast from '$lib/components/CreateStoreToast.svelte';
+	import TrackOrderModal from '$lib/components/TrackOrderModal.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
@@ -20,6 +20,33 @@
 	let previewToken = $state(data.preview?.token ?? null);
 	let secondsLeft = $state(0);
 	let previewExpired = $state(false);
+	const PREVIEW_TOTAL = 600;
+
+	const previewPercent = $derived(Math.min(100, Math.max(0, (secondsLeft / PREVIEW_TOTAL) * 100)));
+
+	$effect(() => {
+		store = data.store;
+		previewToken = data.preview?.token ?? null;
+		secondsLeft = 0;
+		previewExpired = false;
+	});
+
+	$effect(() => {
+		const storeId = data.store.id;
+		const channel = supabase
+			.channel(`store-layout-${storeId}`)
+			.on(
+				'postgres_changes',
+				{ event: '*', schema: 'public', table: 'stores', filter: `id=eq.${storeId}` },
+				(payload) => {
+					if (payload.new && typeof payload.new === 'object') store = payload.new as Store;
+				},
+			)
+			.subscribe();
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	});
 
 	$effect(() => {
 		const expiresAt = data.preview?.expiresAt;
@@ -54,22 +81,6 @@
 		}
 	});
 
-	onMount(() => {
-		const channel = supabase
-			.channel(`store-layout-${data.store.id}`)
-			.on(
-				'postgres_changes',
-				{ event: '*', schema: 'public', table: 'stores', filter: `id=eq.${data.store.id}` },
-				(payload) => {
-					if (payload.new && typeof payload.new === 'object') store = payload.new as Store;
-				},
-			)
-			.subscribe();
-		return () => {
-			supabase.removeChannel(channel);
-		};
-	});
-
 	const storeUrl = $derived(buildStoreUrl(store.slug));
 	const breadcrumbLd = $derived(
 		JSON.stringify({
@@ -99,6 +110,24 @@
 	);
 
 	let favicon = $state<string | null>(null);
+
+	let trackModalOpen = $state(false);
+	let trackCode = $state('');
+
+	$effect(() => {
+		const code = $page.url.searchParams.get('track_order');
+		if (!code) return;
+		trackCode = code;
+		trackModalOpen = true;
+		const url = new URL($page.url);
+		url.searchParams.delete('track_order');
+		history.replaceState(null, '', url.pathname + url.search);
+	});
+
+	function openTrack(code: string) {
+		trackCode = code;
+		trackModalOpen = true;
+	}
 
 	async function buildFavicon(logo: string | null, name: string, accent: string): Promise<string> {
 		const canvas = document.createElement('canvas');
@@ -177,24 +206,42 @@
 
 <div style={themeStyle(store)}>
 	{#if previewToken}
-		<div class="sticky top-0 z-50 px-4 py-2 text-white text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5" style={`background:${store.theme_color}`}>
-			{#if previewExpired}
-				<span>La vista previa expiró y tu tienda se eliminó.</span>
-				<a href="/wizard" class="underline underline-offset-2 font-bold no-underline">Crear tienda de nuevo</a>
-			{:else}
-				<span class="flex items-center gap-1.5">
-					<i class="ri-eye-line"></i>
-					Vista previa — se elimina en
-					<span class="font-bold tabular-nums">{previewTime}</span>
-				</span>
-				<span class="hidden sm:inline text-white/80">Actívalla creando tu cuenta:</span>
-				<div class="flex items-center gap-1.5">
+		<div class="sticky top-0 z-50">
+			<div
+				class="px-4 py-2.5 text-white text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+				style={`background:linear-gradient(135deg, ${store.theme_color}, color-mix(in srgb, ${store.theme_color} 72%, #000 28%))`}
+			>
+				{#if previewExpired}
+					<span class="flex items-center gap-1.5">
+						<i class="ri-time-line"></i>
+						Tu vista previa expiró y la tienda se eliminó.
+					</span>
+					<a href="/wizard" class="inline-flex items-center gap-1.5 bg-white text-ink px-3.5 py-1.5 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline">
+						<i class="ri-store-2-line"></i>
+						Crear tienda de nuevo
+					</a>
+				{:else}
+					<span class="flex items-center gap-1.5">
+						<i class="ri-eye-line"></i>
+						Vista previa
+					</span>
+					<span class="inline-flex items-center gap-1 bg-white/20 border border-white/25 rounded-full px-2.5 py-0.5 font-bold tabular-nums">
+						<i class="ri-time-line"></i>
+						{previewTime}
+					</span>
+					<span class="hidden sm:inline text-white/85">Actívalla gratis creando tu cuenta:</span>
 					<a
 						href={`/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}`}
-						class="inline-flex items-center bg-white text-ink px-3 py-1 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline"
+						class="inline-flex items-center gap-1.5 bg-white text-ink px-3.5 py-1.5 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline"
 					>
-						Correo
+						<i class="ri-rocket-line"></i>
+						Activar gratis
 					</a>
+				{/if}
+			</div>
+			{#if !previewExpired}
+				<div class="h-1 bg-black/15">
+					<div class="h-full bg-white/80 transition-all duration-1000 ease-linear" style={`width:${previewPercent}%`}></div>
 				</div>
 			{/if}
 		</div>
@@ -203,8 +250,11 @@
 	<main class="min-h-[calc(100vh-4rem)]">
 		{@render children()}
 	</main>
-	<Footer {store} />
+	<Footer {store} onTrackOrder={openTrack} />
 	{#if !previewToken && (data.ownerPlan === 'free' || data.ownerPlan === 'creator')}
 		<CreateStoreToast />
+	{/if}
+	{#if trackModalOpen}
+		<TrackOrderModal {store} initialCode={trackCode} onClose={() => (trackModalOpen = false)} />
 	{/if}
 </div>

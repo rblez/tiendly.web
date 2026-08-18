@@ -1,17 +1,26 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { appendUtm } from '$lib/utils';
-	import { socialIcon, storeSocials } from '$lib/socials';
-	import { theme } from '$lib/stores/theme.svelte';
-	import type { Store } from '$lib/types';
+import { socialIcon, storeSocials } from '$lib/socials';
+import { theme } from '$lib/stores/theme.svelte';
+import type { Store } from '$lib/types';
 
-	let { store = null }: { store?: Store | null } = $props();
+let { store = null, onTrackOrder = null }: { store?: Store | null; onTrackOrder?: ((code: string) => void) | null } = $props();
 
-	const socials = $derived(storeSocials(store));
-	const year = new Date().getFullYear();
+const socials = $derived(storeSocials(store));
+const year = new Date().getFullYear();
 
-	let trackCode = $state('');
-	let trackError = $state('');
+function trackSocialClick(s: { key: string; url: string }) {
+	if (!store) return;
+	fetch(`/api/track-event/${store.slug}`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ type: 'social_click', data: { network: s.key, url: s.url } }),
+	}).catch(() => {});
+}
+
+let trackCode = $state('');
+let trackError = $state('');
 
 	function handleTrack(e: SubmitEvent) {
 		e.preventDefault();
@@ -21,6 +30,10 @@
 			return;
 		}
 		trackError = '';
+		if (onTrackOrder) {
+			onTrackOrder(code);
+			return;
+		}
 		goto(`/@${store?.slug}?track_order=${encodeURIComponent(code)}`);
 	}
 </script>
@@ -68,6 +81,7 @@
 								href={appendUtm(s.url)}
 								target="_blank"
 								rel="noopener noreferrer"
+								onclick={() => trackSocialClick(s)}
 								class="h-9 w-9 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
 								aria-label={s.label}
 							>

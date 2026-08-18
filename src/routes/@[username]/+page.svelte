@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import ProductCard from '$lib/components/ProductCard.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters, type SortOrder } from '$lib/stores/filters.svelte';
@@ -12,6 +11,15 @@
 	let store = $state(data.store);
 	// svelte-ignore state_referenced_locally
 	let products = $state<Product[]>(data.products);
+
+	$effect(() => {
+		store = data.store;
+		products = data.products;
+	});
+
+	$effect(() => {
+		syncFiltersFromUrl();
+	});
 
 	function syncFiltersFromUrl() {
 		const p = new URLSearchParams(window.location.search);
@@ -35,8 +43,7 @@
 		history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 	});
 
-	onMount(() => {
-		syncFiltersFromUrl();
+	$effect(() => {
 		const storeId = data.store.id;
 		const channel = supabase
 			.channel(`store-catalog-${storeId}`)
@@ -59,18 +66,23 @@
 	});
 
 	async function refreshProducts() {
-		const { data: fresh } = await supabase
-			.from('products')
-			.select('*')
-			.eq('store_id', data.store.id)
-			.eq('active', true)
-			.order('position', { ascending: true });
-		products = (fresh as Product[] | null)?.map((p) => ({
-			...p,
-			variants: Array.isArray(p.variants) ? p.variants : [],
-			ask: Array.isArray(p.ask) ? p.ask : [],
-			images: Array.isArray(p.images) ? p.images : [],
-		})) ?? [];
+		try {
+			const { data: fresh, error } = await supabase
+				.from('products')
+				.select('*')
+				.eq('store_id', data.store.id)
+				.eq('active', true)
+				.order('position', { ascending: true });
+			if (error) throw error;
+			products = (fresh as unknown as Product[] | null)?.map((p) => ({
+				...p,
+				variants: Array.isArray(p.variants) ? p.variants : [],
+				ask: Array.isArray(p.ask) ? p.ask : [],
+				images: Array.isArray(p.images) ? p.images : [],
+			})) ?? [];
+		} catch (e) {
+			console.error('refreshProducts:', e);
+		}
 	}
 
 	let categories = $derived(

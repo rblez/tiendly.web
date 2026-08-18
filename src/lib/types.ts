@@ -57,10 +57,25 @@ export interface Order {
 	items: OrderItem[];
 	total: number;
 	currency: string;
+	coupon_code?: string | null;
+	discount?: number;
 	status: string;
 	payment?: PaymentMethod | null;
 	payment_receipt?: string | null;
 	delivery?: DeliveryZone | null;
+	created_at: string;
+}
+
+export interface Coupon {
+	id: string;
+	store_id: string;
+	code: string;
+	type: 'percent' | 'amount';
+	value: number;
+	max_uses: number | null;
+	uses: number;
+	expires_at: string | null;
+	active: boolean;
 	created_at: string;
 }
 

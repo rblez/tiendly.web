@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { formatPrice, imageSrcset, productImage, variantPrice } from '$lib/utils';
+	import { formatPrice, imageSrcset, productImage, productStock, variantPrice } from '$lib/utils';
 	import { displayCurrency, displayPrice } from '$lib/stores/currency.svelte';
-	import { onMount } from 'svelte';
+	import { couponStore } from '$lib/stores/coupon.svelte';
+	import { couponDiscount, couponLabelText, normalizeCouponCode } from '$lib/coupons';
 	import type { Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -10,20 +11,80 @@
 	let products = $state<Record<string, Product>>({});
 	let loaded = $state(false);
 
-	onMount(async () => {
-		const { supabase } = await import('$lib/supabase/client');
-		const items = cart.items.filter((i) => i.storeSlug === data.store.slug);
-		if (items.length === 0) {
-			loaded = true;
+	let couponInput = $state('');
+	let couponError = $state('');
+	let couponApplying = $state(false);
+
+	$effect(() => {
+		couponStore.sync(data.store.slug);
+	});
+
+	$effect(() => {
+		const slug = data.store.slug;
+		products = {};
+		loaded = false;
+		let cancelled = false;
+		(async () => {
+			const { supabase } = await import('$lib/supabase/client');
+			const items = cart.items.filter((i) => i.storeSlug === slug);
+			if (items.length === 0) {
+				if (!cancelled) loaded = true;
+				return;
+			}
+			const ids = items.map((i) => i.productId);
+			try {
+				const { data: rows, error } = await supabase.from('products').select('*').in('id', ids);
+				if (error) throw error;
+				if (cancelled) return;
+				for (const row of rows ?? []) {
+					products[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
+				}
+			} catch (e) {
+				console.error('cart load:', e);
+			} finally {
+				if (!cancelled) loaded = true;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	let appliedCoupon = $derived(couponStore.state.coupon);
+
+	async function handleApplyCoupon() {
+		const code = normalizeCouponCode(couponInput);
+		if (!code) {
+			couponError = 'Escribe el código del cupón.';
 			return;
 		}
-		const ids = items.map((i) => i.productId);
-		const { data: rows } = await supabase.from('products').select('*').in('id', ids);
-		for (const row of rows ?? []) {
-			products[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
+		if (couponApplying) return;
+		couponApplying = true;
+		couponError = '';
+		try {
+			const { supabase } = await import('$lib/supabase/client');
+			const { data: res, error: rpcError } = await supabase.rpc('validate_coupon', {
+				p_store_slug: data.store.slug,
+				p_code: code,
+			});
+			const r = (res ?? {}) as { ok?: boolean; error?: string; code?: string; type?: string; value?: number };
+			if (rpcError || !r.ok) {
+				couponError = `Este cupón no es válido o ya no está disponible.${r?.error ? ` (${r.error})` : ''}`;
+				return;
+			}
+			couponStore.setCoupon(data.store.slug, { code: r.code ?? code, type: (r.type as 'percent' | 'amount') ?? 'percent', value: r.value ?? 0 });
+			couponInput = '';
+		} catch {
+			couponError = 'No se pudo validar el cupón. Inténtalo de nuevo.';
+		} finally {
+			couponApplying = false;
 		}
-		loaded = true;
-	});
+	}
+
+	function handleRemoveCoupon() {
+		couponStore.clearCoupon(data.store.slug);
+		couponError = '';
+	}
 
 	let cartLines = $derived(
 		cart.items
@@ -38,12 +99,15 @@
 					? (variant.options ?? []).find((o) => o.id === ci.optionId) ?? null
 					: null;
 				const price = variantPrice(variant, ci.optionId, product.price);
-				return { ...ci, product, variant, option, price, label: variant ? (option && variant.options?.length ? variant.label + ' — ' + option.label : variant.label) : null };
+				const stock = productStock(product, variant?.id ?? null, option?.id ?? null);
+				return { ...ci, product, variant, option, price, stock, label: variant ? (option && variant.options?.length ? variant.label + ' — ' + option.label : variant.label) : null };
 			})
 			.filter((x): x is NonNullable<typeof x> => x !== null)
 	);
 
 	let total = $derived(cartLines.reduce((sum, cp) => sum + displayPrice(cp.price, data.store) * cp.quantity, 0));
+	let discount = $derived(couponDiscount(appliedCoupon, total));
+	let grandTotal = $derived(Math.max(0, total - discount));
 	let cartEmpty = $derived(cart.items.filter((i) => i.storeSlug === data.store.slug).length === 0);
 	let itemCount = $derived(cartLines.reduce((sum, cp) => sum + cp.quantity, 0));
 	let currency = $derived(displayCurrency(data.store));
@@ -141,8 +205,9 @@
 								</button>
 								<span class="w-8 text-center font-semibold text-ink tabular-nums">{cp.quantity}</span>
 								<button
-									onclick={() => cart.updateQuantity(cp.productId, cp.quantity + 1, cp.variantId, cp.optionId)}
-									class="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-bone transition-colors cursor-pointer"
+									onclick={() => cart.updateQuantity(cp.productId, cp.quantity + 1, cp.variantId, cp.optionId, cp.stock)}
+									disabled={cp.stock != null && cp.quantity >= cp.stock}
+									class="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-bone transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
 									aria-label="Sumar"
 								>
 									<i class="ri-add-line"></i>
@@ -169,9 +234,68 @@
 				<span class="text-muted">Envío</span>
 				<span class="text-body">A acordar por WhatsApp</span>
 			</div>
+
+			{#if appliedCoupon}
+				<div class="flex items-center justify-between text-sm mt-3 border-t border-hairline pt-3">
+					<span class="inline-flex items-center gap-1.5 text-success">
+						<i class="ri-coupon-line"></i>
+						Cupón <span class="font-mono font-semibold">{appliedCoupon.code}</span>
+						<span class="text-xs text-muted-soft">(-{couponLabelText(appliedCoupon)})</span>
+					</span>
+					<div class="flex items-center gap-3">
+						<span class="font-medium text-success tabular-nums">-{formatPrice(discount, currency)}</span>
+						<button
+							onclick={handleRemoveCoupon}
+							class="text-muted-soft hover:text-error transition-colors cursor-pointer"
+							aria-label="Quitar cupón"
+						>
+							<i class="ri-close-circle-line text-lg"></i>
+						</button>
+					</div>
+				</div>
+			{:else}
+				<div class="mt-3">
+					<p class="text-xs font-medium text-body mb-1.5">¿Tienes un cupón?</p>
+					<div class="flex gap-2">
+						<input
+							type="text"
+							bind:value={couponInput}
+							onkeydown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									handleApplyCoupon();
+								}
+							}}
+							placeholder="Ej: VERANO10"
+							class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						/>
+						<button
+							onclick={handleApplyCoupon}
+							disabled={couponApplying}
+							class="inline-flex items-center justify-center px-4 py-2.5 bg-bone border border-hairline text-body rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+						>
+							{#if couponApplying}
+								<i class="ri-loader-4-line animate-spin"></i>
+							{:else}
+								Aplicar
+							{/if}
+						</button>
+					</div>
+					{#if couponError}
+						<p class="text-xs text-error mt-1.5">{couponError}</p>
+					{/if}
+				</div>
+			{/if}
+
+			{#if discount > 0}
+				<div class="flex items-center justify-between text-sm mt-2">
+					<span class="text-success">Descuento</span>
+					<span class="font-medium text-success tabular-nums">-{formatPrice(discount, currency)}</span>
+				</div>
+			{/if}
 			<div class="border-t border-hairline mt-4 pt-4 flex items-center justify-between">
 				<span class="text-lg font-bold text-ink">Total</span>
-				<span class="text-xl font-black text-ember tabular-nums">{formatPrice(total, currency)}</span>
+				<span class="text-xl font-black text-ember tabular-nums">{formatPrice(grandTotal, currency)}</span>
 			</div>
 
 			<a

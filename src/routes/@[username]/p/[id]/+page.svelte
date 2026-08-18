@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, SITE_URL, variantPrice, productStock, isOutOfStock } from '$lib/utils';
@@ -25,18 +24,34 @@
 		);
 	}
 
-	onMount(() => {
+	let selectedVariant = $state<Variant | null>(firstAvailable());
+	let selectedOption = $state<string | null>(null);
+	let imgError = $state(false);
+	let activeIndex = $state(0);
+	let added = $state(false);
+
+	$effect(() => {
+		product = data.product;
+		selectedVariant = firstAvailable();
+		selectedOption = null;
+		imgError = false;
+		activeIndex = 0;
+		added = false;
+	});
+
+	$effect(() => {
+		const productId = data.product.id;
 		track('view_item', {
 			value: displayPrice,
 			currency: displayCurrency,
-			content_ids: [product.id],
-			content_name: product.name,
+			content_ids: [productId],
+			content_name: data.product.name,
 		});
 		const channel = supabase
-			.channel(`store-product-${product.id}`)
+			.channel(`store-product-${productId}`)
 			.on(
 				'postgres_changes',
-				{ event: '*', schema: 'public', table: 'products', filter: `id=eq.${product.id}` },
+				{ event: '*', schema: 'public', table: 'products', filter: `id=eq.${productId}` },
 				(payload) => {
 					if (payload.new && typeof payload.new === 'object') {
 						const p = payload.new as Product;
@@ -49,12 +64,6 @@
 			supabase.removeChannel(channel);
 		};
 	});
-
-	let selectedVariant = $state(firstAvailable());
-	let selectedOption = $state<string | null>(null);
-	let imgError = $state(false);
-	let activeIndex = $state(0);
-	let added = $state(false);
 
 	const selectedOptions = $derived(selectedVariant ? (selectedVariant.options ?? []) : []);
 	const selectedOptionObj = $derived(
@@ -113,7 +122,7 @@
 	);
 
 	function addToCart() {
-		cart.addItem(data.store.slug, product.id, selectedVariant?.id, selectedOption ?? undefined);
+		cart.addItem(data.store.slug, product.id, selectedVariant?.id, selectedOption ?? undefined, curStock);
 		track('add_to_cart', {
 			value: displayPrice,
 			currency: displayCurrency,

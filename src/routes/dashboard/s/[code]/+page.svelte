@@ -4,9 +4,10 @@ import { supabase } from '$lib/supabase/client';
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
-	import type { DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
+	import type { Coupon, DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, waLink } from '$lib/utils';
 	import { migratePayment, renderPayment } from '$lib/payments';
+	import { exportOrdersCsv, exportProductsCsv } from '$lib/export';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
@@ -14,8 +15,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	import { STORE_CATEGORIES } from '$lib/categories';
 	import QRCode from 'qrcode';
 
-	type Tab = 'resumen' | 'productos' | 'pedidos' | 'apariencia' | 'configuracion';
-	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'apariencia', 'configuracion'];
+	type Tab = 'resumen' | 'productos' | 'pedidos' | 'cupones' | 'apariencia' | 'configuracion';
+	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'cupones', 'apariencia', 'configuracion'];
 
 	let store = $state<Store | null>(null);
 	let products = $state<Product[]>([]);
@@ -24,6 +25,18 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let loading = $state(true);
 	let unreadOrders = $state(0);
 	let openStatusMenu = $state<string | null>(null);
+
+	// Cupones
+	let coupons = $state<Coupon[]>([]);
+	let couponFormOpen = $state(false);
+	let couponCode = $state('');
+	let couponType = $state<'percent' | 'amount'>('percent');
+	let couponValue = $state('');
+	let couponMaxUses = $state('');
+	let couponExpiresAt = $state('');
+	let couponSaving = $state(false);
+	let couponError = $state('');
+	let couponDeleting = $state<string | null>(null);
 
 	type NotifPrefs = { sound: boolean; browser: boolean; badge: boolean };
 
@@ -324,7 +337,10 @@ $effect(() => {
 				if (target) openEditProduct(target as Product);
 			}
 		await loadOrders();
+		await loadCoupons();
 		await loadVisitChart();
+		await loadSocialClicks();
+		await loadSources();
 		loading = false;
 			} catch {
 				error = 'No se pudo cargar la tienda. Inténtalo de nuevo.';
@@ -339,6 +355,83 @@ $effect(() => {
 	let visitChart = $state<VisitDay[]>([]);
 	let visitMax = $state(1);
 	const visitTotal = $derived(visitChart.reduce((s, d) => s + d.visits, 0));
+
+	type SocialClickRow = { network: string; count: number };
+	let socialClicks = $state<SocialClickRow[]>([]);
+	const socialTotal = $derived(socialClicks.reduce((s, r) => s + r.count, 0));
+	const socialMax = $derived(Math.max(1, ...socialClicks.map((r) => r.count)));
+
+	async function loadSocialClicks() {
+		if (!editingStoreId) return;
+		const from = new Date();
+		from.setDate(from.getDate() - 89);
+		const { data: rows } = await supabase
+			.from('store_events')
+			.select('payload, created_at')
+			.eq('store_id', editingStoreId)
+			.eq('event_type', 'social_click')
+			.gte('created_at', from.toISOString());
+
+		const counts = new Map<string, number>();
+		for (const r of rows ?? []) {
+			const p = (r.payload ?? {}) as { network?: unknown };
+			if (typeof p.network === 'string' && p.network) counts.set(p.network, (counts.get(p.network) ?? 0) + 1);
+		}
+		socialClicks = [...counts.entries()]
+			.map(([network, count]) => ({ network, count }))
+			.sort((a, b) => b.count - a.count);
+	}
+
+	type SourceRow = { label: string; visits: number };
+	let sourceRows = $state<SourceRow[]>([]);
+	const sourceMax = $derived(Math.max(1, ...sourceRows.map((r) => r.visits)));
+	const sourceTotal = $derived(sourceRows.reduce((s, r) => s + r.visits, 0));
+
+	async function loadSources() {
+		if (!editingStoreId) return;
+		const from = new Date();
+		from.setDate(from.getDate() - 89);
+		const { data: rows } = await supabase
+			.from('store_visits')
+			.select('utm_source, visits')
+			.eq('store_id', editingStoreId)
+			.gte('visit_date', from.toISOString().slice(0, 10));
+
+		const acc = new Map<string, number>();
+		for (const r of rows ?? []) {
+			const label = (r.utm_source ?? '').trim() || 'Directo';
+			acc.set(label, (acc.get(label) ?? 0) + r.visits);
+		}
+		sourceRows = [...acc.entries()]
+			.map(([label, visits]) => ({ label, visits }))
+			.sort((a, b) => b.visits - a.visits);
+	}
+
+	type SaleDay = { label: string; orders: number };
+	const salesChart = $derived.by(() => {
+		const days = 7;
+		const byDate = new Map<string, number>();
+		for (const o of orders) {
+			const key = new Date(o.created_at).toISOString().slice(0, 10);
+			byDate.set(key, (byDate.get(key) ?? 0) + 1);
+		}
+		const today = new Date();
+		const chart: SaleDay[] = [];
+		for (let i = 0; i < days; i++) {
+			const d = new Date(today);
+			d.setDate(today.getDate() - (days - 1 - i));
+			const key = d.toISOString().slice(0, 10);
+			chart.push({ label: key.slice(5), orders: byDate.get(key) ?? 0 });
+		}
+		return chart;
+	});
+	const salesTotal = $derived(salesChart.reduce((s, d) => s + d.orders, 0));
+	const salesMax = $derived(Math.max(1, ...salesChart.map((d) => d.orders)));
+	const revenueByCurrency = $derived.by(() => {
+		const acc: Record<string, number> = {};
+		for (const o of orders) acc[o.currency] = (acc[o.currency] ?? 0) + o.total;
+		return acc;
+	});
 
 	async function loadVisitChart() {
 		if (!editingStoreId) return;
@@ -650,6 +743,78 @@ $effect(() => {
 			items: Array.isArray(o.items) ? o.items : [],
 		})) ?? [];
 		ordersLoading = false;
+	}
+
+	async function loadCoupons() {
+		if (!editingStoreId) return;
+		const { data } = await supabase
+			.from('coupons')
+			.select('*')
+			.eq('store_id', editingStoreId)
+			.order('created_at', { ascending: false });
+		coupons = (data as Coupon[] | null) ?? [];
+	}
+
+	function openNewCoupon() {
+		couponFormOpen = true;
+		couponCode = '';
+		couponType = 'percent';
+		couponValue = '';
+		couponMaxUses = '';
+		couponExpiresAt = '';
+		couponError = '';
+	}
+
+	async function createCoupon() {
+		const code = couponCode.trim().toUpperCase().replace(/\s+/g, '');
+		const value = Number(couponValue.replace(',', '.'));
+		if (!code || !Number.isFinite(value) || value <= 0) {
+			couponError = 'Escribe un código y un valor válidos.';
+			return;
+		}
+		if (couponType === 'percent' && value > 100) {
+			couponError = 'El porcentaje no puede superar 100.';
+			return;
+		}
+		couponSaving = true;
+		couponError = '';
+		try {
+			const { data, error: err } = await supabase
+				.from('coupons')
+				.insert({
+					store_id: editingStoreId,
+					code,
+					type: couponType,
+					value,
+					max_uses: couponMaxUses.trim() ? Math.max(1, Math.round(Number(couponMaxUses.replace(',', '.')))) : null,
+					expires_at: couponExpiresAt ? new Date(couponExpiresAt).toISOString() : null,
+				})
+				.select('*')
+				.single();
+			if (err) {
+				couponError = /duplicate/i.test(err.message) ? 'Ya existe un cupón con ese código.' : 'No se pudo crear el cupón. Intenta de nuevo.';
+				return;
+			}
+			coupons = [data as unknown as Coupon, ...coupons];
+			couponFormOpen = false;
+		} catch {
+			couponError = 'No se pudo crear el cupón. Intenta de nuevo.';
+		} finally {
+			couponSaving = false;
+		}
+	}
+
+	async function toggleCoupon(c: Coupon) {
+		const { error: err } = await supabase.from('coupons').update({ active: !c.active }).eq('id', c.id);
+		if (!err) coupons = coupons.map((x) => (x.id === c.id ? { ...x, active: !c.active } : x));
+	}
+
+	async function deleteCoupon(c: Coupon) {
+		if (!window.confirm(`¿Eliminar el cupón ${c.code}? Se dejará de aceptar.`)) return;
+		couponDeleting = c.id;
+		const { error: err } = await supabase.from('coupons').delete().eq('id', c.id);
+		couponDeleting = null;
+		if (!err) coupons = coupons.filter((x) => x.id !== c.id);
 	}
 
 	$effect(() => {
@@ -996,6 +1161,13 @@ async function duplicateProduct(p: Product) {
 						{/if}
 					</a>
 					<a
+						href="?tab=cupones"
+						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+							{tab === 'cupones' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+					>
+						Cupones
+					</a>
+					<a
 						href="?tab=apariencia"
 						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
 							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
@@ -1057,6 +1229,13 @@ async function duplicateProduct(p: Product) {
 								{unreadOrders}
 							</span>
 						{/if}
+					</a>
+					<a
+						href="?tab=cupones"
+						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
+							{tab === 'cupones' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
+					>
+						Cupones
 					</a>
 					<a
 						href="?tab=apariencia"
@@ -1195,6 +1374,91 @@ async function duplicateProduct(p: Product) {
 				</div>
 			</div>
 
+			<div class="bg-card border border-hairline rounded-card p-5 mb-5">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-sm font-semibold text-ink">Clicks en redes sociales</h2>
+					<span class="text-sm font-bold text-ink tabular-nums">{socialTotal}</span>
+				</div>
+				{#if socialTotal > 0}
+					<div class="grid gap-2.5">
+						{#each socialClicks as row}
+							<div class="flex items-center gap-3">
+								<img src={socialIcon(row.network as SocialKeyType, theme.resolved === 'dark')} alt="" class="h-4 w-4 flex-shrink-0" />
+								<span class="text-xs text-body w-16 truncate">{NETWORKS.find((n) => n.key === row.network)?.label ?? row.network}</span>
+								<div class="flex-1 h-1.5 bg-bone rounded-full overflow-hidden">
+									<div class="h-full bg-gradient-to-r from-ember to-ember/60 rounded-full transition-all duration-500" style="width:{Math.max(4, (row.count / socialMax) * 100)}%"></div>
+								</div>
+								<span class="text-xs font-bold text-ink tabular-nums w-8 text-right">{row.count}</span>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="flex items-center justify-center text-xs text-muted-soft gap-2 py-2">
+						<i class="ri-share-line"></i>
+						Aún no hay clicks. Comparte tus redes para medir cuántos clientes llegan desde ellas.
+					</div>
+				{/if}
+			</div>
+
+			<div class="bg-card border border-hairline rounded-card p-5 mb-5">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-sm font-semibold text-ink">Ventas por día · 7 días</h2>
+					<div class="flex items-center gap-2">
+						<span class="text-xs font-bold text-ink tabular-nums">{salesTotal} pedidos</span>
+						{#each Object.entries(revenueByCurrency) as [currency, total]}
+							<span class="text-xs font-bold text-success tabular-nums">{formatPrice(total, currency)}</span>
+						{/each}
+					</div>
+				</div>
+				<div class="flex items-end gap-1.5 h-20">
+					{#if salesTotal > 0}
+						{#each salesChart as day}
+							<div class="flex-1 flex flex-col items-center gap-1 min-w-0 h-full">
+								<span class="text-[9px] text-muted-soft tabular-nums">{day.orders > 0 ? day.orders : ''}</span>
+								<div class="w-full bg-bone rounded-t-md overflow-hidden flex items-end flex-1">
+									<div
+										class="w-full bg-gradient-to-t from-success to-success/60 transition-all duration-500"
+										style="height:{Math.max(4, (day.orders / salesMax) * 100)}%"
+									></div>
+								</div>
+								<span class="text-[9px] text-muted-soft">{day.label}</span>
+							</div>
+						{/each}
+					{:else}
+						<div class="flex-1 flex items-center justify-center text-xs text-muted-soft gap-2">
+							<i class="ri-shopping-cart-line"></i>
+							Sin ventas aún. Comparte tu tienda y recibe pedidos por WhatsApp o por pago manual.
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<div class="bg-card border border-hairline rounded-card p-5 mb-5">
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-sm font-semibold text-ink">Visitas por fuente</h2>
+					<span class="text-sm font-bold text-ink tabular-nums">{sourceTotal}</span>
+				</div>
+				{#if sourceTotal > 0}
+					<div class="grid gap-2.5">
+						{#each sourceRows as row}
+							<div class="flex items-center gap-3">
+								<i class="ri-global-line text-muted-soft text-sm w-4 flex-shrink-0"></i>
+								<span class="text-xs text-body w-24 truncate">{row.label}</span>
+								<div class="flex-1 h-1.5 bg-bone rounded-full overflow-hidden">
+									<div class="h-full bg-gradient-to-r from-ember to-ember/60 rounded-full transition-all duration-500" style="width:{Math.max(4, (row.visits / sourceMax) * 100)}%"></div>
+								</div>
+								<span class="text-xs font-bold text-ink tabular-nums w-8 text-right">{row.visits}</span>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="flex items-center justify-center text-xs text-muted-soft gap-2 py-2">
+						<i class="ri-link"></i>
+						Las fuentes aparecerán cuando compartas tu tienda con parámetros UTM.
+					</div>
+				{/if}
+			</div>
+
 		{:else if tab === 'productos'}
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
 				<div class="relative flex-1 max-w-sm">
@@ -1206,6 +1470,13 @@ async function duplicateProduct(p: Product) {
 						class="w-full pl-10 pr-4 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
 					/>
 				</div>
+				<button
+					onclick={() => exportProductsCsv(products, store?.slug ?? '')}
+					disabled={products.length === 0}
+					class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-4 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+				>
+					Excel
+				</button>
 				<button
 					onclick={openNewProduct}
 					class="btn-3d inline-flex items-center justify-center px-5 py-3 text-sm font-semibold"
@@ -1375,6 +1646,14 @@ async function duplicateProduct(p: Product) {
 							title="Exportar PDF"
 						>
 							PDF
+						</button>
+						<button
+							onclick={() => exportOrdersCsv(orders, store?.slug ?? '')}
+							disabled={orders.length === 0}
+							class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+							title="Exportar a Excel"
+						>
+							Excel
 						</button>
 						<button
 							onclick={() => loadOrders()}
@@ -1595,6 +1874,161 @@ async function duplicateProduct(p: Product) {
 				<div class="fixed inset-0 z-20" role="presentation" aria-hidden="true" tabindex="-1" onclick={() => (openStatusMenu = null)} onkeydown={() => (openStatusMenu = null)}></div>
 			{/if}
 		{/if}
+
+		{:else if tab === 'cupones'}
+			<div class="space-y-5 max-w-2xl">
+				<div class="flex items-center justify-between gap-3">
+					<div>
+						<h2 class="text-xl font-bold text-ink">Cupones de descuento</h2>
+						<p class="text-sm text-muted mt-0.5">Dales un descuento a tus clientes al momento de pagar.</p>
+					</div>
+					<button
+						onclick={openNewCoupon}
+						class="inline-flex items-center gap-1.5 flex-shrink-0 px-4 py-2.5 bg-ember text-white rounded-btn text-sm font-semibold hover:bg-ember-active transition-colors cursor-pointer"
+					>
+						<i class="ri-coupon-line"></i>
+						Crear cupón
+					</button>
+				</div>
+
+				{#if couponFormOpen}
+					<div class="bg-card border border-hairline rounded-card p-5 sm:p-6">
+						<h3 class="font-bold text-ink mb-4">Nuevo cupón</h3>
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div>
+								<label for="cp-code" class="block text-sm font-medium text-body mb-1.5">Código</label>
+								<input
+									id="cp-code"
+									type="text"
+									bind:value={couponCode}
+									oninput={(e) => (couponCode = (e.target as HTMLInputElement).value.toUpperCase().replace(/\s+/g, ''))}
+									placeholder="Ej: VERANO10"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+							<div>
+								<label for="cp-value" class="block text-sm font-medium text-body mb-1.5">
+									{couponType === 'percent' ? 'Porcentaje' : 'Cantidad (CUP)'}
+								</label>
+								<input
+									id="cp-value"
+									type="text"
+									inputmode="decimal"
+									bind:value={couponValue}
+									placeholder={couponType === 'percent' ? 'Ej: 10' : 'Ej: 50'}
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+						</div>
+						<div class="mt-4">
+							<p class="block text-sm font-medium text-body mb-1.5">Tipo de descuento</p>
+							<div class="grid grid-cols-2 gap-2">
+								<label class="flex items-center gap-2.5 border border-hairline rounded-btn px-3.5 py-2.5 cursor-pointer transition-colors hover:border-ember/50 {couponType === 'percent' ? 'border-ember/60 bg-ember/5' : ''}">
+									<input type="radio" name="cp-type" checked={couponType === 'percent'} onchange={() => (couponType = 'percent')} class="w-4 h-4 accent-ember cursor-pointer" />
+									<span class="text-sm text-ink">Porcentaje (%)</span>
+								</label>
+								<label class="flex items-center gap-2.5 border border-hairline rounded-btn px-3.5 py-2.5 cursor-pointer transition-colors hover:border-ember/50 {couponType === 'amount' ? 'border-ember/60 bg-ember/5' : ''}">
+									<input type="radio" name="cp-type" checked={couponType === 'amount'} onchange={() => (couponType = 'amount')} class="w-4 h-4 accent-ember cursor-pointer" />
+									<span class="text-sm text-ink">Cantidad fija</span>
+								</label>
+							</div>
+						</div>
+						<div class="mt-4 grid gap-4 sm:grid-cols-2">
+							<div>
+								<label for="cp-max" class="block text-sm font-medium text-body mb-1.5">Usos máximos <span class="text-muted-soft">(opcional)</span></label>
+								<input
+									id="cp-max"
+									type="number"
+									min="1"
+									bind:value={couponMaxUses}
+									placeholder="Sin límite"
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+							<div>
+								<label for="cp-exp" class="block text-sm font-medium text-body mb-1.5">Vence el <span class="text-muted-soft">(opcional)</span></label>
+								<input
+									id="cp-exp"
+									type="date"
+									bind:value={couponExpiresAt}
+									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors"
+								/>
+							</div>
+						</div>
+						{#if couponError}
+							<p class="text-xs text-error mt-3">{couponError}</p>
+						{/if}
+						<div class="mt-5 flex items-center gap-2.5">
+							<button
+								onclick={createCoupon}
+								disabled={couponSaving}
+								class="inline-flex items-center gap-2 px-5 py-2.5 bg-ember text-white rounded-btn text-sm font-semibold hover:bg-ember-active transition-colors cursor-pointer disabled:opacity-50"
+							>
+								{#if couponSaving}
+									<i class="ri-loader-4-line animate-spin"></i>
+								{:else}
+									<i class="ri-check-line"></i>
+								{/if}
+								Guardar cupón
+							</button>
+							<button
+								onclick={() => (couponFormOpen = false)}
+								class="px-4 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium hover:bg-bone transition-colors cursor-pointer"
+							>
+								Cancelar
+							</button>
+						</div>
+					</div>
+				{/if}
+
+				{#if coupons.length === 0}
+					<div class="bg-card border border-hairline rounded-card p-10 text-center">
+						<span class="mx-auto h-14 w-14 flex items-center justify-center rounded-full bg-ember/10 text-ember text-2xl mb-4">
+							<i class="ri-coupon-3-line"></i>
+						</span>
+						<p class="font-semibold text-ink mb-1">Aún no tienes cupones</p>
+						<p class="text-sm text-muted-soft max-w-sm mx-auto">Crea tu primer cupón para regalar descuentos y atraer más pedidos.</p>
+					</div>
+				{:else}
+					<ul class="space-y-2.5">
+						{#each coupons as c}
+							<li class="bg-card border border-hairline rounded-card px-4 sm:px-5 py-4 flex items-center gap-3">
+								<div class="min-w-0 flex-1">
+									<div class="flex items-center gap-2.5 flex-wrap">
+										<span class="font-mono font-bold text-ink">{c.code}</span>
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-ember/10 text-ember text-[11px] font-semibold">
+											{c.type === 'percent' ? `${c.value}%` : `${formatPrice(c.value, 'CUP')} CUP`}
+										</span>
+										{#if !c.active}
+											<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-bone text-muted-soft text-[11px] font-semibold">Pausado</span>
+										{/if}
+									</div>
+									<p class="text-xs text-muted-soft mt-1.5">
+										Usado {c.uses}{c.max_uses != null ? ` de ${c.max_uses}` : ''} · {c.expires_at
+											? `Vence ${new Date(c.expires_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
+											: 'Sin fecha de vencimiento'}
+									</p>
+								</div>
+								<button
+									onclick={() => toggleCoupon(c)}
+									class="flex-shrink-0 px-3 py-1.5 border border-hairline rounded-full text-xs font-semibold text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+								>
+									{c.active ? 'Pausar' : 'Activar'}
+								</button>
+								<button
+									onclick={() => deleteCoupon(c)}
+									disabled={couponDeleting === c.id}
+									class="flex-shrink-0 p-2 text-muted-soft hover:text-error hover:bg-error/10 rounded-full transition-colors cursor-pointer disabled:opacity-40"
+									aria-label={`Eliminar cupón ${c.code}`}
+								>
+									<i class="ri-delete-bin-line text-lg"></i>
+								</button>
+							</li>
+						{/each}
+					</ul>
+					<p class="text-xs text-muted-soft">El cupón se valida al confirmar el pedido. Los cupones pausados o vencidos dejan de aceptarse automáticamente.</p>
+				{/if}
+			</div>
 
 		{:else if tab === 'apariencia'}
 			<div class="max-w-lg">
