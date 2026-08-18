@@ -46,7 +46,7 @@
 				{:else}
 					<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Entrar</a>
 				{/if}
-				<a href="/wizard" class="btn-3d px-5 py-2.5 text-sm font-semibold no-underline">Crear mi tienda</a>
+				<a href="/wizard" class="btn btn-3d btn-sm no-underline">Crear mi tienda</a>
 			</div>
 
 			<button
@@ -75,7 +75,7 @@
 				{#if auth.session}
 					<a
 						href="/dashboard"
-						class="block text-center border border-hairline text-body font-medium px-5 py-3 rounded-btn text-sm no-underline"
+						class="btn btn-secondary btn-md block text-center no-underline"
 						onclick={() => (open = false)}
 					>
 						Mi panel
@@ -83,7 +83,7 @@
 				{:else}
 					<a
 						href="/login"
-						class="block text-center border border-hairline text-body font-medium px-5 py-3 rounded-btn text-sm no-underline"
+						class="btn btn-secondary btn-md block text-center no-underline"
 						onclick={() => (open = false)}
 					>
 						Iniciar sesión
@@ -91,7 +91,7 @@
 				{/if}
 				<a
 					href="/wizard"
-					class="block text-center bg-ember text-white font-bold px-5 py-3 rounded-btn text-sm no-underline"
+					class="btn btn-3d btn-md block text-center no-underline"
 					onclick={() => (open = false)}
 				>
 					Crear mi tienda

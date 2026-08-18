@@ -93,9 +93,9 @@
 				bind:value={code}
 				placeholder="Nº de pedido"
 				aria-label="Número de pedido"
-				class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+				class="input flex-1 min-w-0"
 			/>
-			<button type="submit" disabled={searching} class="btn-3d px-4 py-2.5 text-sm font-semibold cursor-pointer disabled:opacity-60">
+			<button type="submit" disabled={searching} class="btn btn-3d btn-sm">
 				{searching ? 'Buscando...' : 'Buscar'}
 			</button>
 		</form>
@@ -110,7 +110,7 @@
 						<p class="font-mono font-bold text-ink text-lg">{order.code ?? ''}</p>
 					</div>
 					{#if status}
-						<span class={`text-xs font-medium px-3 py-1.5 rounded-full ${status.cls}`}>{status.label}</span>
+						<span class={`chip ${status.cls}`}>{status.label}</span>
 					{/if}
 				</div>
 
@@ -129,7 +129,7 @@
 						<div class="py-1.5 first:pt-0 last:pb-0 text-sm">
 							<div class="flex items-center justify-between gap-3">
 								<span class="text-body min-w-0 flex items-center gap-2">
-									<span class="text-[10px] font-bold text-ember bg-ember/10 rounded px-1.5 py-0.5 flex-shrink-0">x{item.quantity}</span>
+									<span class="chip bg-ember/10 text-ember flex-shrink-0">x{item.quantity}</span>
 									<span class="truncate">
 										{item.productName}
 										{#if item.label}

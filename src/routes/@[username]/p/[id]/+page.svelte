@@ -187,7 +187,7 @@
 		<div class="space-y-5">
 			<div>
 				<p class="text-xs text-muted uppercase tracking-wider mb-1">{product.category}</p>
-				<h1 class="text-2xl sm:text-3xl font-bold text-ink">{product.name}</h1>
+				<h1 class="text-2xl sm:text-3xl font-black text-ink">{product.name}</h1>
 			</div>
 
 			{#if product.description}
@@ -312,8 +312,7 @@
 				{:else}
 					<button
 						onclick={addToCart}
-						class="btn-3d w-full px-5 py-3 text-sm sm:text-base font-bold flex items-center justify-center gap-2
-							{added ? 'bg-success' : ''}"
+						class="btn btn-3d btn-lg w-full {added ? '!bg-success !border-success' : ''}"
 					>
 						{added ? 'Añadido al carrito' : 'Añadir al carrito'}
 					</button>

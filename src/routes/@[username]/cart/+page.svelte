@@ -119,19 +119,19 @@
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	{#if !loaded}
-		<div class="flex items-center justify-center py-20">
+		<div class="flex items-center justify-center py-section">
 			<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
 		</div>
 	{:else if cartEmpty}
-		<div class="text-center py-20">
+		<div class="empty-state">
 			<div class="mx-auto w-20 h-20 rounded-full bg-bone flex items-center justify-center mb-5">
 				<i class="ri-shopping-cart-line text-3xl text-muted-soft"></i>
 			</div>
-			<h1 class="text-2xl font-bold text-ink mb-1.5">Tu carrito está vacío</h1>
+			<h1 class="text-2xl font-black text-ink mb-1.5">Tu carrito está vacío</h1>
 			<p class="text-sm text-muted mb-7">Explora el catálogo y añade algo que te guste.</p>
 			<a
 				href={`/@${data.store.slug}`}
-				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
+				class="btn btn-3d btn-md w-full no-underline"
 			>
 				Ver productos
 				<i class="ri-arrow-right-line"></i>
@@ -140,7 +140,7 @@
 	{:else}
 		<div class="flex items-end justify-between gap-4 mb-7">
 			<div>
-				<h1 class="text-2xl sm:text-3xl font-bold text-ink">Tu carrito</h1>
+				<h1 class="text-2xl sm:text-3xl font-black text-ink">Tu carrito</h1>
 				<p class="text-sm text-muted mt-1">
 					{itemCount} {itemCount === 1 ? 'artículo' : 'artículos'}
 				</p>
@@ -267,12 +267,12 @@
 								}
 							}}
 							placeholder="Ej: VERANO10"
-							class="flex-1 min-w-0 px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+							class="input flex-1 min-w-0 uppercase placeholder:normal-case"
 						/>
 						<button
 							onclick={handleApplyCoupon}
 							disabled={couponApplying}
-							class="inline-flex items-center justify-center px-4 py-2.5 bg-bone border border-hairline text-body rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+							class="btn btn-secondary btn-sm disabled:opacity-50"
 						>
 							{#if couponApplying}
 								<i class="ri-loader-4-line animate-spin"></i>
@@ -300,7 +300,7 @@
 
 			<a
 				href={`/@${data.store.slug}/checkout`}
-				class="mt-6 w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-6 py-3.5 rounded-btn text-base font-bold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
+				class="mt-6 btn btn-3d btn-lg w-full no-underline"
 			>
 				Continuar al checkout
 				<i class="ri-arrow-right-line"></i>

@@ -242,7 +242,51 @@ select option {
 	color: var(--color-ink);
 }
 
-/* Botón 3D con gradiente: sin sombras, profundidad solo con bordes */
+/* ============ DESIGN SYSTEM ============ */
+
+/* ---- Botones ---- */
+/* Base: layout + estados. Tamaños con .btn-sm / .btn-md / .btn-lg (md por defecto) */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border-radius: var(--radius-btn);
+	font-weight: 600;
+	line-height: 1.25;
+	white-space: nowrap;
+	text-decoration: none;
+	cursor: pointer;
+	transition:
+		border-bottom-width 0.08s ease,
+		transform 0.08s ease,
+		filter 0.15s ease,
+		border-color 0.15s ease,
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+.btn:active {
+	transform: translateY(1px);
+}
+.btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+	filter: none;
+}
+.btn-sm {
+	padding: 0.45rem 0.9rem;
+	font-size: 0.8125rem;
+}
+.btn-md {
+	padding: 0.625rem 1.25rem;
+	font-size: 0.875rem;
+}
+.btn-lg {
+	padding: 0.75rem 1.5rem;
+	font-size: 0.9375rem;
+}
+
+/* Primario 3D con gradiente: sin sombras, profundidad solo con bordes */
 .btn-3d {
 	background:
 		linear-gradient(
@@ -256,11 +300,7 @@ select option {
 	border-bottom-width: 4px;
 	border-radius: var(--radius-btn);
 	color: #ffffff;
-	cursor: pointer;
-	transition:
-		border-bottom-width 0.08s ease,
-		transform 0.08s ease,
-		filter 0.15s ease;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 }
 
 .btn-3d:hover {
@@ -278,7 +318,50 @@ select option {
 	filter: none;
 }
 
-/* CTA principal de landing: rectangular, amplio, con profundidad 3D */
+/* Secundario: neutro con borde */
+.btn-secondary {
+	background-color: var(--color-bone);
+	border: 1px solid var(--color-hairline);
+	color: var(--color-ink);
+}
+.btn-secondary:hover {
+	border-color: color-mix(in srgb, var(--accent) 55%, #ffffff 45%);
+	color: var(--color-ink);
+}
+
+/* Sólido oscuro: para fondos donde el primario no resalta */
+.btn-ink {
+	background-color: var(--color-ink);
+	border: 1px solid var(--color-ink);
+	color: var(--color-canvas);
+}
+.btn-ink:hover {
+	filter: brightness(1.15);
+}
+
+/* Fantasma: sin fondo */
+.btn-ghost {
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--color-body);
+}
+.btn-ghost:hover {
+	background: var(--color-bone);
+	color: var(--color-ink);
+}
+
+/* Peligro: destructivo */
+.btn-danger {
+	background: color-mix(in srgb, var(--color-error) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent);
+	color: var(--color-error);
+}
+.btn-danger:hover {
+	background: var(--color-error);
+	color: #ffffff;
+}
+
+/* CTA de landing: usa la misma geometría del sistema (md+) */
 .cta-primary {
 	display: inline-flex;
 	align-items: center;
@@ -294,11 +377,12 @@ select option {
 	border: 1px solid color-mix(in srgb, var(--accent-active) 65%, #000000 35%);
 	border-top-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
 	border-bottom-width: 4px;
-	border-radius: 14px;
-	padding: 1.05rem 2.75rem;
-	font-size: 1rem;
-	font-weight: 700;
+	border-radius: var(--radius-btn);
+	padding: 0.8rem 2rem;
+	font-size: 0.9375rem;
+	font-weight: 600;
 	color: #ffffff;
+	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 	cursor: pointer;
 	text-decoration: none;
 	transition:
@@ -314,6 +398,61 @@ select option {
 .cta-primary:active {
 	border-bottom-width: 2px;
 	transform: translateY(2px);
+}
+
+/* ---- Cards ---- */
+.card {
+	background-color: var(--color-card);
+	border: 1px solid var(--color-hairline);
+	border-radius: var(--radius-card);
+}
+
+/* ---- Inputs ---- */
+.input {
+	width: 100%;
+	padding: 0.625rem 0.875rem;
+	background-color: var(--color-canvas);
+	border: 1px solid var(--color-hairline);
+	border-radius: var(--radius-btn);
+	font-size: 0.875rem;
+	color: var(--color-ink);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease,
+		background-color 0.15s ease;
+}
+.input::placeholder {
+	color: var(--color-muted-soft);
+}
+.input:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.input-sm {
+	padding: 0.45rem 0.75rem;
+	font-size: 0.8125rem;
+}
+
+/* ---- Chips / badges ---- */
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem 0.625rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+/* ---- Estado vacío ---- */
+.empty-state {
+	text-align: center;
+	padding: 4rem 1.5rem;
+	background-color: var(--color-card);
+	border: 1px solid var(--color-hairline);
+	border-radius: var(--radius-card);
 }
 
 /* Scrollbar fina para áreas internas (wizard, listas) */

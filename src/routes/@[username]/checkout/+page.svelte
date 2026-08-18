@@ -373,10 +373,10 @@
 </svelte:head>
 
 <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
-	<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-10">Completar tu pedido</h1>
+	<h1 class="text-3xl sm:text-4xl font-black text-ink mb-10">Completar tu pedido</h1>
 
 	{#if cartEmpty && !cacheReady}
-		<div class="flex items-center justify-center py-20">
+		<div class="flex items-center justify-center py-section">
 			<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
 		</div>
 	{:else if cartEmpty}
@@ -386,7 +386,7 @@
 			<p class="text-sm text-muted-soft mb-6">Agrega productos al carrito y vuelve aquí para completar tu pedido.</p>
 			<a
 				href={`/@${data.store.slug}`}
-				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Ver productos
 			</a>
@@ -398,7 +398,7 @@
 			<p class="text-sm text-muted-soft mb-6">Vuelve más tarde o contacta a la tienda por otro medio.</p>
 			<a
 				href={`/@${data.store.slug}`}
-				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Volver al catálogo
 			</a>
@@ -447,7 +447,7 @@
 						required
 						bind:value={name}
 						placeholder="Tu nombre"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input"
 					/>
 				</div>
 
@@ -459,7 +459,7 @@
 						required
 						bind:value={phone}
 						placeholder="Ej: +53 12345678"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input"
 					/>
 				</div>
 
@@ -480,7 +480,7 @@
 									required
 									bind:value={askValues[f.key]}
 									placeholder={`Tu ${f.label}`}
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 						{/each}
@@ -494,7 +494,7 @@
 						bind:value={notes}
 						rows="2"
 						placeholder="Ej: Entregar por la tarde"
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+						class="input resize-none"
 					></textarea>
 				</div>
 
@@ -567,7 +567,7 @@
 				<button
 					type="submit"
 					disabled={sending}
-					class="w-full flex items-center justify-center gap-2 bg-ember text-white px-6 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
+					class="btn btn-3d btn-lg w-full disabled:opacity-50"
 				>
 					{#if sending}
 						<i class="ri-loader-4-line animate-spin"></i>

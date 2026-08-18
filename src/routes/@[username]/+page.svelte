@@ -143,16 +143,16 @@
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	<div class="mb-8">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">{store.name}</h1>
+		<h1 class="text-2xl sm:text-3xl font-black text-ink">{store.name}</h1>
 	</div>
 
 	{#if categories.length > 1}
 		<div class="flex flex-wrap gap-2 mb-8">
 			<button
 				onclick={() => filters.setCategory(null)}
-				class="px-4 py-2 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer
+				class="chip text-sm cursor-pointer border transition-colors duration-200
 					{!filters.selectedCategory
-						? 'bg-ember text-white border-ember shadow-lg shadow-ember/20'
+						? 'bg-ember text-white border-ember'
 						: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ember'}"
 			>
 				Todos
@@ -160,9 +160,9 @@
 			{#each categories as cat}
 				<button
 					onclick={() => filters.setCategory(cat)}
-					class="px-4 py-2 text-sm font-medium rounded-full border transition-all duration-200 cursor-pointer
+					class="chip text-sm cursor-pointer border transition-colors duration-200
 						{filters.selectedCategory === cat
-							? 'bg-ember text-white border-ember shadow-lg shadow-ember/20'
+							? 'bg-ember text-white border-ember'
 							: 'bg-card text-body border-hairline hover:border-ember/50 hover:text-ember'}"
 				>
 					{cat}
@@ -172,7 +172,7 @@
 	{/if}
 
 	{#if filtered.length === 0}
-		<div class="text-center py-20">
+		<div class="empty-state py-14">
 			<i class="ri-search-line text-5xl text-muted-soft mb-4 block"></i>
 			<p class="text-muted text-lg">No se encontraron productos</p>
 			<button

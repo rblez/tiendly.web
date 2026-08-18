@@ -69,14 +69,14 @@
 			<p class="text-lg text-muted mb-6">No encontramos ningún pedido reciente de esta tienda.</p>
 			<a
 				href={`/@${data.store.slug}`}
-				class="inline-flex bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Ver productos
 			</a>
 		</div>
 	{:else}
 		<div class="text-center mb-10">
-			<h1 class="text-3xl sm:text-4xl font-bold text-ink mb-2">¡Gracias, {order.name}!</h1>
+			<h1 class="text-3xl sm:text-4xl font-black text-ink mb-2">¡Gracias, {order.name}!</h1>
 			<p class="text-body">
 				Tu pedido fue registrado en
 				<span class="font-semibold text-ink">{data.store.name}</span>
@@ -130,7 +130,7 @@
 		<div class="flex flex-col sm:flex-row justify-center gap-3">
 			<a
 				href={`/@${data.store.slug}`}
-				class="inline-flex items-center justify-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Seguir comprando
 			</a>

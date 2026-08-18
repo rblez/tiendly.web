@@ -239,12 +239,12 @@
 			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
 				<span class="text-2xl font-black text-ember">1</span>
 			</div>
-			<h1 class="text-2xl font-bold text-ink mb-2">Llegaste al límite del plan Gratis</h1>
+			<h1 class="text-2xl font-black text-ink mb-2">Llegaste al límite del plan Gratis</h1>
 			<p class="text-body mb-2">El plan Gratis incluye 1 tienda. Ya tienes una en Tiendly.</p>
 			<p class="text-xs text-muted-soft mb-8">Puedes eliminar o duplicar tus tiendas desde el menú ⋮ en tu panel.</p>
 			<a
 				href="/dashboard"
-				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Volver a mis tiendas
 			</a>
@@ -256,7 +256,7 @@
 	{:else}
 		<div class="mb-8">
 			<p class="text-xs font-semibold text-ember uppercase tracking-wide mb-2">Paso {step} de 4</p>
-			<h1 class="text-2xl sm:text-3xl font-bold text-ink leading-tight">{STEP_META[step - 1].title}</h1>
+			<h1 class="text-2xl sm:text-3xl font-black text-ink leading-tight">{STEP_META[step - 1].title}</h1>
 			<p class="text-sm text-muted mt-2">{STEP_META[step - 1].desc}</p>
 		</div>
 
@@ -308,7 +308,7 @@
 								bind:value={name}
 								placeholder="Ej: Dulces de Ana"
 								autofocus
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+								class="input"
 							/>
 						</div>
 						<div>
@@ -347,7 +347,7 @@
 								bind:value={description}
 								rows="2"
 								placeholder="Ej: Dulces artesanales y repostería por encargo"
-								class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all resize-none"
+								class="input resize-none"
 							></textarea>
 							<p class="text-xs text-muted-soft mt-1.5">Aparece en tu tienda y en el directorio público.</p>
 						</div>
@@ -388,7 +388,7 @@
 						bind:value={whatsapp}
 						placeholder="Ej: +53 5 1234567"
 						autofocus
-						class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+						class="input"
 					/>
 					<p class="text-xs text-muted-soft mt-1.5">Cada pedido llega directo a este número. Puedes cambiarlo después.</p>
 				</div>
@@ -430,7 +430,7 @@
 											value={product.name}
 											oninput={(e) => updateProduct(i, 'name', (e.target as HTMLInputElement).value)}
 											placeholder="Nombre (Ej: Pastel de chocolate)"
-											class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+											class="input"
 										/>
 									</div>
 									<input
@@ -438,7 +438,7 @@
 										value={product.price}
 										oninput={(e) => updateProduct(i, 'price', (e.target as HTMLInputElement).value)}
 										placeholder="Precio (Ej: 500)"
-										class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+										class="input"
 									/>
 								</div>
 							</div>
@@ -478,7 +478,7 @@
 					<button
 						onclick={next}
 						disabled={!canContinue}
-						class="flex-1 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						Continuar
 						<i class="ri-arrow-right-line ml-1"></i>
@@ -487,7 +487,7 @@
 					<button
 						onclick={createStore}
 						disabled={creating}
-						class="flex-1 inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						{#if creating}
 							<span class="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>

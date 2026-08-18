@@ -268,7 +268,7 @@
 
 <section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
 	{#if loading || !draft}
-		<div class="flex items-center justify-center py-20">
+		<div class="flex items-center justify-center py-section">
 			<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
 		</div>
 	{:else}
@@ -282,7 +282,7 @@
 				<i class="ri-qr-scan-line text-xl"></i>
 			</span>
 			<div>
-				<h1 class="text-2xl sm:text-3xl font-bold text-ink">Paga tu pedido</h1>
+				<h1 class="text-3xl sm:text-4xl font-black text-ink">Paga tu pedido</h1>
 				<p class="text-sm text-muted-soft">
 					Pedido {draft.id ? `nº ${draft.id}` : 'sin número'}
 					{draft.name ? ` · ${draft.name}` : ''}
@@ -425,7 +425,7 @@
 		<button
 			onclick={confirmPayment}
 			disabled={sending || orderPlaced}
-			class="w-full flex items-center justify-center gap-2 bg-ember text-white px-6 py-3.5 rounded-btn text-base font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
+			class="btn btn-3d btn-lg w-full disabled:opacity-50"
 		>
 			{#if sending}
 				<i class="ri-loader-4-line animate-spin"></i>

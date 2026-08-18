@@ -56,12 +56,9 @@ let trackError = $state('');
 						bind:value={trackCode}
 						placeholder="Nº de pedido"
 						aria-label="Número de pedido"
-						class="flex-1 min-w-0 px-3.5 py-2.5 bg-card border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input flex-1 min-w-0"
 					/>
-					<button
-						type="submit"
-						class="btn-3d px-4 py-2.5 text-sm font-semibold cursor-pointer"
-					>
+					<button type="submit" class="btn btn-3d btn-sm">
 						Buscar
 					</button>
 				</form>

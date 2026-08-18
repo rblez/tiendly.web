@@ -279,7 +279,7 @@
 				<div class="space-y-2">
 					<div class="flex items-center gap-2">
 						<label
-							class="inline-flex items-center gap-1.5 bg-ember text-white px-3 py-2 rounded-btn text-xs font-semibold transition-all duration-200 hover:bg-ember-active cursor-pointer"
+							class="btn btn-3d btn-sm cursor-pointer"
 							title={auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
 						>
 							{#if uploading}
@@ -309,7 +309,7 @@
 						type="text"
 						bind:value={name}
 						placeholder="Tu nombre"
-						class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input"
 					/>
 				</div>
 				<div>
@@ -319,7 +319,7 @@
 						type="tel"
 						bind:value={phone}
 						placeholder="Ej: +53 5 1234567"
-						class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input"
 					/>
 				</div>
 			</div>
@@ -331,7 +331,7 @@
 					type="email"
 					value={auth.session?.user.email ?? ''}
 					disabled
-					class="w-full px-3.5 py-3 bg-bone border border-hairline rounded-btn text-sm text-muted cursor-not-allowed"
+					class="input cursor-not-allowed"
 				/>
 				<p class="text-xs text-muted-soft mt-1.5">El correo es tu identificador de cuenta. Para cambiarlo usa la pestaña General.</p>
 			</div>
@@ -382,7 +382,7 @@
 				<button
 					onclick={saveProfile}
 					disabled={saving}
-					class="inline-flex items-center gap-2 bg-ember text-white px-7 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50"
+					class="btn btn-3d btn-lg disabled:opacity-50"
 				>
 					{#if saving}
 						<i class="ri-loader-4-line animate-spin"></i>
@@ -413,12 +413,12 @@
 						type="password"
 						bind:value={password}
 						placeholder="••••••••"
-						class="flex-1 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input flex-1"
 					/>
 					<button
 						onclick={changePassword}
 						disabled={secBusy || !password}
-						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						Actualizar contraseña
 					</button>
@@ -435,12 +435,12 @@
 						type="email"
 						bind:value={newEmail}
 						placeholder="nuevo@correo.com"
-						class="flex-1 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input flex-1"
 					/>
 					<button
 						onclick={changeEmail}
 						disabled={secBusy || !newEmail}
-						class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
 					>
 						Actualizar correo
 					</button>
@@ -453,7 +453,7 @@
 				<button
 					onclick={signOutOthers}
 					disabled={secBusy}
-					class="inline-flex items-center bg-bone border border-hairline text-body px-6 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-40"
+					class="btn btn-secondary btn-md disabled:opacity-40"
 				>
 					Cerrar sesión en otros dispositivos
 				</button>

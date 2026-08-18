@@ -80,7 +80,7 @@
 			oninput={syncUrl}
 			placeholder="Buscar por tienda o categoría..."
 			aria-label="Buscar tiendas"
-			class="w-full px-4 py-3 bg-card border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-shadow"
+			class="input"
 		/>
 	</div>
 
@@ -128,7 +128,7 @@
 			<p class="font-bold text-ink mb-1">No encontramos tiendas con ese filtro</p>
 			<p class="text-sm text-muted mb-5">Prueba con otra palabra o revisa todas las categorías.</p>
 			<button
-				class="bg-ember text-white px-5 py-2.5 rounded-btn text-sm font-semibold cursor-pointer"
+				class="btn btn-3d btn-sm cursor-pointer"
 				onclick={() => {
 					query = '';
 					selectedCategory = '';

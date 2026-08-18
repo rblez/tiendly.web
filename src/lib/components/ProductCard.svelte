@@ -73,13 +73,13 @@
 			{displayFormat(product.price, store)}
 		{/if}
 		{#if !isAgotado && product.bajo_pedido}
-			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning text-[10px] font-semibold">
+			<span class="ml-2 align-middle chip bg-warning/15 text-warning">
 				<i class="ri-time-line"></i>
 				Bajo pedido
 			</span>
 		{/if}
 		{#if !isAgotado && curStock != null}
-			<span class="ml-2 align-middle inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-ember/10 text-ember text-[10px] font-semibold">
+			<span class="ml-2 align-middle chip bg-ember/10 text-ember">
 				<i class="ri-truck-line"></i>
 				Quedan {curStock}
 			</span>
@@ -87,10 +87,7 @@
 	</p>
 
 		<span
-			class="w-full mt-2 px-4 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 inline-flex items-center justify-center gap-2
-				{isAgotado
-					? 'bg-bone text-muted-soft cursor-not-allowed'
-					: 'btn-3d font-semibold'}"
+			class="btn btn-sm w-full mt-2 {isAgotado ? 'btn-secondary text-muted-soft cursor-not-allowed' : 'btn-3d'}"
 		>
 			{isAgotado ? 'Agotado' : 'Ver producto'}
 		</span>

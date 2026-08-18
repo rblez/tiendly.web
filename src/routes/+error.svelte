@@ -249,7 +249,7 @@
 					</div>
 					<a
 						href={`/@${suggested.slug}`}
-						class="inline-flex items-center bg-ember text-white px-4 py-2 rounded-[12px] text-sm font-medium hover:bg-ember-active transition-colors no-underline flex-shrink-0"
+						class="btn btn-3d btn-sm flex-shrink-0 no-underline"
 					>
 						Ir
 					</a>
@@ -274,7 +274,7 @@
 				aria-expanded={browseItems.length > 0}
 				aria-controls="store-list"
 				aria-activedescendant={activeIndex >= 0 ? `store-opt-${activeIndex}` : undefined}
-				class="w-full px-4 py-3 bg-card border border-hairline rounded-[14px] text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-shadow"
+				class="input"
 			/>
 
 			{#if query.trim() && searching}
@@ -313,19 +313,19 @@
 		<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
 			<a
 				href="/wizard"
-				class="inline-flex items-center justify-center bg-ember text-white px-8 py-3 rounded-[14px] text-sm font-bold hover:bg-ember-active transition-colors no-underline w-full sm:w-auto"
+				class="btn btn-3d btn-lg w-full sm:w-auto no-underline"
 			>
 				Crea tu tienda gratis
 			</a>
 			<a
 				href="/tiendas"
-				class="inline-flex items-center justify-center bg-ink text-canvas px-8 py-3 rounded-[14px] text-sm font-semibold hover:opacity-85 transition-opacity no-underline w-full sm:w-auto"
+				class="btn btn-ink btn-lg w-full sm:w-auto no-underline"
 			>
 				Explorar tiendas
 			</a>
 			<a
 				href="/"
-				class="inline-flex items-center justify-center border border-hairline bg-card text-body px-8 py-3 rounded-[14px] text-sm font-medium hover:bg-bone transition-colors no-underline w-full sm:w-auto"
+				class="btn btn-secondary btn-lg w-full sm:w-auto no-underline"
 			>
 				Volver al inicio
 			</a>

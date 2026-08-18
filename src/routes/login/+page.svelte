@@ -106,7 +106,7 @@
 						bind:value={email}
 						placeholder="tu@correo.com"
 						autocomplete="email"
-						class="w-full pl-11 pr-4 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+						class="input pl-11 pr-4"
 					/>
 				</div>
 			</div>
@@ -129,7 +129,7 @@
 						bind:value={password}
 						placeholder="••••••••"
 						autocomplete="current-password"
-						class="w-full pl-11 pr-12 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
+						class="input pl-11 pr-12"
 					/>
 					<button
 						type="button"
@@ -152,7 +152,7 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3.5 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+				class="btn btn-3d btn-lg w-full disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				{#if loading}
 					<i class="ri-loader-4-line animate-spin"></i>

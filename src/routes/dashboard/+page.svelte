@@ -207,7 +207,7 @@
 			{#if atLimit}
 				<button
 					onclick={() => (upgradeOpen = true)}
-					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] cursor-pointer"
+					class="btn btn-3d btn-md cursor-pointer"
 				>
 					<i class="ri-add-line"></i>
 					Nueva tienda
@@ -215,7 +215,7 @@
 			{:else}
 				<a
 					href="/wizard"
-					class="inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active active:scale-[0.98] no-underline"
+					class="btn btn-3d btn-md no-underline"
 				>
 					<i class="ri-add-line"></i>
 					Nueva tienda
@@ -271,7 +271,7 @@
 			{/each}
 		</div>
 	{:else if stores.length === 0}
-		<div class="text-center py-20 bg-card border border-hairline rounded-card">
+		<div class="empty-state">
 			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
 				<i class="ri-store-2-line text-3xl text-ember"></i>
 			</div>
@@ -279,7 +279,7 @@
 			<p class="text-body mb-6">Crea tu primera tienda gratis en menos de 5 minutos.</p>
 			<a
 				href="/wizard"
-				class="inline-flex items-center gap-2 bg-ember text-white px-6 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline"
+				class="btn btn-3d btn-md no-underline"
 			>
 				Crear mi tienda
 			</a>
@@ -457,7 +457,7 @@
 					<button
 						onclick={() => (deleteTarget = null)}
 						disabled={deleting}
-						class="flex-1 px-5 py-3 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer disabled:opacity-50"
+						class="btn btn-secondary btn-md flex-1 disabled:opacity-50"
 					>
 						Cancelar
 					</button>
@@ -492,7 +492,7 @@
 				<button
 					type="button"
 					onclick={() => (upgradeOpen = false)}
-					class="mt-6 w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active cursor-pointer"
+					class="btn btn-3d btn-md w-full mt-6 cursor-pointer"
 				>
 					Entendido
 				</button>

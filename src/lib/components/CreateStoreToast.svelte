@@ -25,7 +25,7 @@
 			</div>
 			<a
 				href={appUrl() + '/wizard'}
-				class="inline-flex items-center bg-ember text-white text-xs font-semibold px-3 py-2 rounded-btn hover:bg-ember-active transition-colors no-underline flex-shrink-0"
+				class="btn btn-3d btn-sm flex-shrink-0"
 			>
 				Crear
 			</a>

@@ -1467,13 +1467,13 @@ async function duplicateProduct(p: Product) {
 						type="search"
 						bind:value={productQuery}
 						placeholder="Buscar producto..."
-						class="w-full pl-10 pr-4 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+						class="input pl-10 pr-4"
 					/>
 				</div>
 				<button
 					onclick={() => exportProductsCsv(products, store?.slug ?? '')}
 					disabled={products.length === 0}
-					class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-4 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+					class="btn btn-secondary btn-md disabled:opacity-50"
 				>
 					Excel
 				</button>
@@ -1508,7 +1508,7 @@ async function duplicateProduct(p: Product) {
 			{/if}
 
 			{#if products.length === 0}
-				<div class="text-center py-12 bg-card border border-hairline rounded-card">
+				<div class="empty-state">
 					<div class="w-12 h-12 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-3">
 						<i class="ri-shopping-bag-line text-xl text-ember"></i>
 					</div>
@@ -1519,7 +1519,7 @@ async function duplicateProduct(p: Product) {
 					</button>
 				</div>
 			{:else if filteredProducts.length === 0}
-				<div class="text-center py-12 bg-card border border-hairline rounded-card">
+				<div class="empty-state">
 					<div class="w-12 h-12 bg-bone rounded-full flex items-center justify-center mx-auto mb-3">
 						<i class="ri-search-line text-xl text-muted-soft"></i>
 					</div>
@@ -1527,7 +1527,7 @@ async function duplicateProduct(p: Product) {
 					<p class="text-xs text-muted-soft mb-4">Ningún producto coincide con tu búsqueda o filtro.</p>
 					<button
 						onclick={() => { productQuery = ''; categoryFilter = 'all'; }}
-						class="bg-bone border border-hairline text-ink px-5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 transition-colors cursor-pointer"
+						class="btn btn-secondary btn-sm"
 					>
 						Limpiar filtros
 					</button>
@@ -1637,12 +1637,12 @@ async function duplicateProduct(p: Product) {
 								type="search"
 								bind:value={orderQuery}
 								placeholder="Buscar cliente..."
-								class="w-full sm:w-56 pl-10 pr-4 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								class="input pl-10 pr-4 sm:w-56"
 							/>
 						</div>
 						<button
 							onclick={() => exportOrdersPDF()}
-							class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+							class="btn btn-secondary btn-md"
 							title="Exportar PDF"
 						>
 							PDF
@@ -1650,7 +1650,7 @@ async function duplicateProduct(p: Product) {
 						<button
 							onclick={() => exportOrdersCsv(orders, store?.slug ?? '')}
 							disabled={orders.length === 0}
-							class="inline-flex items-center justify-center bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+							class="btn btn-secondary btn-md disabled:opacity-50"
 							title="Exportar a Excel"
 						>
 							Excel
@@ -1658,7 +1658,7 @@ async function duplicateProduct(p: Product) {
 						<button
 							onclick={() => loadOrders()}
 							disabled={ordersLoading}
-							class="inline-flex items-center justify-center gap-1.5 bg-bone border border-hairline text-body px-3.5 py-3 rounded-btn text-sm font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer disabled:opacity-50"
+							class="btn btn-secondary btn-sm disabled:opacity-50"
 							title="Actualizar"
 						>
 							{#if ordersLoading}
@@ -1699,7 +1699,7 @@ async function duplicateProduct(p: Product) {
 					<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
 				</div>
 			{:else if orders.length === 0}
-				<div class="text-center py-12 bg-card border border-hairline rounded-card">
+				<div class="empty-state">
 					<div class="w-12 h-12 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-3">
 						<i class="ri-folder-open-line text-xl text-ember"></i>
 					</div>
@@ -1707,7 +1707,7 @@ async function duplicateProduct(p: Product) {
 					<p class="text-xs text-muted-soft">Cuando un cliente envíe un pedido desde tu tienda, aparecerá aquí.</p>
 				</div>
 			{:else if filteredOrders.length === 0}
-				<div class="text-center py-12 bg-card border border-hairline rounded-card">
+				<div class="empty-state">
 					<div class="w-12 h-12 bg-bone rounded-full flex items-center justify-center mx-auto mb-3">
 						<i class="ri-search-line text-xl text-muted-soft"></i>
 					</div>
@@ -1718,7 +1718,7 @@ async function duplicateProduct(p: Product) {
 							orderQuery = '';
 							orderFilter = 'todos';
 						}}
-						class="bg-bone border border-hairline text-ink px-5 py-2 rounded-btn text-sm font-medium hover:border-ember/50 transition-colors cursor-pointer"
+						class="btn btn-secondary btn-sm"
 					>
 						Limpiar filtros
 					</button>
@@ -1829,7 +1829,7 @@ async function duplicateProduct(p: Product) {
 									href={waLink(order.customer_phone, `Hola ${order.customer_name}, soy de ${store.name}, te escribo por tu pedido (Nº ${order.code ?? order.id.slice(0, 8)}) del ${formatOrderDate(order.created_at)}.`)}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-btn bg-ember text-white hover:bg-ember-active transition-colors no-underline"
+									class="btn btn-3d btn-sm no-underline"
 								>
 									<i class="ri-whatsapp-line"></i>
 									Contactar
@@ -1884,7 +1884,7 @@ async function duplicateProduct(p: Product) {
 					</div>
 					<button
 						onclick={openNewCoupon}
-						class="inline-flex items-center gap-1.5 flex-shrink-0 px-4 py-2.5 bg-ember text-white rounded-btn text-sm font-semibold hover:bg-ember-active transition-colors cursor-pointer"
+						class="btn btn-3d btn-sm flex-shrink-0"
 					>
 						<i class="ri-coupon-line"></i>
 						Crear cupón
@@ -1903,7 +1903,7 @@ async function duplicateProduct(p: Product) {
 									bind:value={couponCode}
 									oninput={(e) => (couponCode = (e.target as HTMLInputElement).value.toUpperCase().replace(/\s+/g, ''))}
 									placeholder="Ej: VERANO10"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input uppercase placeholder:normal-case"
 								/>
 							</div>
 							<div>
@@ -1916,7 +1916,7 @@ async function duplicateProduct(p: Product) {
 									inputmode="decimal"
 									bind:value={couponValue}
 									placeholder={couponType === 'percent' ? 'Ej: 10' : 'Ej: 50'}
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 						</div>
@@ -1942,7 +1942,7 @@ async function duplicateProduct(p: Product) {
 									min="1"
 									bind:value={couponMaxUses}
 									placeholder="Sin límite"
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 							<div>
@@ -1951,7 +1951,7 @@ async function duplicateProduct(p: Product) {
 									id="cp-exp"
 									type="date"
 									bind:value={couponExpiresAt}
-									class="w-full px-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 						</div>
@@ -1962,7 +1962,7 @@ async function duplicateProduct(p: Product) {
 							<button
 								onclick={createCoupon}
 								disabled={couponSaving}
-								class="inline-flex items-center gap-2 px-5 py-2.5 bg-ember text-white rounded-btn text-sm font-semibold hover:bg-ember-active transition-colors cursor-pointer disabled:opacity-50"
+								class="btn btn-3d btn-md disabled:opacity-50"
 							>
 								{#if couponSaving}
 									<i class="ri-loader-4-line animate-spin"></i>
@@ -2053,7 +2053,7 @@ async function duplicateProduct(p: Product) {
 						{#if productImage({ image: store.logo })}
 							<button
 								onclick={handleRemoveLogo}
-								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-error/50 hover:text-error transition-colors cursor-pointer"
+								class="btn btn-danger btn-sm"
 								title="Quitar logo"
 							>
 								<i class="ri-delete-bin-6-line"></i>
@@ -2092,7 +2092,7 @@ async function duplicateProduct(p: Product) {
 									id="s-name"
 									type="text"
 									bind:value={settings.name}
-									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 							<div>
@@ -2105,7 +2105,7 @@ async function duplicateProduct(p: Product) {
 										bind:value={settings.slug}
 										oninput={onSettingsSlugInput}
 										placeholder="username"
-										class="w-full pl-7 pr-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+										class="input pl-7 pr-3.5"
 									/>
 								</div>
 							</div>
@@ -2116,7 +2116,7 @@ async function duplicateProduct(p: Product) {
 								id="s-desc"
 								bind:value={settings.description}
 								rows="2"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+								class="input resize-none"
 							></textarea>
 						</div>
 						<div class="mt-4">
@@ -2171,7 +2171,7 @@ async function duplicateProduct(p: Product) {
 								type="tel"
 								bind:value={settings.whatsapp}
 								placeholder="Ej: +53 5 1234567"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								class="input"
 							/>
 							<p class="text-xs text-muted-soft mt-1.5">Los pedidos de tu tienda llegan a este número por WhatsApp.</p>
 						</div>
@@ -2201,7 +2201,7 @@ async function duplicateProduct(p: Product) {
 									inputmode="decimal"
 									bind:value={settings.usd_rate}
 									placeholder="Ej: 670"
-									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 								{#if settings.usd_rate.trim() && (usdRateParsed === null || Number.isNaN(usdRateParsed))}
 									<p class="text-xs text-error mt-1.5">La tasa debe ser un número mayor que 0.</p>
@@ -2236,7 +2236,7 @@ async function duplicateProduct(p: Product) {
 													type="text"
 													bind:value={pm.title}
 													placeholder="Nombre del método (ej. PayPal, Transfermóvil)"
-													class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													class="input input-sm flex-1 min-w-0"
 												/>
 												<button
 													type="button"
@@ -2254,13 +2254,13 @@ async function duplicateProduct(p: Product) {
 															type="text"
 															bind:value={f.label}
 															placeholder="Etiqueta (Nº de cuenta, correo, titular...)"
-															class="w-1/3 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+															class="input input-sm w-1/3 min-w-0"
 														/>
 														<input
 															type="text"
 															bind:value={f.value}
 															placeholder="Dato copiable"
-															class="flex-1 min-w-0 px-2.5 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+															class="input input-sm flex-1 min-w-0"
 														/>
 														<button
 															type="button"
@@ -2283,7 +2283,7 @@ async function duplicateProduct(p: Product) {
 													bind:value={pm.instructions}
 													rows="2"
 													placeholder="Instrucciones de pago (opcional): 'Paga solo con tu nombre de usuario y envíame la foto del comprobante'..."
-													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+													class="input input-sm resize-none"
 												></textarea>
 											</div>
 										</div>
@@ -2320,7 +2320,7 @@ async function duplicateProduct(p: Product) {
 													type="text"
 													bind:value={settings.delivery.zones[zi].name}
 													placeholder="Zona (ej: La Habana)"
-													class="flex-1 min-w-0 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+class="input input-sm flex-1 min-w-0"
 												/>
 												<input
 													type="number"
@@ -2328,7 +2328,7 @@ async function duplicateProduct(p: Product) {
 													min="0"
 													bind:value={settings.delivery.zones[zi].price}
 													placeholder="Costo"
-													class="w-28 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink text-right placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													class="input input-sm w-28 text-right"
 												/>
 												<button
 													type="button"
@@ -2349,7 +2349,7 @@ async function duplicateProduct(p: Product) {
 									bind:value={settings.delivery.note}
 									rows="2"
 									placeholder="Nota de mensajería (opcional): días de entrega, gratis por compras mayores... (opcional)"
-									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+									class="input resize-none"
 								></textarea>
 							{/if}
 						</div>
@@ -2380,7 +2380,7 @@ async function duplicateProduct(p: Product) {
 											placeholder={net.placeholder}
 											autocomplete="off"
 											spellcheck="false"
-											class="w-full pr-10 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors {net.prefix ? 'pl-8' : 'pl-4'}"
+											class="input pr-10 {net.prefix ? 'pl-8' : 'pl-4'}"
 										/>
 										{#if handle}
 											<button
@@ -2455,7 +2455,7 @@ async function duplicateProduct(p: Product) {
 								<button
 									type="button"
 									onclick={() => (productModalOpen = false)}
-									class="inline-flex items-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-medium transition-all duration-200 hover:bg-ember-active no-underline cursor-pointer"
+									class="btn btn-3d btn-md no-underline"
 								>
 									<i class="ri-close-line"></i>
 									Cerrar
@@ -2469,7 +2469,7 @@ async function duplicateProduct(p: Product) {
 								type="text"
 								bind:value={formName}
 								placeholder="Ej: Pastel de chocolate"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								class="input"
 							/>
 						</div>
 						<div>
@@ -2478,7 +2478,7 @@ async function duplicateProduct(p: Product) {
 								id="p-desc"
 								bind:value={formDescription}
 								rows="2"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors resize-none"
+								class="input resize-none"
 							></textarea>
 						</div>
 						<div class="grid grid-cols-2 gap-3">
@@ -2489,7 +2489,7 @@ async function duplicateProduct(p: Product) {
 									type="text"
 									bind:value={formPrice}
 									placeholder="500"
-									class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+									class="input"
 								/>
 							</div>
 						<div>
@@ -2497,7 +2497,7 @@ async function duplicateProduct(p: Product) {
 							<button
 								type="button"
 								onclick={() => (pickerCurrencyOpen = true)}
-								class="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink hover:border-ember/50 transition-colors cursor-pointer"
+								class="btn btn-secondary btn-md w-full"
 							>
 								<span>{formCurrency}</span>
 								<i class="ri-arrow-down-s-line text-muted"></i>
@@ -2515,7 +2515,7 @@ async function duplicateProduct(p: Product) {
 								inputmode="numeric"
 								bind:value={formStock}
 								placeholder="Vacío = sin control"
-								class="w-full px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+								class="input"
 							/>
 							<p class="text-xs text-muted-soft mt-1.5">Si llega a 0, el producto se marca como agotado.</p>
 						</div>
@@ -2529,7 +2529,7 @@ async function duplicateProduct(p: Product) {
 										type="text"
 										bind:value={formCategory}
 										placeholder="Nueva categoría"
-										class="flex-1 min-w-0 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+										class="input flex-1 min-w-0"
 									/>
 									<button
 										onclick={cancelNewCategory}
@@ -2543,7 +2543,7 @@ async function duplicateProduct(p: Product) {
 								<button
 									type="button"
 									onclick={() => (pickerCategoryOpen = true)}
-									class="w-full flex items-center justify-between gap-2 px-3.5 py-3 bg-canvas border border-hairline rounded-btn text-sm text-ink hover:border-ember/50 transition-colors cursor-pointer"
+									class="btn btn-secondary btn-md w-full"
 								>
 									<span>{formCategory}</span>
 									<i class="ri-arrow-down-s-line text-muted"></i>
@@ -2584,7 +2584,7 @@ async function duplicateProduct(p: Product) {
 															bind:value={variant.stock}
 															placeholder="Stock"
 															title="Stock de esta variante (vacío = sin control)"
-															class="w-24 px-2 py-1 bg-bone border border-hairline rounded-btn text-xs text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+															class="input input-sm w-24 text-xs"
 														/>
 													{/if}
 													<button
@@ -2604,7 +2604,7 @@ async function duplicateProduct(p: Product) {
 													type="text"
 													bind:value={variant.label}
 													placeholder="Ej: Grande, 500 g, Azul..."
-													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													class="input input-sm"
 												/>
 											</div>
 											<div>
@@ -2616,7 +2616,7 @@ async function duplicateProduct(p: Product) {
 													min="0"
 													bind:value={variant.price}
 													placeholder="0"
-													class="w-full px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+													class="input input-sm"
 												/>
 											</div>
 											{#if (variant.options ?? []).length > 0}
@@ -2631,7 +2631,7 @@ async function duplicateProduct(p: Product) {
 																		type="text"
 																		bind:value={opt.label}
 																		placeholder="Ej: Con envío"
-																		class="w-full px-3 py-1.5 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+																		class="input input-sm"
 																	/>
 																</div>
 																<div>
@@ -2643,7 +2643,7 @@ async function duplicateProduct(p: Product) {
 																		min="0"
 																		bind:value={opt.price}
 																		placeholder="0"
-																		class="w-full px-3 py-1.5 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+																		class="input input-sm"
 																	/>
 																</div>
 															</div>
@@ -2660,7 +2660,7 @@ async function duplicateProduct(p: Product) {
 																		bind:value={opt.stock}
 																		placeholder="Stock"
 																		title="Stock de esta opción (vacío = sin control)"
-																		class="w-24 px-2 py-1 bg-bone border border-hairline rounded-btn text-xs text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+class="input input-sm w-24 text-xs"
 																	/>
 																{/if}
 																<button
@@ -2711,7 +2711,7 @@ async function duplicateProduct(p: Product) {
 												type="text"
 												bind:value={formAskList[i]}
 												placeholder="Ej: ID de Free Fire"
-												class="flex-1 min-w-0 px-3 py-2 bg-bone border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember transition-colors"
+												class="input input-sm flex-1 min-w-0"
 											/>
 											<button
 												type="button"
@@ -2763,7 +2763,7 @@ async function duplicateProduct(p: Product) {
 								</div>
 							{/if}
 							<label
-								class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
+class="btn btn-secondary btn-sm"
 								title="Subir fotos"
 							>
 								<i class="ri-image-add-line"></i>
@@ -2886,7 +2886,7 @@ async function duplicateProduct(p: Product) {
 					<a
 						href={qrDataUrl}
 						download={`qr-${store.slug}.png`}
-						class="w-full inline-flex items-center justify-center gap-2 bg-ember text-white px-5 py-3 rounded-btn text-sm font-semibold transition-all duration-200 hover:bg-ember-active no-underline"
+						class="btn btn-3d btn-md w-full no-underline"
 					>
 						<i class="ri-download-2-line"></i>
 						Descargar PNG

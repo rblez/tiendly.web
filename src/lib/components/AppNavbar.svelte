@@ -102,14 +102,14 @@
 			<div class="flex flex-col sm:flex-row gap-3">
 				<button
 					onclick={() => (logoutOpen = false)}
-					class="flex-1 px-5 py-2.5 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer"
+					class="btn btn-secondary btn-md flex-1 cursor-pointer"
 				>
 					Cancelar
 				</button>
 				<button
 					onclick={confirmLogout}
 					disabled={loggingOut}
-					class="flex-1 inline-flex items-center justify-center gap-2 bg-error text-white px-5 py-2.5 rounded-btn text-sm font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+					class="btn btn-danger btn-md flex-1 disabled:opacity-50"
 				>
 					<i class="ri-logout-box-r-line"></i>
 					{loggingOut ? 'Saliendo...' : 'Cerrar sesión'}
