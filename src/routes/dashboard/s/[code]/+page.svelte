@@ -1153,7 +1153,7 @@ async function duplicateProduct(p: Product) {
 						{#if unreadOrders > 0}
 							<span
 								class={`ml-auto min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center text-[10px] font-bold rounded-full tabular-nums ${
-									tab === 'pedidos' ? 'bg-white text-ink' : 'bg-ember text-white'
+									tab === 'pedidos' ? 'bg-white text-[#111827]' : 'bg-ember text-white'
 								}`}
 							>
 								{unreadOrders}
@@ -1225,7 +1225,7 @@ async function duplicateProduct(p: Product) {
 					>
 						Pedidos
 						{#if unreadOrders > 0}
-							<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-ink rounded-full tabular-nums">
+							<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-[#111827] rounded-full tabular-nums">
 								{unreadOrders}
 							</span>
 						{/if}
