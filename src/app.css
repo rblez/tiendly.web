@@ -72,7 +72,7 @@ html {
 	--color-ember-active: var(--accent-active);
 	--color-glow: var(--c-glow);
 
-	--font-sans: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 	--font-display: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -103,6 +103,34 @@ html {
 }
 
 /* ============ FONTS ============ */
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('/fonts/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/inter-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('/fonts/inter-latin-700-normal.woff2') format('woff2');
+}
 @font-face {
 	font-family: 'General Sans';
 	font-style: normal;
@@ -149,6 +177,7 @@ h4,
 h5,
 h6 {
 	font-family: var(--font-display);
+	letter-spacing: -0.02em;
 }
 
 h1 {
@@ -165,7 +194,7 @@ h3 {
 }
 
 button {
-	font-family: var(--font-display);
+	font-family: var(--font-sans);
 }
 
 input[type='color'] {

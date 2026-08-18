@@ -216,7 +216,10 @@
 						<i class="ri-time-line"></i>
 						Tu vista previa expiró y la tienda se eliminó.
 					</span>
-					<a href="/wizard" class="inline-flex items-center gap-1.5 bg-white text-ink px-3.5 py-1.5 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline">
+					<a
+						href="/wizard"
+						class="inline-flex items-center gap-1.5 bg-white text-ink px-4 py-2 rounded-full text-xs font-bold border border-black/5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] hover:bg-white/90 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.3)] active:translate-y-0 transition-all no-underline"
+					>
 						<i class="ri-store-2-line"></i>
 						Crear tienda de nuevo
 					</a>
@@ -232,7 +235,7 @@
 					<span class="hidden sm:inline text-white/85">Actívalla gratis creando tu cuenta:</span>
 					<a
 						href={`/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}`}
-						class="inline-flex items-center gap-1.5 bg-white text-ink px-3.5 py-1.5 rounded-full text-xs font-bold hover:opacity-90 transition-opacity no-underline"
+						class="inline-flex items-center gap-1.5 bg-white text-ink px-4 py-2 rounded-full text-xs font-bold border border-black/5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] hover:bg-white/90 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.3)] active:translate-y-0 transition-all no-underline"
 					>
 						<i class="ri-rocket-line"></i>
 						Activar gratis
