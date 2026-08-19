@@ -73,17 +73,14 @@
 			<form onsubmit={handleReset} class="space-y-4 fade-up" style="animation-delay: 0.12s">
 				<div>
 					<label for="reset-email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
-					<div class="relative">
-						<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
-						<input
+					<input
 							id="reset-email"
 							type="email"
 							required
 							bind:value={resetEmail}
 							placeholder="tu@correo.com"
-							class="input pl-11 pr-4"
+							class="input px-4"
 						/>
-					</div>
 				</div>
 
 				{#if resetError}
