@@ -10,6 +10,8 @@ import { supabase } from '$lib/supabase/client';
 	import { exportOrdersCsv, exportProductsCsv } from '$lib/export';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 import OptionModal from '$lib/components/OptionModal.svelte';
+	import StoreSidebar from '$lib/components/dashboard/StoreSidebar.svelte';
+	import ProfileSidebar from '$lib/components/dashboard/ProfileSidebar.svelte';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import { STORE_CATEGORIES } from '$lib/categories';
@@ -1168,131 +1170,17 @@ async function duplicateProduct(p: Product) {
 			</div>
 		</div>
 	{:else}
-		<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
-			<aside class="hidden lg:flex flex-col gap-4">
-				<nav class="bg-card border border-hairline rounded-card p-2 space-y-1">
-					<a
-						href="?tab=resumen"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Resumen
-					</a>
-					<a
-						href="?tab=productos"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Productos
-					</a>
-					<a
-						href="?tab=pedidos"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Pedidos
-						{#if unreadOrders > 0}
-							<span
-								class={`ml-auto min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center text-[10px] font-bold rounded-full tabular-nums ${
-									tab === 'pedidos' ? 'bg-white text-[#111827]' : 'bg-ember text-white'
-								}`}
-							>
-								{unreadOrders}
-							</span>
-						{/if}
-					</a>
-					<a
-						href="?tab=cupones"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'cupones' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Cupones
-					</a>
-					<a
-						href="?tab=apariencia"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Apariencia
-					</a>
-					<a
-						href="?tab=configuracion"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Configuración
-					</a>
-				</nav>
-				<div class="bg-card border border-hairline rounded-card divide-y divide-hairline-soft text-sm">
-					<div class="px-5 py-3.5 flex items-center justify-between gap-2">
-						<span class="text-muted">Visitas 7d</span>
-						<span class="font-bold text-ink tabular-nums">{visitTotal}</span>
-					</div>
-					<div class="px-5 py-3.5 flex items-center justify-between gap-2">
-						<span class="text-muted">Pedidos</span>
-						<span class="font-bold text-ink tabular-nums">{orders.length}</span>
-					</div>
-					<div class="px-5 py-3.5 flex items-center justify-between gap-2">
-						<span class="text-muted">Productos</span>
-						<span class="font-bold text-ink tabular-nums">
-							{products.length}
-							{#if Number.isFinite(productLimit)}
-								<span class="font-semibold text-muted-soft">/{productLimit}</span>
-							{/if}
-						</span>
-					</div>
-				</div>
-		</aside>
-			<div class="min-w-0">
-				<div class="lg:hidden flex gap-1 bg-card border border-hairline rounded-btn p-1 mb-3 overflow-x-auto">
-					<a
-						href="?tab=resumen"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Resumen
-					</a>
-					<a
-						href="?tab=productos"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'productos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Productos
-					</a>
-					<a
-						href="?tab=pedidos"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'pedidos' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Pedidos
-						{#if unreadOrders > 0}
-							<span class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-white text-[#111827] rounded-full tabular-nums">
-								{unreadOrders}
-							</span>
-						{/if}
-					</a>
-					<a
-						href="?tab=cupones"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'cupones' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Cupones
-					</a>
-					<a
-						href="?tab=apariencia"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Apariencia
-					</a>
-					<a
-						href="?tab=configuracion"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Configuración
-					</a>
-				</div>
+		<div class="mt-4 lg:flex lg:items-start lg:gap-5">
+			<StoreSidebar
+				store={store}
+				tab={tab}
+				unreadOrders={unreadOrders}
+				visitTotal={visitTotal}
+				ordersCount={orders.length}
+				productsCount={products.length}
+				productLimit={productLimit}
+			/>
+			<div class="min-w-0 flex-1">
 				<div class="lg:hidden grid grid-cols-3 gap-3 mb-5">
 					<div class="bg-card border border-hairline rounded-card px-4 py-3.5">
 						<p class="text-xs text-muted mb-1">Visitas</p>
@@ -2452,6 +2340,7 @@ class="input input-sm flex-1 min-w-0"
 			</div>
 		{/if}
 			</div>
+			<ProfileSidebar />
 		</div>
 
 		{#if (tab === 'apariencia' || tab === 'configuracion') && dirty}
