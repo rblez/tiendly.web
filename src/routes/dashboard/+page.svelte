@@ -275,14 +275,11 @@
 	{/if}
 
 	{#if loading}
-		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-			{#each Array(3) as _, i}
-				<div class="bg-card border border-hairline rounded-card p-6 animate-pulse">
-					<div class="h-5 bg-bone rounded w-1/2 mb-4"></div>
-					<div class="h-3 bg-bone rounded w-3/4 mb-2"></div>
-					<div class="h-3 bg-bone rounded w-2/3"></div>
-				</div>
-			{/each}
+		<div class="flex items-center justify-center py-24">
+			<div class="flex flex-col items-center gap-3">
+				<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
+				<p class="text-sm text-muted">Cargando tus tiendas...</p>
+			</div>
 		</div>
 	{:else if stores.length === 0}
 		<div class="empty-state">
@@ -306,7 +303,7 @@
 						<div class="flex items-start gap-3 pr-10">
 							<div class="h-12 w-12 rounded-xl overflow-hidden bg-canvas border border-hairline flex-shrink-0">
 								{#if store.logo}
-									<img src={store.logo} alt={store.name} class="h-full w-full object-cover" />
+									<img src={store.logo} alt={store.name} class="h-full w-full object-cover" loading="lazy" />
 								{:else}
 									<span class="h-full w-full flex items-center justify-center bg-ember text-canvas font-black text-lg select-none">
 										{store.name.charAt(0).toUpperCase()}

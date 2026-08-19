@@ -6,6 +6,8 @@
 	import TrackOrderModal from '$lib/components/TrackOrderModal.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { PUBLIC_SUPABASE_URL } from '$env/static/public';
+	import { cart } from '$lib/stores/cart.svelte';
+	import { currency } from '$lib/stores/currency.svelte';
 	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
@@ -29,6 +31,11 @@
 		previewToken = data.preview?.token ?? null;
 		secondsLeft = 0;
 		previewExpired = false;
+	});
+
+	$effect(() => {
+		cart.init();
+		currency.init();
 	});
 
 	$effect(() => {

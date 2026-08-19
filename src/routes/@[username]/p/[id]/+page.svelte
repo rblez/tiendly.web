@@ -31,12 +31,14 @@
 	let added = $state(false);
 
 	$effect(() => {
-		product = data.product;
-		selectedVariant = firstAvailable();
-		selectedOption = null;
-		imgError = false;
-		activeIndex = 0;
-		added = false;
+		if (product.id !== data.product.id) {
+			product = data.product;
+			selectedVariant = firstAvailable();
+			selectedOption = null;
+			imgError = false;
+			activeIndex = 0;
+			added = false;
+		}
 	});
 
 	$effect(() => {

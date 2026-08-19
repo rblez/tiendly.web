@@ -87,11 +87,10 @@ function createCartStore() {
 		return items.reduce((sum, i) => sum + i.quantity, 0);
 	}
 
-	init();
-
 	return {
 		get items() { return items; },
 		get storeSlug() { return storeSlug; },
+		init,
 		addItem,
 		removeItem,
 		updateQuantity,

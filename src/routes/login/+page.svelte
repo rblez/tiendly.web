@@ -30,29 +30,40 @@
 		return typeof body?.code === 'string' ? body.code : null;
 	}
 
+	function navigate(url: string) {
+		goto(url).catch(() => {
+			window.location.href = url;
+		});
+	}
+
 	async function afterAuth() {
 		if (previewToken && !claimed) {
 			claimed = true;
 			const storeCode = await claimPreview();
 			if (storeCode) {
-				goto(`/dashboard/s/${storeCode}?created=1`);
+				navigate(`/dashboard/s/${storeCode}?created=1`);
 				return;
 			}
 		}
-		goto('/dashboard');
+		navigate('/dashboard');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		error = '';
 		loading = true;
-		const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
-		loading = false;
-		if (err) {
-			error = friendlyAuthError(err.message);
-			return;
+		try {
+			const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
+			if (err) {
+				error = friendlyAuthError(err.message);
+				return;
+			}
+			await afterAuth();
+		} catch {
+			error = 'No se pudo conectar. Revisa tu conexión e intenta de nuevo.';
+		} finally {
+			loading = false;
 		}
-		await afterAuth();
 	}
 
 	function friendlyAuthError(message: string): string {

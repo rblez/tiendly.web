@@ -368,11 +368,7 @@ $effect(() => {
 				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
 				if (target) openEditProduct(target as Product);
 			}
-		await loadOrders(!!cached);
-		await loadCoupons();
-		await loadVisitChart();
-		await loadSocialClicks();
-		await loadSources();
+		await Promise.all([loadOrders(!!cached), loadCoupons(), loadVisitChart(), loadSocialClicks(), loadSources()]);
 		loading = false;
 		storeSnapshots.set(storeCode, {
 			storeData: storeData,
@@ -1165,12 +1161,11 @@ async function duplicateProduct(p: Product) {
 			<a href="/dashboard" class="inline-block mt-4 text-ember text-sm font-medium no-underline">Volver a mis tiendas</a>
 		</div>
 	{:else if loading || !store}
-		<div class="space-y-3">
-			{#each Array(4) as _, i}
-				<div class="bg-card border border-hairline rounded-card p-4 animate-pulse">
-					<div class="h-4 bg-bone rounded w-1/3"></div>
-				</div>
-			{/each}
+		<div class="flex items-center justify-center py-24">
+			<div class="flex flex-col items-center gap-3">
+				<i class="ri-loader-4-line animate-spin text-2xl text-ember"></i>
+				<p class="text-sm text-muted">Cargando tu tienda...</p>
+			</div>
 		</div>
 	{:else}
 		<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
@@ -1584,7 +1579,7 @@ async function duplicateProduct(p: Product) {
 						<div class="bg-card border border-hairline rounded-card group relative">
 							<div class="relative aspect-square bg-canvas">
 								{#if productImage(product)}
-									<img src={productImage(product)!} alt={product.name} class="w-full h-full object-cover rounded-t-card" />
+									<img src={productImage(product)!} alt={product.name} class="w-full h-full object-cover rounded-t-card" loading="lazy" />
 								{:else}
 									<div class="w-full h-full rounded-t-card flex items-center justify-center">
 										<i class="ri-image-line text-2xl text-muted-soft"></i>
@@ -2796,7 +2791,7 @@ class="input input-sm w-24 text-xs"
 								<div class="flex flex-wrap gap-2 mb-3">
 									{#each formImages as url, i}
 										<div class="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-canvas border border-hairline group">
-											<img src={url} alt={`Foto ${i + 1}`} class="w-full h-full object-cover" />
+											<img src={url} alt={`Foto ${i + 1}`} class="w-full h-full object-cover" loading="lazy" />
 											<button
 												onclick={() => formImages = formImages.filter((_, idx) => idx !== i)}
 												class="absolute top-0.5 right-0.5 w-5 h-5 flex items-center justify-center rounded-full bg-black/60 text-white text-xs hover:bg-error transition-colors cursor-pointer"

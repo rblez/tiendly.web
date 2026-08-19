@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { convertPrice, currencyRate, formatPrice, vendorCurrency } from '$lib/utils';
 import type { Store } from '$lib/types';
 
@@ -30,6 +29,10 @@ export const currency = (() => {
 				// sin storage
 			}
 		},
+		init() {
+			const stored = loadStored();
+			if (stored) display = stored;
+		},
 		reset() {
 			display = '';
 			try {
@@ -40,11 +43,6 @@ export const currency = (() => {
 		},
 	};
 })();
-
-if (browser) {
-	const stored = loadStored();
-	if (stored) currency.set(stored);
-}
 
 export function availableCurrencies(store: Store | null | undefined): string[] {
 	const map = store?.exchange_rates;
