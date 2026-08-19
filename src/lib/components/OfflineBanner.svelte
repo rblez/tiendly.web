@@ -2,11 +2,22 @@
 	let online = $state(true);
 	let dismissed = $state(false);
 
+	const DISMISS_KEY = 'tiendly.offline.dismissed';
+
 	$effect(() => {
 		online = navigator.onLine;
 
-		function handleOnline() { online = true; dismissed = false; }
-		function handleOffline() { online = false; dismissed = false; }
+		if (!online) dismissed = sessionStorage.getItem(DISMISS_KEY) === '1';
+
+		function handleOnline() {
+			online = true;
+			dismissed = false;
+			sessionStorage.removeItem(DISMISS_KEY);
+		}
+		function handleOffline() {
+			online = false;
+			dismissed = false;
+		}
 
 		window.addEventListener('online', handleOnline);
 		window.addEventListener('offline', handleOffline);
@@ -16,29 +27,38 @@
 			window.removeEventListener('offline', handleOffline);
 		};
 	});
+
+	function dismiss() {
+		dismissed = true;
+		sessionStorage.setItem(DISMISS_KEY, '1');
+	}
 </script>
 
 {#if !online && !dismissed}
-	<div class="fixed bottom-0 inset-x-0 z-[70] p-4 sm:p-6 pointer-events-none">
-		<div class="max-w-md mx-auto bg-card border border-hairline rounded-card p-5 shadow-2xl pointer-events-auto">
-			<div class="flex items-start gap-3">
-				<div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-ember/10 rounded-full">
-					<i class="ri-wifi-off-line text-xl text-ember"></i>
-				</div>
-				<div class="flex-1 min-w-0">
-					<p class="text-sm font-semibold text-ink">Sin conexión a internet</p>
-					<p class="text-xs text-body mt-1">
-						Puedes seguir navegando y armando tu pedido. Cuando recuperes conexión podrás enviarlo.
-					</p>
-				</div>
-				<button
-					onclick={() => dismissed = true}
-					class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-muted-soft hover:text-ink transition-colors cursor-pointer"
-					aria-label="Cerrar"
-				>
-					<i class="ri-close-line text-sm"></i>
-				</button>
-			</div>
+	<div
+		class="fixed top-0 inset-x-0 z-[80] pointer-events-none"
+		role="status"
+		aria-live="polite"
+	>
+		<div
+			class="pointer-events-auto bg-neutral-900/95 backdrop-blur text-white text-xs sm:text-sm font-medium px-4 py-2 flex items-center justify-center gap-2 shadow-lg animate-[offline-in_.25s_ease]"
+		>
+			<i class="ri-wifi-off-line text-sm text-ember flex-shrink-0"></i>
+			<span class="truncate">Sin conexión — puedes seguir navegando, pero no podrás enviar el pedido hasta reconectar.</span>
+			<button
+				onclick={dismiss}
+				class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+				aria-label="Cerrar aviso"
+			>
+				<i class="ri-close-line text-sm"></i>
+			</button>
 		</div>
 	</div>
 {/if}
+
+<style>
+	@keyframes offline-in {
+		from { transform: translateY(-100%); }
+		to { transform: translateY(0); }
+	}
+</style>

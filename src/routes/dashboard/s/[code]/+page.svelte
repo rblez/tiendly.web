@@ -18,6 +18,19 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	type Tab = 'resumen' | 'productos' | 'pedidos' | 'cupones' | 'apariencia' | 'configuracion';
 	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'cupones', 'apariencia', 'configuracion'];
 
+	// Caché por código de tienda: evita el skeleton y el salto de layout al volver
+	// a una tienda ya cargada en esta sesión (navegación atrás o entre pestañas).
+	type StoreRow = Database['public']['Tables']['stores']['Row'];
+	type StoreSnapshot = {
+		storeData: StoreRow & Record<string, unknown>;
+		products: Product[];
+		orders: Order[];
+		visitChart: VisitDay[];
+		socialClicks: SocialClickRow[];
+		sources: SourceRow[];
+	};
+	const storeSnapshots = new Map<string, StoreSnapshot>();
+
 	let store = $state<Store | null>(null);
 	let products = $state<Product[]>([]);
 	let orders = $state<Order[]>([]);
@@ -260,12 +273,72 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		formCategory = categories[0] ?? 'General';
 	}
 
+function applyStoreData(storeData: Database['public']['Tables']['stores']['Row'] & Record<string, unknown>) {
+		store = storeData as unknown as Store;
+		hasActionColumn = 'action' in storeData;
+		hasCurrencyColumn = 'currency' in storeData;
+		settings = {
+			name: storeData.name,
+			slug: storeData.slug,
+			description: storeData.description ?? '',
+			category: storeData.category ?? '',
+			whatsapp: storeData.whatsapp ?? '',
+			theme_color: storeData.theme_color,
+			active: storeData.active,
+			action: (storeData as { action?: string }).action === 'whatsapp' ? 'whatsapp' : 'sin_contactar',
+			currency: ((storeData as { currency?: string | null }).currency ?? 'CUP') as string,
+			exchange_rate: ((storeData as { exchange_rate?: number | null }).exchange_rate ?? '') === '' ? '' : String((storeData as { exchange_rate?: number | null }).exchange_rate ?? ''),
+			usd_rate: loadUsdRate(storeData),
+			show_cup: loadShowCup(storeData),
+			extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
+			location: storeData.location ?? '',
+			schedule: storeData.schedule ?? '',
+			payments: ((storeData as { payments?: PaymentMethod[] | null }).payments ?? [])
+				.map((p) => migratePayment(p))
+				.filter((p): p is PaymentMethod => p !== null),
+			delivery: {
+				enabled: !!((storeData as { delivery?: DeliveryConfig | null }).delivery)?.enabled,
+				zones: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.zones ?? [],
+				note: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.note ?? '',
+			},
+		};
+		const rawSocial = (storeData as { social?: Record<string, unknown> | null }).social;
+		social = {};
+		for (const net of SOCIAL_NETWORKS) {
+			const val = rawSocial?.[net.key];
+			if (typeof val === 'string' && val.trim()) social[net.key] = val;
+		}
+		initialSettings = JSON.stringify(settings);
+		initialSocial = JSON.stringify(social);
+		editingStoreId = storeData.id as string;
+	}
+
+	function normalizeProducts(data: unknown): Product[] {
+		return ((data as Product[] | null) ?? []).map((p) => ({
+			...p,
+			variants: Array.isArray(p.variants) ? p.variants : [],
+			images: Array.isArray(p.images) ? p.images : [],
+			ask: Array.isArray(p.ask) ? p.ask : [],
+		}));
+	}
+
 $effect(() => {
 		if (!auth.ready || !auth.session) return;
 		const storeCode = $page.params.code;
 		if (!storeCode) return;
 		(async () => {
-			loading = true;
+			const cached = storeSnapshots.get(storeCode);
+			if (cached) {
+				applyStoreData(cached.storeData);
+				products = cached.products;
+				orders = cached.orders;
+				visitChart = cached.visitChart;
+				socialClicks = cached.socialClicks;
+				sourceRows = cached.sources;
+				loading = false;
+			} else {
+				loading = true;
+			}
 			try {
 			const { data: storeData } = await supabase
 				.from('stores')
@@ -277,54 +350,13 @@ $effect(() => {
 				loading = false;
 				return;
 			}
-			store = storeData as unknown as Store;
-			hasActionColumn = 'action' in storeData;
-			hasCurrencyColumn = 'currency' in storeData;
-			settings = {
-				name: storeData.name,
-				slug: storeData.slug,
-				description: storeData.description ?? '',
-				category: storeData.category ?? '',
-				whatsapp: storeData.whatsapp ?? '',
-				theme_color: storeData.theme_color,
-				active: storeData.active,
-				action: ((storeData as { action?: string }).action === 'whatsapp' ? 'whatsapp' : 'sin_contactar') as string,
-				currency: ((storeData as { currency?: string | null }).currency ?? 'CUP') as string,
-				exchange_rate: ((storeData as { exchange_rate?: number | null }).exchange_rate ?? '') === '' ? '' : String((storeData as { exchange_rate?: number | null }).exchange_rate ?? ''),
-				usd_rate: loadUsdRate(storeData),
-				show_cup: loadShowCup(storeData),
-				extra_links: Array.isArray(storeData.extra_links) ? (storeData.extra_links as { title: string; url: string }[]) : [],
-				location: storeData.location ?? '',
-				schedule: storeData.schedule ?? '',
-				payments: ((storeData as { payments?: PaymentMethod[] | null }).payments ?? [])
-				.map((p) => migratePayment(p))
-				.filter((p): p is PaymentMethod => p !== null),
-				delivery: {
-					enabled: !!((storeData as { delivery?: DeliveryConfig | null }).delivery)?.enabled,
-					zones: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.zones ?? [],
-					note: ((storeData as { delivery?: DeliveryConfig | null }).delivery)?.note ?? '',
-				},
-			};
-			const rawSocial = (storeData as { social?: Record<string, unknown> | null }).social;
-			social = {};
-			for (const net of SOCIAL_NETWORKS) {
-				const val = rawSocial?.[net.key];
-				if (typeof val === 'string' && val.trim()) social[net.key] = val;
-			}
-			initialSettings = JSON.stringify(settings);
-			initialSocial = JSON.stringify(social);
-			editingStoreId = storeData.id;
+			applyStoreData(storeData);
 			const { data: productsData } = await supabase
 				.from('products')
 				.select('*')
 				.eq('store_id', storeData.id)
 				.order('position', { ascending: true });
-			products = (productsData as Product[] | null)?.map((p) => ({
-			...p,
-			variants: Array.isArray(p.variants) ? p.variants : [],
-			images: Array.isArray(p.images) ? p.images : [],
-			ask: Array.isArray(p.ask) ? p.ask : [],
-		})) ?? [];
+			products = normalizeProducts(productsData);
 			if (!hasAskColumn && (productsData ?? []).length > 0) {
 				hasAskColumn = 'ask' in (productsData as object[])[0];
 			}
@@ -336,12 +368,20 @@ $effect(() => {
 				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
 				if (target) openEditProduct(target as Product);
 			}
-		await loadOrders();
+		await loadOrders(!!cached);
 		await loadCoupons();
 		await loadVisitChart();
 		await loadSocialClicks();
 		await loadSources();
 		loading = false;
+		storeSnapshots.set(storeCode, {
+			storeData: storeData,
+			products: [...products],
+			orders: [...orders],
+			visitChart: [...visitChart],
+			socialClicks: [...socialClicks],
+			sources: [...sourceRows],
+		});
 			} catch {
 				error = 'No se pudo cargar la tienda. Inténtalo de nuevo.';
 			} finally {
@@ -728,6 +768,8 @@ $effect(() => {
 			images: Array.isArray(p.images) ? p.images : [],
 			ask: Array.isArray(p.ask) ? p.ask : [],
 		})) ?? [];
+		const snap = storeSnapshots.get($page.params.code ?? '');
+		if (snap) snap.products = [...products];
 	}
 
 	async function loadOrders(silent = false) {
@@ -1048,7 +1090,11 @@ $effect(() => {
 
 	async function reloadStore() {
 		const { data } = await supabase.from('stores').select('*').eq('id', editingStoreId).maybeSingle();
-		if (data) store = data as unknown as Store;
+		if (data) {
+			store = data as unknown as Store;
+			const snap = storeSnapshots.get($page.params.code ?? '');
+			if (snap) snap.storeData = data;
+		}
 	}
 
 async function duplicateProduct(p: Product) {

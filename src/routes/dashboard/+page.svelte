@@ -8,6 +8,10 @@
 
 	type StoreStats = Record<string, { products: number; orders: number; visits: number }>;
 
+	// Caché de la sesión: evita skeleton y salto de layout al volver a /dashboard
+	let cachedStores: Store[] = [];
+	let cachedStats: StoreStats = {};
+
 	let stores = $state<Store[]>([]);
 	let stats = $state<StoreStats>({});
 	let loading = $state(true);
@@ -136,15 +140,18 @@
 			return;
 		}
 		stores = stores.filter((s) => s.id !== target.id);
+		cachedStores = [...stores];
 		deleteTarget = null;
 	}
 
 	async function toggleActive(store: Store) {
 		const next = !store.active;
 		stores = stores.map((s) => (s.id === store.id ? { ...s, active: next } : s));
+		cachedStores = [...stores];
 		const { error } = await supabase.from('stores').update({ active: next }).eq('id', store.id);
 		if (error) {
 			stores = stores.map((s) => (s.id === store.id ? { ...s, active: !next } : s));
+			cachedStores = [...stores];
 		}
 	}
 
@@ -152,7 +159,7 @@
 	const atLimit = $derived(stores.length >= (plan.limitStores ?? Infinity));
 
 	async function loadStores() {
-		loading = true;
+		loading = cachedStores.length === 0;
 		loadError = '';
 		try {
 			const [storesRes, productsRes, ordersRes, visitRes] = await Promise.all([
@@ -180,6 +187,8 @@
 				if (acc[row.store_id]) acc[row.store_id].visits += row.visits;
 			}
 			stats = acc;
+			cachedStores = storeRows;
+			cachedStats = acc;
 		} catch {
 			loadError = 'No se pudieron cargar tus tiendas. Inténtalo de nuevo.';
 		} finally {
@@ -189,6 +198,11 @@
 
 	$effect(() => {
 		if (!auth.ready || !auth.session) return;
+		if (cachedStores.length > 0 && stores.length === 0) {
+			stores = cachedStores;
+			stats = cachedStats;
+			loading = false;
+		}
 		loadStores();
 	});
 </script>
