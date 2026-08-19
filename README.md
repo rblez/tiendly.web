@@ -3,7 +3,6 @@
 **Tu tienda online, sin intermediarios.** Plataforma multi-tienda para crear un catálogo público en minutos y recibir pedidos directo por WhatsApp. Sin plataformas de pago ajenas, sin comisiones por venta.
 
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-ff3e00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
-[![Svelte](https://img.shields.io/badge/Svelte-5-runes-ff3e00?logo=svelte&logoColor=white)](https://svelte.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white)](https://vercel.com)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
