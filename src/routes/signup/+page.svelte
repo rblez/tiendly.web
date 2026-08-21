@@ -129,19 +129,23 @@
 			</div>
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
-				<input
+				<div class="relative">
+					<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<input
 						id="email"
 						type="email"
 						required
 						bind:value={email}
 						placeholder="tu@correo.com"
 						autocomplete="email"
-						class="input px-4"
+						class="input pl-11 pr-4"
 					/>
+				</div>
 			</div>
 			<div>
 				<label for="password" class="block text-sm font-medium text-body mb-1.5">Contraseña</label>
 				<div class="relative">
+					<i class="ri-lock-2-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
@@ -150,7 +154,7 @@
 						bind:value={password}
 						placeholder="Mínimo 6 caracteres"
 						autocomplete="new-password"
-						class="input pl-4 pr-12"
+						class="input pl-11 pr-12"
 					/>
 					<button
 						type="button"
