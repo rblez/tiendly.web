@@ -2139,14 +2139,14 @@ async function duplicateProduct(p: Product) {
 							<div>
 								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
 								<div class="relative">
-									<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">@</span>
+									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">@</span>
 									<input
 										id="s-slug"
 										type="text"
 										bind:value={settings.slug}
 										oninput={onSettingsSlugInput}
 										placeholder="username"
-										class="input pl-7 pr-3.5"
+										class="input pl-8 pr-3"
 									/>
 								</div>
 							</div>

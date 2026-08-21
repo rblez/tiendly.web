@@ -410,7 +410,10 @@ select option {
 /* ---- Inputs ---- */
 .input {
 	width: 100%;
-	padding: 0.625rem 0.875rem;
+	padding-top: 0.625rem;
+	padding-bottom: 0.625rem;
+	padding-left: 0.875rem;
+	padding-right: 0.875rem;
 	background-color: var(--color-canvas);
 	border: 1px solid var(--color-hairline);
 	border-radius: var(--radius-btn);
@@ -430,7 +433,10 @@ select option {
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .input-sm {
-	padding: 0.45rem 0.75rem;
+	padding-top: 0.45rem;
+	padding-bottom: 0.45rem;
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
 	font-size: 0.8125rem;
 }
 
