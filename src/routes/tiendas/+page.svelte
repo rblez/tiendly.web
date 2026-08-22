@@ -2,9 +2,9 @@
 	import { page } from '$app/stores';
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
-	import { STORE_CATEGORIES, categoryInfo } from '$lib/categories';
+	import { categoryInfo } from '$lib/categories';
 
-	let { data }: { data: { stores: Array<{ id: string; name: string; slug: string; logo: string | null; description: string | null; category: string | null }>; visits: Record<string, number> } } = $props();
+	let { data }: { data: { stores: Array<{ id: string; name: string; slug: string; logo: string | null; description: string | null; category: string | null; created_at: string }>; visits: Record<string, number> } } = $props();
 
 	let query = $state('');
 	let selectedCategory = $state('');
@@ -41,13 +41,6 @@
 			.sort((a, b) => b.visits - a.visits);
 	});
 
-	const categoryGrid = $derived.by(() =>
-		STORE_CATEGORIES.map((c) => ({
-			...c,
-			count: data.stores.filter((s) => s.category === c.name || (categoryInfo(s.category)?.name ?? s.category) === c.name).length,
-		})).filter((c) => c.count > 0)
-	);
-
 	function setCategory(name: string) {
 		selectedCategory = selectedCategory === name ? '' : name;
 		syncUrl();
@@ -59,6 +52,14 @@
 		if (selectedCategory) p.set('cat', selectedCategory);
 		const qs = p.toString();
 		history.replaceState(null, '', qs ? `/tiendas?${qs}` : '/tiendas');
+	}
+
+	function fmtDate(iso: string): string {
+		try {
+			return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+		} catch {
+			return '';
+		}
 	}
 </script>
 
@@ -83,26 +84,6 @@
 			class="input"
 		/>
 	</div>
-
-	{#if categoryGrid.length > 0}
-		<section class="mb-10">
-			<h2 class="text-sm font-bold text-ink uppercase tracking-wide mb-4">Explora por categoría</h2>
-			<div class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-				{#each categoryGrid as c}
-					<a
-						href={`/tiendas?cat=${encodeURIComponent(c.name)}`}
-						class="bg-card border border-hairline rounded-card p-4 no-underline hover:border-ember/50 transition-colors flex flex-col"
-					>
-						<span class="font-bold text-ink text-sm leading-tight">{c.name}</span>
-						<span class="text-xs text-muted-soft leading-snug mb-2 flex-1">{c.desc}</span>
-						<span class="text-[11px] font-semibold text-ember">
-							{c.count} {c.count === 1 ? 'tienda' : 'tiendas'}
-						</span>
-					</a>
-				{/each}
-			</div>
-		</section>
-	{/if}
 
 	{#if allCategories.length > 0}
 		<div class="flex flex-wrap gap-2 mb-10">
@@ -139,39 +120,41 @@
 			</button>
 		</div>
 	{:else}
-		<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-			{#each filtered as s}
-				<a href={`/@${s.slug}`} class="bg-card border border-hairline rounded-card p-5 no-underline hover:border-ember/40 transition-colors flex flex-col">
-					<div class="flex items-center gap-3 mb-3">
-						{#if s.logo}
-							<img src={s.logo} alt={s.name} class="h-12 w-12 object-cover rounded-lg bg-canvas" loading="lazy" />
-						{:else}
-							<span class="h-12 w-12 flex items-center justify-center rounded-lg bg-ember text-canvas font-black text-lg select-none">
-								{s.name.charAt(0).toUpperCase()}
-							</span>
-						{/if}
-						<div class="min-w-0">
-							<p class="font-bold text-ink truncate">{s.name}</p>
-							<p class="text-xs text-muted truncate">@{s.slug}</p>
+		<div class="border border-hairline rounded-card bg-card overflow-hidden">
+			<div class="hidden sm:grid grid-cols-[2fr_3fr_120px_90px] gap-4 px-5 py-3 bg-bone border-b border-hairline text-xs font-semibold text-muted uppercase tracking-wide">
+				<span>Nombre</span>
+				<span>Descripción</span>
+				<span>Fecha</span>
+				<span class="text-right">Ver</span>
+			</div>
+			<div class="divide-y divide-hairline-soft">
+				{#each filtered as s}
+					<a href={`/@${s.slug}`} class="grid grid-cols-1 sm:grid-cols-[2fr_3fr_120px_90px] gap-2 sm:gap-4 px-5 py-4 hover:bg-bone/60 transition-colors no-underline items-center group">
+						<div class="flex items-center gap-3 min-w-0">
+							{#if s.logo}
+								<img src={s.logo} alt={s.name} class="h-10 w-10 object-cover rounded-lg bg-canvas border border-hairline shrink-0" loading="lazy" />
+							{:else}
+								<span class="h-10 w-10 flex items-center justify-center rounded-lg bg-ember text-canvas font-bold text-sm select-none shrink-0">
+									{s.name.charAt(0).toUpperCase()}
+								</span>
+							{/if}
+							<div class="min-w-0">
+								<p class="font-semibold text-ink truncate group-hover:text-ember transition-colors">{s.name}</p>
+								<p class="text-xs text-muted truncate">@{s.slug}</p>
+							</div>
 						</div>
-					</div>
-					{#if s.description}
-						<p class="text-sm text-body leading-relaxed line-clamp-2 mb-3 flex-1">{s.description}</p>
-					{:else}
-						<div class="flex-1"></div>
-					{/if}
-					<div class="flex items-center justify-between gap-2">
-						{#if s.category}
-							<span class="text-[11px] font-medium text-muted bg-bone rounded-full px-2 py-0.5 truncate max-w-32">{s.category}</span>
-						{:else}
-							<span></span>
-						{/if}
-						<span class="inline-flex items-center gap-1 text-xs font-semibold text-ember shrink-0">
-							Ver tienda
+						<p class="text-sm text-body leading-snug line-clamp-2 sm:line-clamp-1 min-w-0">
+							{s.description ? s.description : '—'}
+						</p>
+						<span class="text-xs text-muted tabular-nums hidden sm:block">{fmtDate(s.created_at)}</span>
+						<span class="sm:hidden text-xs text-muted tabular-nums">{fmtDate(s.created_at)}</span>
+						<span class="inline-flex items-center justify-center sm:justify-end gap-1 text-xs font-semibold text-ember group-hover:gap-1.5 transition-all">
+							Ver
+							<i class="ri-arrow-right-line"></i>
 						</span>
-					</div>
-				</a>
-			{/each}
+					</a>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </main>

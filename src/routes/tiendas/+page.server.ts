@@ -4,7 +4,7 @@ export const load = async () => {
 	const [storesRes, visitsRes] = await Promise.all([
 		supabase
 			.from('stores')
-			.select('id, name, slug, logo, description, category')
+			.select('id, name, slug, logo, description, category, created_at')
 			.eq('active', true)
 			.not('owner_id', 'is', null)
 			.limit(300),
