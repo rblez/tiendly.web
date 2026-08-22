@@ -67,7 +67,7 @@
 						aria-label="Cambiar moneda"
 						value={displayCurrency(store)}
 						onchange={(e) => currency.set((e.target as HTMLSelectElement).value)}
-						class="bg-card border border-hairline rounded-full px-2.5 py-1.5 text-xs font-semibold text-ink focus:outline-none focus:border-ember transition-colors cursor-pointer"
+						class="select-pill select-pill-sm"
 					>
 						{#each currencies as c}
 							<option value={c}>{c}</option>
