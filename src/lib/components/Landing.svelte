@@ -1,34 +1,5 @@
 <script lang="ts">
-	import { supabase } from '$lib/supabase/client';
 	import { SITE_URL } from '$lib/utils';
-	import { categoryInfo } from '$lib/categories';
-
-	let topCategories = $state<Array<{ category: string; count: number }>>([]);
-	$effect(() => {
-		let cancelled = false;
-		supabase
-			.from('stores')
-			.select('category')
-			.eq('active', true)
-			.limit(300)
-			.then(({ data }) => {
-				if (cancelled) return;
-				const counts = new Map<string, number>();
-				for (const s of data ?? []) {
-					const raw = (s.category ?? '').trim();
-					if (!raw) continue;
-					const c = categoryInfo(raw)?.name ?? raw;
-					counts.set(c, (counts.get(c) ?? 0) + 1);
-				}
-				topCategories = [...counts.entries()]
-					.sort((a, b) => b[1] - a[1])
-					.slice(0, 6)
-					.map(([category, count]) => ({ category, count }));
-			});
-		return () => {
-			cancelled = true;
-		};
-	});
 
 	const steps = [
 		{
@@ -126,35 +97,6 @@
 			{/each}
 		</div>
 	</section>
-
-	{#if topCategories.length > 0}
-		<section class="border-y border-hairline bg-card/40">
-			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-				<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-					<div>
-						<h2 class="text-2xl sm:text-3xl font-black tracking-tight text-ink">Descubre tiendas por categoría</h2>
-						<p class="text-body mt-2">Los rubros con más tiendas hoy en Tiendly.</p>
-					</div>
-					<a href="/tiendas" class="inline-flex items-center gap-1.5 text-sm font-semibold text-ember hover:text-ember-active transition-colors no-underline">
-						Ver todas
-						<i class="ri-arrow-right-line"></i>
-					</a>
-				</div>
-				<div class="flex flex-wrap gap-3">
-					{#each topCategories as c}
-						<a
-							href={`/tiendas?cat=${encodeURIComponent(c.category)}`}
-							class="inline-flex items-center gap-2 bg-card border border-hairline rounded-full px-4 py-2.5 text-sm font-medium text-body hover:border-ember/50 hover:text-ember transition-colors no-underline"
-						>
-							<i class="ri-price-tag-3-line text-muted"></i>
-							{c.category}
-							<span class="text-xs font-bold text-muted-soft">{c.count}</span>
-						</a>
-					{/each}
-				</div>
-			</div>
-		</section>
-	{/if}
 
 	<section class="border-t border-hairline">
 		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
