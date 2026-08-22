@@ -125,7 +125,7 @@
 	{:else if cartEmpty}
 		<div class="empty-state">
 			<div class="mx-auto w-20 h-20 rounded-full bg-bone flex items-center justify-center mb-5">
-				<i class="ri-shopping-cart-line text-3xl text-muted-soft"></i>
+				<i class="ri-shopping-bag-4-line text-3xl text-muted-soft"></i>
 			</div>
 			<h1 class="text-2xl font-black text-ink mb-1.5">Tu carrito está vacío</h1>
 			<p class="text-sm text-muted mb-7">Explora el catálogo y añade algo que te guste.</p>
