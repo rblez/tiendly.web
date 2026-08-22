@@ -16,13 +16,25 @@
 		},
 	];
 
-	const features = [
-		{ title: 'Pedidos por WhatsApp', text: 'Cada pedido llega a tu WhatsApp con productos, cantidades, datos del cliente y método de pago elegido.' },
-		{ title: 'Pago por transferencia', text: 'Ofrece tus cuentas (BANDEC, BPA, Metropolitano o MiTransfer) y el cliente sube el comprobante del pago en el propio checkout.' },
-		{ title: 'Multimoneda', text: 'Pon precios en tu moneda base y muestra tus propios tipos de cambio para las otras.' },
-		{ title: 'Rastreo de pedidos', text: 'Tus clientes ven el estado de su pedido con el número que les das, sin tener que preguntarte.' },
-		{ title: 'Estadísticas', text: 'Visitas diarias, pedidos y productos agotados: sabes qué vende y cuándo te visitan.' },
-		{ title: 'Sin comisiones', text: 'No cobramos por venta ni retenemos tu dinero. Tú recibes el pago como siempre, 100% directo.' },
+	const showcase = [
+		{
+			title: 'Tu tienda, impecable en cualquier pantalla',
+			text: 'Un link corto que abre una vitrina rápida y ordenada, igual en el teléfono que en la computadora. Fotos, precios y variantes claras para que comprar sea tan fácil como escoger.',
+			img: '/feature-1.webp',
+			alt: 'Tienda de Tiendly vista en teléfono y computadora',
+		},
+		{
+			title: 'Pedidos directo a tu WhatsApp',
+			text: 'Sin paneles ni correos que revisar: el pedido completo llega a tu chat con productos, cantidades, datos del cliente y método de pago. Solo confirmas y coordinas la entrega.',
+			img: '/feature-2.webp',
+			alt: 'Pedido de Tiendly recibido en WhatsApp',
+		},
+		{
+			title: 'Cobra por donde tú quieras',
+			text: 'Crea tus propios métodos de pago — Zelle, PayPal, USDT o tu banco — con titular, número de cuenta y teléfono. El cliente sube el comprobante en el checkout y tú confirmas y listo.',
+			img: '/feature-3.webp',
+			alt: 'Checkout de Tiendly con un método de pago creado por el vendedor',
+		},
 	];
 
 	const faqs = [
@@ -85,14 +97,23 @@
 
 	<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 		<h2 class="text-2xl sm:text-3xl font-black tracking-tight text-ink text-center mb-12">Todo lo que necesitas para vender</h2>
-		<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-			{#each features as f}
-				<div class="bg-card border border-hairline rounded-card p-5">
-					<div>
-						<i class="text-lg"></i>
+		<div class="space-y-14 sm:space-y-20">
+			{#each showcase as f, i}
+				<div class="grid gap-6 lg:gap-12 md:grid-cols-2 md:items-center">
+					<img
+						src={f.img}
+						alt={f.alt}
+						width="5760"
+						height="4320"
+						loading="lazy"
+						class="w-full h-auto rounded-card border border-hairline bg-card {i % 2 === 1 ? 'md:order-2' : ''}"
+					/>
+					<div class="{i % 2 === 1 ? 'md:order-1' : ''}">
+						<h3 class="text-xl sm:text-2xl font-bold text-ink mb-2 flex items-center gap-2">
+							{f.title}
+						</h3>
+						<p class="text-body leading-relaxed">{f.text}</p>
 					</div>
-					<h3 class="font-bold text-ink mb-1 text-sm">{f.title}</h3>
-					<p class="text-sm text-body leading-relaxed">{f.text}</p>
 				</div>
 			{/each}
 		</div>
