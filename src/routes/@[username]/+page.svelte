@@ -132,13 +132,9 @@
 	<title>{store.name} | Catálogo</title>
 </svelte:head>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-section">
-	<div class="mb-8">
-		<h1 class="text-2xl sm:text-3xl font-black text-ink">{store.name}</h1>
-	</div>
-
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 	{#if categories.length > 1}
-		<div class="flex flex-wrap gap-2 mb-8">
+		<div class="flex flex-wrap gap-2 mb-6">
 			<button
 				onclick={() => filters.setCategory(null)}
 				class="chip text-sm cursor-pointer border transition-colors duration-200
