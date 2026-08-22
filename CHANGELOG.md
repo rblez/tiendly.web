@@ -6,50 +6,43 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 ## [Unreleased] - 2026-08-08
 
 ### Añadido
-- Código corto visible por el cliente en el checkout y gracias (ej: ABC345), persistido en `orders.code` (migración `add_orders_code` + índice por tienda).
-- Panel de pedidos: búsqueda por Nº de pedido, badge Nº en las tarjetas y columna Código en el CSV exportado.
+- Mejoras de interfaz en el checkout: número de pedido visible para el cliente (ej: ABC345).
+- Mejoras de interfaz en el panel de pedidos: búsqueda por número de pedido y código visible en cada tarjeta y en la exportación.
 
 ### Cambiado
-- Registro de pedidos sin `.select()` (el anon no tiene policy de SELECT en `orders`): el insert ya no falla con RLS 42501 aunque el cliente no tenga la fila devuelta.
-- Variantes del storefront muestran solo la etiqueta (el precio real se muestra debajo); chips agotados con badge.
-- Compra directa "Comprar ahora" sin pasar por el carrito: `/checkout?product=...&v=...&id=<nº pedido>` con `replaceState`.
-- Botones "Añadir al carrito" (desktop y móvil) sin iconos, solo texto.
-- WhatsApp del pedido incluye `🧾 Nº pedido`.
-- OG en storefronts usa el logo de la tienda (si existe); eliminado el sistema OG-banner de Tiendly y sus assets.
+- Mejoras de interfaz en el catálogo: variantes más claras y productos agotados mejor indicados.
+- Mejoras de interfaz en el checkout: opción de compra directa sin pasar por el carrito.
+- Mejoras de interfaz en botones: "Añadir al carrito" más limpio, solo texto.
+- Mejoras de interfaz en WhatsApp: el mensaje del pedido ahora incluye el número de pedido.
+- Mejoras de interfaz en tiendas: vista previa al compartir por WhatsApp ahora usa el logo de la tienda.
 
 ## [1.1.12-beta] - 2026-08-06
 
 ### Añadido
-- Landing editorial B/N profesional (tipográfica, sin color; acento verde solo en CTAs de crear tienda).
-- Footer oficial de Tiendly en el panel, landing y storefronts (badge "Hecho con Tiendly" solo en planes free/creator).
-- Ruta `/dash/store/[code]` con código corto de 8 caracteres en lugar de UUID; redirect 301 desde `/app/**`.
-- UTM end-to-end: captura en storefront, `track_visit` con UTM, columnas `utm_*` en `orders` y `store_visits`.
-- Barra fija "Añadir al carrito" con total en móvil (producto) y feedback de añadido.
-- Rediseño completo de la página de carrito (steppers, subtotales por línea, estado vacío).
-- Wizard simplificado a 3 pasos (nombre, WhatsApp, productos básicos) con UI consistente con auth.
-- Spinners de carga en todos los botones con operaciones asíncronas (guardar, actualizar, enviar, eliminar).
-- Migraciones DB: `stores.code` + trigger `trg_set_store_code`, función `track_visit`, índices únicos de visitas con UTM.
+- Mejoras de interfaz en la página principal: nuevo diseño editorial más limpio y profesional.
+- Mejoras de interfaz en el pie de página: información oficial de Tiendly visible en toda la web.
+- Mejoras de interfaz en el panel: nueva ruta más corta para acceder a cada tienda.
+- Mejoras de interfaz en el carrito: barra fija en el móvil con el total y confirmación al añadir productos.
+- Mejoras de interfaz en el carrito: página rediseñada con controles de cantidad y resumen más claro.
+- Mejoras de interfaz en el asistente de creación: proceso simplificado en 3 pasos.
+- Mejoras de interfaz en botones: indicadores de carga al guardar o enviar.
 
 ### Cambiado
-- Tipografía global: stack sans-serif del sistema; headings con Inter Tight. Se eliminaron Host Grotesk, Google Sans, SF Pro Rounded y Geist Mono.
-- Radios reducidos: botones 12px, tarjetas 14px.
-- Filtros del panel (categorías, estados, secciones) en `flex-wrap`, sin scroll horizontal en móvil.
-- Tabs activas de perfil en verde; botones de logo/fotos compactos con icono.
-- Toast "¿Tienes un negocio?" solo en planes free/creator.
+- Mejoras de interfaz en tipografía: estilo más limpio y consistente en toda la web.
+- Mejoras de interfaz en botones y tarjetas: bordes más suaves.
+- Mejoras de interfaz en el panel: filtros y pestañas más ordenados en el móvil.
+- Mejoras de interfaz en avisos: mensaje de invitación a crear tienda solo para cuentas gratuitas.
 
 ### Eliminado
-- Logo/isotipo/favicons del repo (icono por defecto del navegador).
-- "Creado con Tiendly" / "Hecho con Tiendly" de storefronts y panel.
-- Personalización de color y logo del wizard (se configura desde el panel).
+- Mejoras de interfaz en el wizard: personalización de color y logo ahora se hace desde el panel.
 
 ## [1.1.11] - 2026-08-05
 
 ### Añadido
-- Vista previa temporal de tiendas (10 min) con claim por token al registrarse.
-- Panel compacto: sidebar de tabs con estadísticas, header fino y secciones densas.
-- Wizard sin draft: enlace `/register?from=wizard` que auto-crea la tienda al registrarse.
-- Favicon dinámico por storefront (canvas con logo o inicial).
+- Mejoras de interfaz en tiendas: vista previa temporal al crear una tienda.
+- Mejoras de interfaz en el panel: diseño más compacto con estadísticas visibles.
+- Mejoras de interfaz en el registro: creación automática de la tienda al registrarse.
 
 ### Cambiado
-- Rutas de tiendas a `tiendly.lat/@slug` (se revirtieron los subdominios).
-- Optimización de imágenes a WebP en el servidor (sharp).
+- Mejoras de interfaz en enlaces de tiendas: formato más corto y fácil de compartir.
+- Mejoras de interfaz en imágenes: carga más rápida en toda la web.

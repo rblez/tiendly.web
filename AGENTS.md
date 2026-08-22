@@ -37,3 +37,4 @@ SvelteKit app for **Tiendly** — a multi-store storefront platform. Public stor
 - Do not commit `.env`
 - Product `variants` may be `null` — always normalize with `Array.isArray(...) ? ... : []`
 - Product `ask` may be missing en datos antiguos — normalízalo con `Array.isArray(...) ? ... : []`
+- Changelog: solo información coherente para cliente, sin jerga técnica — formato "Mejoras de interfaz en X lugar". `/changelog` debe renderizar lo mismo que `CHANGELOG.md`.

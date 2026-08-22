@@ -4,7 +4,6 @@
 
 	const links: Array<{ href: string; label: string }> = [
 		{ href: '/tiendas', label: 'Tiendas' },
-		{ href: '/blog', label: 'Blog' },
 		{ href: '/changelog', label: 'Cambios' },
 	];
 

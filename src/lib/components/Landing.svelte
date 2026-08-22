@@ -79,13 +79,8 @@
 
 <main>
 	<section class="relative overflow-hidden max-w-full">
-	<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/hero.webp')" aria-hidden="true"></div>
 	<div class="absolute inset-0 bg-gradient-to-b from-canvas/85 via-canvas/60 to-canvas/85" aria-hidden="true"></div>
 	<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
-		<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-ember bg-ember/10 border border-ember/20 rounded-full px-3 py-1.5 mb-6">
-			<i class="ri-vip-crown-2-line"></i>
-			Plan Gratis para siempre, sin tarjeta
-		</span>
 		<h1 class="text-4xl sm:text-6xl font-black tracking-tight text-ink max-w-3xl mx-auto leading-[1.05]">
 			Tu tienda online y los pedidos en tu <span class="text-ember">WhatsApp</span>
 		</h1>
@@ -101,9 +96,6 @@
 				Explorar tiendas
 			</a>
 		</div>
-		{#if topCategories.length > 0}
-			<p class="text-xs text-muted-soft mt-6">Tiendas activas en {topCategories.map((c) => c.category).slice(0, 3).join(', ')} y más categorías.</p>
-		{/if}
 	</div>
 	</section>
 
