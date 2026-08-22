@@ -274,28 +274,26 @@
 				{/if}
 		{/if}
 
-			{#if !isAgotado}
-				<div class="bg-bone rounded-btn p-3 sm:p-4">
-					<div class="flex items-center justify-between gap-3">
-						<div>
-							<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
-							<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(displayPrice, displayCurrency)}</p>
-						</div>
-						{#if product.bajo_pedido}
-							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning text-xs font-semibold flex-shrink-0">
-								<i class="ri-time-line"></i>
-								Bajo pedido
-							</span>
-						{/if}
-						{#if curStock != null && !isAgotado}
-							<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ember/10 text-ember text-xs font-semibold flex-shrink-0">
-								<i class="ri-truck-line"></i>
-								Quedan {curStock}
-							</span>
-						{/if}
+			<div class="bg-bone rounded-btn p-3 sm:p-4">
+				<div class="flex items-center justify-between gap-3">
+					<div>
+						<p class="text-xs sm:text-sm text-muted mb-0.5">Precio</p>
+						<p class="text-xl sm:text-2xl font-bold text-ember">{formatPrice(displayPrice, displayCurrency)}</p>
 					</div>
+					{#if product.bajo_pedido}
+						<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning text-xs font-semibold flex-shrink-0">
+							<i class="ri-time-line"></i>
+							Bajo pedido
+						</span>
+					{/if}
+					{#if curStock != null && !isAgotado}
+						<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ember/10 text-ember text-xs font-semibold flex-shrink-0">
+							<i class="ri-truck-line"></i>
+							Quedan {curStock}
+						</span>
+					{/if}
 				</div>
-			{/if}
+			</div>
 
 			<div class="space-y-3">
 				{#if isAgotado}
