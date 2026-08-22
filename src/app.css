@@ -138,27 +138,7 @@ html {
 	font-display: swap;
 	src: url('/fonts/GeneralSans-Regular.otf') format('opentype');
 }
-@font-face {
-	font-family: 'General Sans';
-	font-style: normal;
-	font-weight: 500;
-	font-display: swap;
-	src: url('/fonts/GeneralSans-Medium.otf') format('opentype');
-}
-@font-face {
-	font-family: 'General Sans';
-	font-style: normal;
-	font-weight: 600;
-	font-display: swap;
-	src: url('/fonts/GeneralSans-Semibold.otf') format('opentype');
-}
-@font-face {
-	font-family: 'General Sans';
-	font-style: normal;
-	font-weight: 700;
-	font-display: swap;
-	src: url('/fonts/GeneralSans-Bold.otf') format('opentype');
-}
+
 
 /* ============ BASE ============ */
 body {
@@ -180,13 +160,14 @@ h6 {
 	letter-spacing: -0.02em;
 }
 
-h1 {
-	font-weight: 800;
-}
-
+h1,
 h2,
-h3 {
-	font-weight: 700;
+h3,
+h4,
+h5,
+h6,
+.font-display {
+	font-weight: 400 !important;
 }
 
 .font-display {
