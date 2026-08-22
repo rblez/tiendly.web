@@ -114,15 +114,6 @@
 			}),
 	);
 
-	let groupedByCategory = $derived(
-		categories
-			.map((cat) => ({
-				name: cat,
-				products: filtered.filter((p) => p.category === cat),
-			}))
-			.filter((g) => g.products.length > 0)
-	);
-
 	function clearFilters() {
 		filters.resetFilters();
 	}
@@ -199,26 +190,10 @@
 				<option value="precio-desc">Precio: mayor a menor</option>
 			</select>
 		</div>
-		{#if filters.selectedCategory || filters.searchQuery || filters.sortOrder !== 'relevancia'}
-			<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-				{#each filtered as product}
-					<ProductCard {product} store={store} />
-				{/each}
-			</div>
-		{:else}
-			{#each groupedByCategory as group}
-				<div class="mb-10">
-					<h2 class="text-xl sm:text-2xl font-bold text-ink mb-4 flex items-center gap-2">
-						{group.name}
-						<span class="text-sm font-normal text-muted-soft">({group.products.length})</span>
-					</h2>
-					<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-						{#each group.products as product}
-							<ProductCard {product} store={store} />
-						{/each}
-					</div>
-				</div>
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+			{#each filtered as product}
+				<ProductCard {product} store={store} />
 			{/each}
-		{/if}
+		</div>
 	{/if}
 </section>

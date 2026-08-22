@@ -3,7 +3,6 @@
 	import '$lib/remixicon.css';
 	import { page } from '$app/stores';
 	import { afterNavigate } from '$app/navigation';
-	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Analytics from '$lib/components/seo/Analytics.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
@@ -49,7 +48,6 @@
 	<meta name="twitter:image" content={`${SITE_URL}/og-banner.webp`} />
 </svelte:head>
 
-	<ScrollToTop />
 	<OfflineBanner />
 	<Analytics />
 	<main class="min-h-[calc(100vh-4rem)]">
