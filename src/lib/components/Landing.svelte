@@ -32,29 +32,26 @@
 
 	const steps = [
 		{
-			icon: 'ri-store-2-line',
 			title: 'Crea tu tienda',
 			text: 'Regístrate con tu WhatsApp y agrega tus productos con fotos, precios y variantes en minutos.',
 		},
 		{
-			icon: 'ri-link-m',
 			title: 'Comparte tu link',
 			text: `Te damos un enlace corto (${SITE_URL.replace(/^https?:\/\//, '')}/@tu-tienda) perfecto para WhatsApp, Instagram o tu bio.`,
 		},
 		{
-			icon: 'ri-chat-smile-3-line',
 			title: 'Recibe pedidos directo',
 			text: 'El cliente arma su carrito y te llega el pedido completo por WhatsApp, listo para coordinar pago y entrega.',
 		},
 	];
 
 	const features = [
-		{ icon: 'ri-whatsapp-line', title: 'Pedidos por WhatsApp', text: 'Cada pedido llega a tu WhatsApp con productos, cantidades, datos del cliente y método de pago elegido.' },
-		{ icon: 'ri-bank-line', title: 'Pago por transferencia', text: 'Ofrece tus cuentas (BANDEC, BPA, Metropolitano o MiTransfer) y el cliente sube el comprobante del pago en el propio checkout.' },
-		{ icon: 'ri-exchange-dollar-line', title: 'Multimoneda', text: 'Pon precios en tu moneda base y muestra tus propios tipos de cambio para las otras.' },
-		{ icon: 'ri-package-search-line', title: 'Rastreo de pedidos', text: 'Tus clientes ven el estado de su pedido con el número que les das, sin tener que preguntarte.' },
-		{ icon: 'ri-bar-chart-line', title: 'Estadísticas', text: 'Visitas diarias, pedidos y productos agotados: sabes qué vende y cuándo te visitan.' },
-		{ icon: 'ri-currency-line', title: 'Sin comisiones', text: 'No cobramos por venta ni retenemos tu dinero. Tú recibes el pago como siempre, 100% directo.' },
+		{ title: 'Pedidos por WhatsApp', text: 'Cada pedido llega a tu WhatsApp con productos, cantidades, datos del cliente y método de pago elegido.' },
+		{ title: 'Pago por transferencia', text: 'Ofrece tus cuentas (BANDEC, BPA, Metropolitano o MiTransfer) y el cliente sube el comprobante del pago en el propio checkout.' },
+		{ title: 'Multimoneda', text: 'Pon precios en tu moneda base y muestra tus propios tipos de cambio para las otras.' },
+		{ title: 'Rastreo de pedidos', text: 'Tus clientes ven el estado de su pedido con el número que les das, sin tener que preguntarte.' },
+		{ title: 'Estadísticas', text: 'Visitas diarias, pedidos y productos agotados: sabes qué vende y cuándo te visitan.' },
+		{ title: 'Sin comisiones', text: 'No cobramos por venta ni retenemos tu dinero. Tú recibes el pago como siempre, 100% directo.' },
 	];
 
 	const faqs = [
@@ -107,9 +104,6 @@
 				{#each steps as s, i}
 					<div class="bg-card border border-hairline rounded-card p-6 relative">
 						<span class="absolute top-5 right-5 text-4xl font-black text-hairline select-none">{i + 1}</span>
-						<div class="h-11 w-11 flex items-center justify-center rounded-btn bg-ember/10 text-ember mb-4">
-							<i class="{s.icon} text-xl"></i>
-						</div>
 						<h3 class="font-bold text-ink mb-1.5">{s.title}</h3>
 						<p class="text-sm text-body leading-relaxed">{s.text}</p>
 					</div>
@@ -123,8 +117,8 @@
 		<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 			{#each features as f}
 				<div class="bg-card border border-hairline rounded-card p-5">
-					<div class="h-10 w-10 flex items-center justify-center rounded-btn bg-ember/10 text-ember mb-3.5">
-						<i class="{f.icon} text-lg"></i>
+					<div>
+						<i class="text-lg"></i>
 					</div>
 					<h3 class="font-bold text-ink mb-1 text-sm">{f.title}</h3>
 					<p class="text-sm text-body leading-relaxed">{f.text}</p>
@@ -186,16 +180,6 @@
 					</details>
 				{/each}
 			</div>
-		</div>
-	</section>
-
-	<section class="relative overflow-hidden border-t border-hairline">
-		<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/hero.webp')" aria-hidden="true"></div>
-		<div class="absolute inset-0 bg-gradient-to-b from-canvas/90 via-canvas/65 to-canvas/90" aria-hidden="true"></div>
-		<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-			<h2 class="text-2xl sm:text-3xl font-black tracking-tight text-ink mb-3">Tu catálogo está a unos minutos</h2>
-			<p class="text-body max-w-md mx-auto mb-8">Crea tu tienda gratis hoy y comparte tu primer link esta misma tarde.</p>
-			<a href="/wizard" class="cta-primary">Crear mi tienda gratis</a>
 		</div>
 	</section>
 </main>

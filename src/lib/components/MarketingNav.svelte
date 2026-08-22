@@ -3,8 +3,8 @@
 	import { auth } from '$lib/stores/auth.svelte';
 
 	const links: Array<{ href: string; label: string }> = [
-		{ href: '/tiendas', label: 'Tiendas' },
-		{ href: '/changelog', label: 'Cambios' },
+		{ href: '/tiendas', label: 'Explorar tiendas' },
+		{ href: '/changelog', label: 'Historial de cambios' },
 	];
 
 	let open = $state(false);
@@ -25,7 +25,7 @@
 	<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16 gap-4">
 			<a href="/" class="flex items-center gap-2.5 text-ink no-underline shrink-0">
-				<img src="/tiendly-logo-completo.webp" alt="Tiendly" class="h-9 object-contain" />
+				<img src="/tiendly-logo.webp" alt="Tiendly" class="h-9 object-contain" />
 			</a>
 
 			<div class="hidden md:flex items-center gap-6">
@@ -41,7 +41,7 @@
 
 			<div class="hidden md:flex items-center gap-2.5">
 				{#if auth.session}
-					<a href="/dashboard" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Mi panel</a>
+					<a href="/dashboard" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Dashboard</a>
 				{:else}
 					<a href="/login" class="text-sm font-medium text-body hover:text-ink transition-colors no-underline px-3 py-2">Entrar</a>
 				{/if}
@@ -77,7 +77,7 @@
 						class="btn btn-secondary btn-md block text-center no-underline"
 						onclick={() => (open = false)}
 					>
-						Mi panel
+						Dashboard
 					</a>
 				{:else}
 					<a

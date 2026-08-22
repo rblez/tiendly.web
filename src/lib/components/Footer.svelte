@@ -101,7 +101,7 @@ let trackError = $state('');
 					<img src="/tiendly-logo.webp" alt="Tiendly" class="h-8 object-contain" />
 				</p>
 				<p class="text-sm text-muted mt-3 leading-relaxed max-w-xs">
-					Crea tu tienda online en minutos y vende directo: pedidos a tu WhatsApp, tus precios, tus clientes. Sin comisiones ni plataformas de pago ajenas.
+					Crea tu tienda online en minutos y vende directo: pedidos a tu WhatsApp, tus precios, tus clientes.
 				</p>
 			</div>
 			<div>
@@ -114,7 +114,7 @@ let trackError = $state('');
 						<a href="/tiendas" class="text-sm text-body hover:text-ember transition-colors no-underline">Explorar tiendas</a>
 					</li>
 					<li>
-						<a href="/changelog" class="text-sm text-body hover:text-ember transition-colors no-underline">Cambios</a>
+						<a href="/changelog" class="text-sm text-body hover:text-ember transition-colors no-underline">Historial de cambios</a>
 					</li>
 					<li>
 						<a href="/wizard" class="text-sm text-body hover:text-ember transition-colors no-underline">Crea tu tienda</a>
@@ -128,39 +128,13 @@ let trackError = $state('');
 				<p class="text-sm font-semibold text-ink mb-3">Legal</p>
 				<ul class="space-y-2">
 					<li>
-						<a href="/about" class="text-sm text-body hover:text-ember transition-colors no-underline">Sobre Tiendly</a>
+						<a href="/about" class="text-sm text-body hover:text-ember transition-colors no-underline">Sobre nosotros</a>
 					</li>
 					<li>
 						<a href="/terms-of-use" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
 					</li>
 					<li>
 						<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
-					</li>
-				</ul>
-			</div>
-			<div>
-				<p class="text-sm font-semibold text-ink mb-3">La propuesta</p>
-				<p class="text-sm text-muted leading-relaxed">
-					Tu catálogo, tus reglas. No cobramos por venta ni retenemos tu dinero: tú cobras como siempre, en efectivo, transferencia o tu app favorita.
-				</p>
-			</div>
-			<div>
-				<p class="text-sm font-semibold text-ink mb-3">Contacto</p>
-				<ul class="space-y-2">
-					<li>
-						<a href="mailto:hola@tiendly.lat" class="text-sm text-body hover:text-ember transition-colors no-underline">
-							hola@tiendly.lat
-						</a>
-					</li>
-					<li>
-						<a
-							href="https://wa.me/5363807214?text=Hola,%20quiero%20soporte%20de%20Tiendly"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-sm text-body hover:text-ember transition-colors no-underline"
-						>
-							Soporte por WhatsApp
-						</a>
 					</li>
 				</ul>
 			</div>

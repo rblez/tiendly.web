@@ -109,7 +109,7 @@
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<div class="relative">
-					<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="email"
 						type="email"
@@ -132,7 +132,7 @@
 					</a>
 				</div>
 				<div class="relative">
-					<i class="ri-lock-2-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
+					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
@@ -169,9 +169,7 @@
 					<i class="ri-loader-4-line animate-spin"></i>
 				{/if}
 				{loading ? 'Entrando...' : 'Entrar'}
-				{#if !loading}
-					<i class="ri-arrow-right-line"></i>
-				{/if}
+				{#if !loading}{/if}
 			</button>
 		</form>
 		<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">

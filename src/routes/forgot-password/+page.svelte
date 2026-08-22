@@ -56,16 +56,12 @@
 
 		{#if resetSent}
 			<div class="text-center fade-up" style="animation-delay: 0.12s">
-				<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-5">
-					<i class="ri-mail-send-line text-3xl text-ember"></i>
-				</div>
 				<h2 class="text-xl font-bold text-ink mb-1.5">Revisa tu correo</h2>
 				<p class="text-sm text-muted mb-8">Te enviamos un enlace para restablecer tu contraseña.</p>
 				<a
 					href="/login"
 					class="btn btn-3d btn-lg no-underline"
 				>
-					<i class="ri-arrow-left-line"></i>
 					Volver al inicio de sesión
 				</a>
 			</div>
@@ -74,7 +70,7 @@
 				<div>
 					<label for="reset-email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 					<div class="relative">
-						<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+						<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 						<input
 							id="reset-email"
 							type="email"
@@ -102,9 +98,7 @@
 						<i class="ri-loader-4-line animate-spin"></i>
 					{/if}
 					{loading ? 'Enviando...' : 'Enviar enlace'}
-					{#if !loading}
-						<i class="ri-arrow-right-line"></i>
-					{/if}
+					{#if !loading}{/if}
 				</button>
 			</form>
 			<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">

@@ -9,7 +9,7 @@
 	let subtitle = $derived(
 		previewToken
 			? `Tu tienda «${storeName || 'sin nombre'}» te espera. Crea tu cuenta para activarla.`
-			: 'Gratis, sin tarjeta. Tu tienda lista en 5 minutos.'
+			: 'Totalmente gratis. Tu tienda lista en 5 minutos.'
 	);
 	// svelte-ignore state_referenced_locally
 	let name = $state(storeName);
@@ -115,7 +115,7 @@
 			<div>
 				<label for="name" class="block text-sm font-medium text-body mb-1.5">Tu nombre</label>
 				<div class="relative">
-					<i class="ri-user-smile-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="name"
 						type="text"
@@ -130,7 +130,7 @@
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<div class="relative">
-					<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="email"
 						type="email"
@@ -145,7 +145,7 @@
 			<div>
 				<label for="password" class="block text-sm font-medium text-body mb-1.5">Contraseña</label>
 				<div class="relative">
-					<i class="ri-lock-2-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
@@ -189,9 +189,7 @@
 						<i class="ri-loader-4-line animate-spin"></i>
 					{/if}
 					{loading ? 'Creando cuenta...' : 'Crear cuenta'}
-					{#if !loading}
-						<i class="ri-arrow-right-line"></i>
-					{/if}
+					{#if !loading}{/if}
 				</button>
 				<p class="text-xs text-muted-soft text-center">Al crear tu cuenta aceptas los términos de Tiendly.</p>
 			</form>
