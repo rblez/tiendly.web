@@ -235,9 +235,6 @@
 									<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
 								{/if}
 							</span>
-							{#if selectedVariant?.id === variant.id}
-								<i class="ri-check-line text-sm flex-shrink-0 text-ember"></i>
-							{/if}
 						</button>
 					{/each}
 				</div>
@@ -270,9 +267,6 @@
 											<span class="text-[10px] font-semibold text-muted-soft bg-bone px-1.5 py-0.5 rounded-full">Agotada</span>
 										{/if}
 									</span>
-									{#if selectedOption === opt.id}
-										<i class="ri-check-line text-sm flex-shrink-0 text-ember"></i>
-									{/if}
 								</button>
 							{/each}
 						</div>
