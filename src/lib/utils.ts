@@ -116,6 +116,34 @@ export function isOutOfStock(stock: number | null | undefined): boolean {
 	return stock !== null && stock !== undefined && stock <= 0;
 }
 
+export function productHasDiscount(p: { discount_type?: string | null; discount_value?: number | null } | null | undefined): boolean {
+	if (!p || !p.discount_type || p.discount_value == null) return false;
+	const v = Number(p.discount_value);
+	if (!Number.isFinite(v) || v <= 0) return false;
+	if (p.discount_type === 'percent') return v > 0 && v <= 100;
+	if (p.discount_type === 'amount') return v > 0;
+	return false;
+}
+
+export function discountedPrice(price: number, p: { discount_type?: string | null; discount_value?: number | null } | null | undefined): number {
+	if (!productHasDiscount(p) || !Number.isFinite(price)) return price;
+	const v = Number(p!.discount_value);
+	if (p!.discount_type === 'percent') {
+		return Math.max(0, Math.round(price * (1 - v / 100) * 100) / 100);
+	}
+	if (p!.discount_type === 'amount') {
+		return Math.max(0, Math.round((price - v) * 100) / 100);
+	}
+	return price;
+}
+
+export function discountLabel(p: { discount_type?: string | null; discount_value?: number | null } | null | undefined, currency?: string): string | null {
+	if (!productHasDiscount(p)) return null;
+	if (p!.discount_type === 'percent') return `-${p!.discount_value}%`;
+	// amount: se formatea con precio luego, aquí devolvemos valor
+	return `-${p!.discount_value}${currency ? ' ' + currency : ''}`;
+}
+
 // srcset para imágenes subidas con /api/upload-image (formato img-<ts>-<ancho>.webp);
 // imágenes antiguas sin sufijo devuelven null y el <img> cae al src simple.
 export function imageSrcset(src: string | null | undefined): string | null {

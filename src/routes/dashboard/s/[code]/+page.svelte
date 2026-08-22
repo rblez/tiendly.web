@@ -13,7 +13,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import { STORE_CATEGORIES } from '$lib/categories';
-	import QRCode from 'qrcode';
 
 	type Tab = 'resumen' | 'productos' | 'pedidos' | 'cupones' | 'apariencia' | 'configuracion';
 	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'cupones', 'apariencia', 'configuracion'];
@@ -155,6 +154,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 		qrGenerating = true;
 		try {
 			const dark = theme.resolved === 'dark';
+			const { default: QRCode } = await import('qrcode');
 			qrDataUrl = await QRCode.toDataURL(storeUrl(store.slug), {
 				width: 512,
 				margin: 2,
@@ -368,7 +368,12 @@ $effect(() => {
 				const target = (productsData as Product[] | null)?.find((p) => p.id === openPid);
 				if (target) openEditProduct(target as Product);
 			}
-		await Promise.all([loadOrders(!!cached), loadCoupons(), loadVisitChart(), loadSocialClicks(), loadSources()]);
+		await Promise.all([loadOrders(!!cached), loadCoupons()]);
+		// Analíticas solo si estamos en resumen o es primera carga (evita traer 5k filas al entrar en productos/pedidos)
+		const shouldLoadAnalytics = !cached || tab === 'resumen';
+		if (shouldLoadAnalytics) {
+			await Promise.all([loadVisitChart(), loadSocialClicks(), loadSources()]);
+		}
 		loading = false;
 		storeSnapshots.set(storeCode, {
 			storeData: storeData,
@@ -384,6 +389,43 @@ $effect(() => {
 				loading = false;
 			}
 		})();
+	});
+
+	// Carga diferida de analíticas al entrar en tab resumen (evita traer datos pesados si el usuario solo quiere productos/pedidos)
+	$effect(() => {
+		if (tab !== 'resumen') return;
+		if (!editingStoreId) return;
+		if (visitChart.length === 0) loadVisitChart();
+		if (socialClicks.length === 0) loadSocialClicks();
+		if (sourceRows.length === 0) loadSources();
+	});
+
+	// Reanuda al volver a la pestaña (corrige "se pausa" al salir y volver)
+	$effect(() => {
+		if (typeof document === 'undefined' || typeof window === 'undefined') return;
+		const onVisible = () => {
+			if (document.visibilityState === 'visible' && auth.session && editingStoreId) {
+				auth.refresh().then(() => {
+					loadOrders(true);
+					if (tab === 'resumen') {
+						loadVisitChart();
+						loadSocialClicks();
+						loadSources();
+					}
+				});
+			}
+		};
+		const onFocus = () => {
+			if (auth.session && editingStoreId) {
+				auth.refresh().then(() => loadOrders(true));
+			}
+		};
+		document.addEventListener('visibilitychange', onVisible);
+		window.addEventListener('focus', onFocus);
+		return () => {
+			document.removeEventListener('visibilitychange', onVisible);
+			window.removeEventListener('focus', onFocus);
+		};
 	});
 
 	type VisitDay = { label: string; visits: number };
@@ -406,7 +448,8 @@ $effect(() => {
 			.select('payload, created_at')
 			.eq('store_id', editingStoreId)
 			.eq('event_type', 'social_click')
-			.gte('created_at', from.toISOString());
+			.gte('created_at', from.toISOString())
+			.limit(5000);
 
 		const counts = new Map<string, number>();
 		for (const r of rows ?? []) {
@@ -431,7 +474,8 @@ $effect(() => {
 			.from('store_visits')
 			.select('utm_source, visits')
 			.eq('store_id', editingStoreId)
-			.gte('visit_date', from.toISOString().slice(0, 10));
+			.gte('visit_date', from.toISOString().slice(0, 10))
+			.limit(5000);
 
 		const acc = new Map<string, number>();
 		for (const r of rows ?? []) {
@@ -481,7 +525,8 @@ $effect(() => {
 			.select('visit_date, visits')
 			.eq('store_id', editingStoreId)
 			.gte('visit_date', fromStr)
-			.order('visit_date', { ascending: true });
+			.order('visit_date', { ascending: true })
+			.limit(500);
 
 		const byDate = new Map<string, number>();
 		for (const r of rows ?? []) byDate.set(r.visit_date, r.visits);
@@ -775,9 +820,12 @@ $effect(() => {
 			.from('orders')
 			.select('*')
 			.eq('store_id', editingStoreId)
-			.order('created_at', { ascending: false });
+			.order('created_at', { ascending: false })
+			.limit(200);
 		orders = (data as Order[] | null)?.map((o) => ({
 			...o,
+			customer_name: o.customer_name ?? '',
+			customer_phone: o.customer_phone ?? '',
 			items: Array.isArray(o.items) ? o.items : [],
 		})) ?? [];
 		ordersLoading = false;
@@ -789,7 +837,8 @@ $effect(() => {
 			.from('coupons')
 			.select('*')
 			.eq('store_id', editingStoreId)
-			.order('created_at', { ascending: false });
+			.order('created_at', { ascending: false })
+			.limit(100);
 		coupons = (data as Coupon[] | null) ?? [];
 	}
 
@@ -806,6 +855,10 @@ $effect(() => {
 	async function createCoupon() {
 		const code = couponCode.trim().toUpperCase().replace(/\s+/g, '');
 		const value = Number(couponValue.replace(',', '.'));
+		if (!editingStoreId) {
+			couponError = 'No se pudo identificar la tienda. Recarga la página.';
+			return;
+		}
 		if (!code || !Number.isFinite(value) || value <= 0) {
 			couponError = 'Escribe un código y un valor válidos.';
 			return;
@@ -814,29 +867,48 @@ $effect(() => {
 			couponError = 'El porcentaje no puede superar 100.';
 			return;
 		}
+		if (code.length < 3 || code.length > 20) {
+			couponError = 'El código debe tener entre 3 y 20 caracteres.';
+			return;
+		}
+		if (!/^[A-Z0-9_-]+$/.test(code)) {
+			couponError = 'Solo letras, números, guión y guión bajo.';
+			return;
+		}
 		couponSaving = true;
 		couponError = '';
 		try {
+			const payload: Record<string, unknown> = {
+				store_id: editingStoreId,
+				code,
+				type: couponType,
+				value,
+				max_uses: couponMaxUses.trim() ? Math.max(1, Math.round(Number(couponMaxUses.replace(',', '.')))) : null,
+				expires_at: couponExpiresAt ? new Date(couponExpiresAt + 'T23:59:59').toISOString() : null,
+			};
 			const { data, error: err } = await supabase
 				.from('coupons')
-				.insert({
-					store_id: editingStoreId,
-					code,
-					type: couponType,
-					value,
-					max_uses: couponMaxUses.trim() ? Math.max(1, Math.round(Number(couponMaxUses.replace(',', '.')))) : null,
-					expires_at: couponExpiresAt ? new Date(couponExpiresAt).toISOString() : null,
-				})
+				.insert(payload)
 				.select('*')
 				.single();
 			if (err) {
-				couponError = /duplicate/i.test(err.message) ? 'Ya existe un cupón con ese código.' : 'No se pudo crear el cupón. Intenta de nuevo.';
+				console.error('createCoupon', err);
+				if (/duplicate|unique|ya existe/i.test(err.message)) {
+					couponError = 'Ya existe un cupón con ese código.';
+				} else if (/row-level security|permission|not allowed|violates/i.test(err.message)) {
+					couponError = 'No tienes permiso para crear cupones en esta tienda. Verifica que eres el dueño y recarga.';
+				} else if (/value/i.test(err.message) && /check/i.test(err.message)) {
+					couponError = 'Valor no válido. Revisa el porcentaje o cantidad.';
+				} else {
+					couponError = `No se pudo crear el cupón: ${err.message}`;
+				}
 				return;
 			}
 			coupons = [data as unknown as Coupon, ...coupons];
 			couponFormOpen = false;
-		} catch {
-			couponError = 'No se pudo crear el cupón. Intenta de nuevo.';
+		} catch (e) {
+			console.error('createCoupon catch', e);
+			couponError = e instanceof Error ? `No se pudo crear el cupón: ${e.message}` : 'No se pudo crear el cupón. Intenta de nuevo.';
 		} finally {
 			couponSaving = false;
 		}
@@ -960,8 +1032,8 @@ $effect(() => {
 				const q = orderQuery.trim().toLowerCase();
 				return (
 					!q ||
-					o.customer_name.toLowerCase().includes(q) ||
-					o.customer_phone.toLowerCase().includes(q) ||
+					(o.customer_name ?? '').toLowerCase().includes(q) ||
+					(o.customer_phone ?? '').toLowerCase().includes(q) ||
 					(o.code ?? '').toLowerCase().includes(q)
 				);
 			})
@@ -1774,7 +1846,7 @@ async function duplicateProduct(p: Product) {
 							<div class="flex items-start justify-between gap-3 mb-4">
 								<div class="flex items-center gap-3 min-w-0">
 									<div class={`h-10 w-10 flex items-center justify-center rounded-full font-bold flex-shrink-0 text-sm ${status.cls}`}>
-										{order.customer_name.charAt(0).toUpperCase()}
+										{(order.customer_name || '?').charAt(0).toUpperCase()}
 									</div>
 									<div class="min-w-0">
 										<h3 class="font-semibold text-ink text-sm truncate">{order.customer_name}</h3>

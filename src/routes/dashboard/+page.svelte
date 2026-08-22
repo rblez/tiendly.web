@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { ensureUniqueSlug, generateStoreCode, storeUrl } from '$lib/utils';
@@ -162,29 +163,37 @@
 		loading = cachedStores.length === 0;
 		loadError = '';
 		try {
-			const [storesRes, productsRes, ordersRes, visitRes] = await Promise.all([
-				supabase.from('stores').select('*').eq('owner_id', auth.session!.user.id).order('created_at', { ascending: false }),
-				supabase.from('products').select('store_id').eq('active', true),
-				supabase.from('orders').select('store_id'),
-				supabase.from('store_visits').select('store_id, visits'),
-			]);
-
-			const storeRows = (storesRes.data as Store[] | null) ?? [];
+			const { data: storeRowsRaw, error: storeErr } = await supabase
+				.from('stores')
+				.select('*')
+				.eq('owner_id', auth.session!.user.id)
+				.order('created_at', { ascending: false });
+			if (storeErr) throw storeErr;
+			const storeRows = (storeRowsRaw as unknown as Store[] | null) ?? [];
 			stores = storeRows;
 
 			const acc: StoreStats = {};
 			for (const s of storeRows) acc[s.id] = { products: 0, orders: 0, visits: 0 };
-			for (const p of productsRes.data ?? []) {
-				const row = p as { store_id: string };
-				if (acc[row.store_id]) acc[row.store_id].products += 1;
-			}
-			for (const o of ordersRes.data ?? []) {
-				const row = o as { store_id: string };
-				if (acc[row.store_id]) acc[row.store_id].orders += 1;
-			}
-			for (const v of visitRes.data ?? []) {
-				const row = v as { store_id: string; visits: number };
-				if (acc[row.store_id]) acc[row.store_id].visits += row.visits;
+
+			if (storeRows.length > 0) {
+				const storeIds = storeRows.map((s) => s.id);
+				const [productsRes, ordersRes, visitRes] = await Promise.all([
+					supabase.from('products').select('store_id').in('store_id', storeIds).eq('active', true).limit(5000),
+					supabase.from('orders').select('store_id').in('store_id', storeIds).limit(5000),
+					supabase.from('store_visits').select('store_id, visits').in('store_id', storeIds).limit(5000),
+				]);
+				for (const p of productsRes.data ?? []) {
+					const row = p as { store_id: string };
+					if (acc[row.store_id]) acc[row.store_id].products += 1;
+				}
+				for (const o of ordersRes.data ?? []) {
+					const row = o as { store_id: string };
+					if (acc[row.store_id]) acc[row.store_id].orders += 1;
+				}
+				for (const v of visitRes.data ?? []) {
+					const row = v as { store_id: string; visits: number };
+					if (acc[row.store_id]) acc[row.store_id].visits += row.visits;
+				}
 			}
 			stats = acc;
 			cachedStores = storeRows;
@@ -204,6 +213,24 @@
 			loading = false;
 		}
 		loadStores();
+	});
+
+	// Reanuda al volver a la pestaña sin causar bucle de efectos: usa onMount, no $effect
+	onMount(() => {
+		const onVisible = () => {
+			if (document.visibilityState === 'visible' && auth.session) {
+				auth.refresh().then(() => loadStores());
+			}
+		};
+		const onFocus = () => {
+			if (auth.session) auth.refresh().then(() => loadStores());
+		};
+		document.addEventListener('visibilitychange', onVisible);
+		window.addEventListener('focus', onFocus);
+		return () => {
+			document.removeEventListener('visibilitychange', onVisible);
+			window.removeEventListener('focus', onFocus);
+		};
 	});
 </script>
 

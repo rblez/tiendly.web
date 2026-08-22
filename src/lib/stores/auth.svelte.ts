@@ -46,7 +46,15 @@ function init() {
 		} else {
 			profile = null;
 		}
+		ready = true;
 	});
+}
+
+async function refresh() {
+	const { data } = await supabase.auth.getSession();
+	session = data.session;
+	if (session) await loadProfile(session.user.id);
+	ready = true;
 }
 
 async function signOut() {
@@ -62,6 +70,7 @@ export const auth = {
 	get profile() { return profile; },
 	get ready() { return ready; },
 	init,
+	refresh,
 	signOut,
 	updateProfile,
 };

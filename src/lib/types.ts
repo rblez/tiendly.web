@@ -31,6 +31,8 @@ export interface Product {
 	bajo_pedido: boolean;
 	active: boolean;
 	stock?: number | null;
+	discount_type?: string | null;
+	discount_value?: number | null;
 	position: number;
 	created_at: string;
 }

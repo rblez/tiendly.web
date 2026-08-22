@@ -145,6 +145,8 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          discount_type: string | null
+          discount_value: number | null
           id: string
           image: string | null
           images: Json
@@ -164,6 +166,8 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           id?: string
           image?: string | null
           images?: Json
@@ -183,6 +187,8 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           id?: string
           image?: string | null
           images?: Json
