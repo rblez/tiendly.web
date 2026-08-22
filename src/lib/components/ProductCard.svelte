@@ -65,9 +65,7 @@
 		{/if}
 
 	<p class="text-base sm:text-xl font-bold text-ember">
-		{#if isAgotado}
-			<span class="text-muted-soft">Agotado</span>
-		{:else if product.variants.length > 0}
+		{#if product.variants.length > 0}
 			Desde {displayFormat(minPrice, store)}
 		{:else}
 			{displayFormat(product.price, store)}
