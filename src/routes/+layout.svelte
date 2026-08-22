@@ -6,9 +6,7 @@
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Analytics from '$lib/components/seo/Analytics.svelte';
-	import ConsentBanner from '$lib/components/seo/ConsentBanner.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
-	import { consent } from '$lib/stores/consent.svelte';
 	import { trackPageView } from '$lib/analytics';
 	import { SITE_URL } from '$lib/utils';
 
@@ -19,7 +17,6 @@
 
 	$effect(() => {
 		theme.init();
-		consent.init();
 		const tr = $page.url.searchParams.get('theme_refresh');
 		if (tr === '1' || tr === '2' || tr === 'auto') {
 			theme.set(tr === '1' ? 'dark' : tr === '2' ? 'light' : 'auto');
@@ -30,7 +27,7 @@
 	});
 
 	afterNavigate(() => {
-		if (consent.granted) trackPageView();
+		trackPageView();
 	});
 </script>
 
@@ -52,10 +49,9 @@
 	<meta name="twitter:image" content={`${SITE_URL}/og-banner.webp`} />
 </svelte:head>
 
-<ScrollToTop />
-<OfflineBanner />
-<Analytics />
-<ConsentBanner />
-<main class="min-h-[calc(100vh-4rem)]">
+	<ScrollToTop />
+	<OfflineBanner />
+	<Analytics />
+	<main class="min-h-[calc(100vh-4rem)]">
 	{@render children()}
 </main>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { consent } from '$lib/stores/consent.svelte';
 	import { fbq, ga4Id, gtag, pixelId } from '$lib/analytics';
 
 	let loaded = false;
@@ -30,23 +29,9 @@
 	}
 
 	$effect(() => {
-		if (!consent.granted || loaded) return;
+		if (loaded) return;
 		loaded = true;
 		injectGtag();
 		injectPixel();
-	});
-
-	$effect(() => {
-		if (consent.decision === 'unknown') return;
-		const granted = consent.decision === 'granted';
-		if (window.dataLayer && window.dataLayer.length && window.gtag) {
-			window.gtag('consent', 'update', {
-				ad_storage: granted ? 'granted' : 'denied',
-				ad_user_data: granted ? 'granted' : 'denied',
-				ad_personalization: granted ? 'granted' : 'denied',
-				analytics_storage: granted ? 'granted' : 'denied',
-			});
-		}
-		if (window.fbq) fbq('consent', granted ? 'grant' : 'revoke');
 	});
 </script>
