@@ -28,7 +28,8 @@
 		"jspdf": "^4.2.1",
 		"qrcode": "^1.5.4",
 		"remixicon": "^4.9.1",
-		"sharp": "^0.35.3"
+		"sharp": "^0.35.3",
+		"simple-icons": "^16.28.0"
 	},
 	"overrides": {
 		"cookie": "^0.7.2"

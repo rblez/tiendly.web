@@ -11,6 +11,7 @@ import { supabase } from '$lib/supabase/client';
 	import { migratePayment, renderPayment } from '$lib/payments';
 	import { exportOrdersCsv, exportProductsCsv } from '$lib/export';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
+	import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
 import OptionModal from '$lib/components/OptionModal.svelte';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_ACTIONS } from '$lib/storeActions';
@@ -1497,8 +1498,14 @@ async function duplicateProduct(p: Product) {
 				{#if socialTotal > 0}
 					<div class="grid gap-2.5">
 						{#each socialClicks as row}
+							{@const brand = socialIcon(row.network as SocialKeyType)}
 							<div class="flex items-center gap-3">
-								<img src={socialIcon(row.network as SocialKeyType, theme.resolved === 'dark')} alt="" class="h-4 w-4 flex-shrink-0" />
+							{#if brand}
+								<SocialBrandIcon
+									name={brand.name}
+									color={theme.resolved === 'dark' ? '#FFFFFF' : brand.color}
+								/>
+							{/if}
 								<span class="text-xs text-body w-16 truncate">{NETWORKS.find((n) => n.key === row.network)?.label ?? row.network}</span>
 								<div class="flex-1 h-1.5 bg-bone rounded-full overflow-hidden">
 									<div class="h-full bg-gradient-to-r from-ember to-ember/60 rounded-full transition-all duration-500" style="width:{Math.max(4, (row.count / socialMax) * 100)}%"></div>

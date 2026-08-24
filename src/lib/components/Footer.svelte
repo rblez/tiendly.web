@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { appendUtm } from '$lib/utils';
 import { socialIcon, storeSocials } from '$lib/socials';
+import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
 import { theme } from '$lib/stores/theme.svelte';
 import type { Store } from '$lib/types';
 
@@ -74,6 +75,7 @@ let trackError = $state('');
 					<p class="text-sm font-semibold text-ink mb-3">Redes sociales</p>
 					<div class="flex items-center gap-2.5">
 						{#each socials as s}
+							{@const brand = socialIcon(s.key)}
 							<a
 								href={appendUtm(s.url)}
 								target="_blank"
@@ -82,7 +84,12 @@ let trackError = $state('');
 								class="h-9 w-9 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
 								aria-label={s.label}
 							>
-								<img src={socialIcon(s.key, theme.resolved === 'dark')} alt={s.label} class="h-4 w-4" />
+								{#if brand}
+									<SocialBrandIcon
+										name={brand.name}
+										color={theme.resolved === 'dark' ? '#FFFFFF' : brand.color}
+									/>
+								{/if}
 							</a>
 						{/each}
 					</div>

@@ -8,11 +8,10 @@ export const SOCIAL_NETWORKS = [
 	{ key: 'tg', label: 'Telegram', icon: 'Telegram', color: '#26A5E4', prefix: '@', placeholder: 'tucanal' },
 ] as const;
 
-export function socialIcon(key: SocialKey, dark: boolean): string {
+export function socialIcon(key: SocialKey): { name: string; color: string } | undefined {
 	const net = SOCIAL_NETWORKS.find((n) => n.key === key);
-	if (!net) return '';
-	const color = dark ? 'FFFFFF' : net.color.replace('#', '');
-	return `https://cdn.simpleicons.org/${net.icon}/${color}`;
+	if (!net) return undefined;
+	return { name: net.icon, color: net.color };
 }
 
 export type SocialKey = (typeof SOCIAL_NETWORKS)[number]['key'];
