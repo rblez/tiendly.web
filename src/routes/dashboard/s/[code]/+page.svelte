@@ -2,6 +2,8 @@
 	import type { Database } from '$lib/database.types';
 import { supabase } from '$lib/supabase/client';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { Coupon, DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
@@ -14,8 +16,8 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import { STORE_CATEGORIES } from '$lib/categories';
 
-	type Tab = 'resumen' | 'productos' | 'pedidos' | 'cupones' | 'apariencia' | 'configuracion';
-	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'cupones', 'apariencia', 'configuracion'];
+	type Tab = 'resumen' | 'productos' | 'pedidos' | 'cupones';
+	const TAB_KEYS: Tab[] = ['resumen', 'productos', 'pedidos', 'cupones'];
 
 	// Caché por código de tienda: evita el skeleton y el salto de layout al volver
 	// a una tienda ya cargada en esta sesión (navegación atrás o entre pestañas).
@@ -111,11 +113,17 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 
 	function urlTab(fallback: Tab): Tab {
 		const t = $page.url.searchParams.get('tab');
-		if (t === 'general') return 'configuracion';
 		return TAB_KEYS.includes(t as Tab) ? (t as Tab) : fallback;
 	}
 
 	let tab = $derived(urlTab($page.url.searchParams.get('created') ? 'resumen' : 'productos'));
+
+	$effect(() => {
+		const t = $page.url.searchParams.get('tab');
+		if (t === 'configuracion' || t === 'apariencia' || t === 'general') {
+			goto(`/dashboard/s/${$page.params.code}/configuracion`, { replaceState: true });
+		}
+	});
 
 	$effect(() => {
 		if (tab === 'pedidos') markOrdersRead();
@@ -400,8 +408,8 @@ $effect(() => {
 		if (sourceRows.length === 0) loadSources();
 	});
 
-	// Reanuda al volver a la pestaña (corrige "se pausa" al salir y volver)
-	$effect(() => {
+	// Reanuda al volver a la pestaña sin causar bucle de efectos: usa onMount, no $effect
+	onMount(() => {
 		if (typeof document === 'undefined' || typeof window === 'undefined') return;
 		const onVisible = () => {
 			if (document.visibilityState === 'visible' && auth.session && editingStoreId) {
@@ -878,7 +886,7 @@ $effect(() => {
 		couponSaving = true;
 		couponError = '';
 		try {
-			const payload: Record<string, unknown> = {
+			const payload = {
 				store_id: editingStoreId,
 				code,
 				type: couponType,
@@ -1240,6 +1248,28 @@ async function duplicateProduct(p: Product) {
 			</div>
 		</div>
 	{:else}
+		<div class="flex items-center justify-between gap-3 mb-5">
+			<div class="flex items-center gap-3 min-w-0">
+				<a
+					href="/dashboard"
+					aria-label="Mis tiendas"
+					title="Mis tiendas"
+					class="w-9 h-9 rounded-full bg-bone border border-hairline flex items-center justify-center text-body hover:text-ink transition-colors flex-shrink-0 no-underline"
+				>
+					<i class="ri-arrow-left-line"></i>
+				</a>
+				<h1 class="text-lg font-bold text-ink truncate">{store.name}</h1>
+			</div>
+			<a
+				href={`/dashboard/s/${store.code}/configuracion`}
+				aria-label="Configuración"
+				title="Configuración"
+				class="w-9 h-9 rounded-full bg-bone border border-hairline flex items-center justify-center text-body hover:text-ember hover:border-ember/50 transition-colors flex-shrink-0 no-underline"
+			>
+				<i class="ri-settings-3-line text-lg"></i>
+			</a>
+		</div>
+
 		<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 			<aside class="hidden lg:flex flex-col gap-4">
 				<nav class="bg-card border border-hairline rounded-card p-2 space-y-1">
@@ -1248,7 +1278,7 @@ async function duplicateProduct(p: Product) {
 						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
 							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
 					>
-						Resumen
+						Estadísticas
 					</a>
 					<a
 						href="?tab=productos"
@@ -1280,20 +1310,6 @@ async function duplicateProduct(p: Product) {
 					>
 						Cupones
 					</a>
-					<a
-						href="?tab=apariencia"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Apariencia
-					</a>
-					<a
-						href="?tab=configuracion"
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Configuración
-					</a>
 				</nav>
 				<div class="bg-card border border-hairline rounded-card divide-y divide-hairline-soft text-sm">
 					<div class="px-5 py-3.5 flex items-center justify-between gap-2">
@@ -1322,7 +1338,7 @@ async function duplicateProduct(p: Product) {
 						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
 							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
-						Resumen
+						Estadísticas
 					</a>
 					<a
 						href="?tab=productos"
@@ -1349,20 +1365,6 @@ async function duplicateProduct(p: Product) {
 							{tab === 'cupones' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
 					>
 						Cupones
-					</a>
-					<a
-						href="?tab=apariencia"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'apariencia' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Apariencia
-					</a>
-					<a
-						href="?tab=configuracion"
-						class="flex-1 text-center px-3 py-2 rounded-btn text-sm font-medium transition-colors no-underline whitespace-nowrap
-							{tab === 'configuracion' ? 'bg-ember text-white' : 'text-body hover:text-ember hover:bg-ember/10'}"
-					>
-						Configuración
 					</a>
 				</div>
 				<div class="lg:hidden grid grid-cols-3 gap-3 mb-5">
@@ -2143,408 +2145,10 @@ async function duplicateProduct(p: Product) {
 				{/if}
 			</div>
 
-		{:else if tab === 'apariencia'}
-			<div class="max-w-lg">
-				<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
-					<h2 class="font-bold text-ink mb-5">Apariencia</h2>
-					<div class="flex items-center gap-3 mb-4">
-						<div class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden bg-canvas border border-hairline">
-							{#if productImage({ image: store.logo })}
-								<img src={productImage({ image: store.logo })!} alt="Logo" class="w-full h-full object-cover" />
-							{:else}
-								<span class="text-xl font-black text-ember">{store.name.charAt(0).toUpperCase()}</span>
-							{/if}
-						</div>
-						<label
-							class="inline-flex items-center gap-1.5 bg-bone border border-hairline text-body px-3 py-2 rounded-btn text-xs font-medium hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-							title="Cambiar logo"
-						>
-							<i class="ri-image-edit-line"></i>
-							Cambiar
-							<input type="file" accept="image/*" class="hidden" onchange={handleStoreImage} />
-						</label>
-						{#if productImage({ image: store.logo })}
-							<button
-								onclick={handleRemoveLogo}
-								class="btn btn-danger btn-sm"
-								title="Quitar logo"
-							>
-								<i class="ri-delete-bin-6-line"></i>
-								Quitar
-							</button>
-						{/if}
-					</div>
-					<div>
-						<p class="block text-sm font-medium text-body">Color de la tienda</p>
-						<div class="flex flex-wrap items-center gap-3">
-							{#each PRESET_COLORS as color}
-								<button
-									onclick={() => (settings.theme_color = color)}
-									class="h-8 w-8 rounded-full border-2 transition-all cursor-pointer
-										{settings.theme_color === color ? 'border-ink scale-110' : 'border-transparent hover:scale-105'}"
-									style={`background-color: ${color}`}
-									aria-label={`Color ${color}`}
-								></button>
-							{/each}
-						</div>
-					</div>
-					{#if settingsError}
-						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3 mt-5">{settingsError}</p>
-					{/if}
-				</div>
-			</div>
-		{:else if tab === 'configuracion'}
-			<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-				<div class="space-y-5">
-					<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
-						<h2 class="font-bold text-ink mb-5">Información general</h2>
-						<div class="grid gap-4 sm:grid-cols-2">
-							<div>
-								<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
-								<input
-									id="s-name"
-									type="text"
-									bind:value={settings.name}
-									class="input"
-								/>
-							</div>
-							<div>
-								<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Username</label>
-								<div class="relative">
-									<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">@</span>
-									<input
-										id="s-slug"
-										type="text"
-										bind:value={settings.slug}
-										oninput={onSettingsSlugInput}
-										placeholder="username"
-										class="input pl-8 pr-3"
-									/>
-								</div>
-							</div>
-						</div>
-						<div class="mt-4">
-							<label for="s-desc" class="block text-sm font-medium text-body mb-1.5">Descripción</label>
-							<textarea
-								id="s-desc"
-								bind:value={settings.description}
-								rows="2"
-								class="input resize-none"
-							></textarea>
-						</div>
-						<div class="mt-4">
-							<p class="block text-sm font-medium text-body mb-1.5">Categoría de negocio</p>
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
-								{#each STORE_CATEGORIES as c}
-									<label
-										class="flex items-center gap-2.5 border border-hairline rounded-btn px-3.5 py-2.5 cursor-pointer transition-colors hover:border-ember/50 {settings.category === c.name ? 'border-ember/60 bg-ember/5' : ''}"
-									>
-										<input
-											type="radio"
-											name="store-category"
-											value={c.name}
-											checked={settings.category === c.name}
-											onchange={() => (settings.category = c.name)}
-											class="w-4 h-4 accent-ember cursor-pointer shrink-0"
-										/>
-										<span class="text-sm text-ink">{c.name}</span>
-									</label>
-								{/each}
-							</div>
-						</div>
-						{#if hasActionColumn}
-							<div class="mt-4">
-								<label for="s-action" class="block text-sm font-medium text-body mb-1.5">Cómo reciben los pedidos</label>
-								<div class="space-y-2">
-									{#each STORE_ACTIONS as a (a.id)}
-										<label
-											class="flex items-start gap-3 border border-hairline rounded-btn p-3.5 cursor-pointer transition-colors hover:border-ember/50 {settings.action === a.id ? 'border-ember/60 bg-ember/5' : ''}"
-										>
-											<input
-												type="radio"
-												name="store-action"
-												value={a.id}
-												checked={settings.action === a.id}
-												onchange={() => (settings.action = a.id)}
-												class="mt-1 w-4 h-4 accent-ember cursor-pointer"
-											/>
-											<div class="min-w-0">
-												<p class="text-sm font-semibold text-ink">{a.label}</p>
-												<p class="text-xs text-muted-soft mt-0.5">{a.hint}</p>
-											</div>
-										</label>
-									{/each}
-								</div>
-							</div>
-						{/if}
-						<div class="mt-4">
-							<label for="s-wa" class="block text-sm font-medium text-body mb-1.5">WhatsApp para pedidos</label>
-							<input
-								id="s-wa"
-								type="tel"
-								bind:value={settings.whatsapp}
-								placeholder="Ej: +53 5 1234567"
-								class="input"
-							/>
-							<p class="text-xs text-muted-soft mt-1.5">Los pedidos de tu tienda llegan a este número por WhatsApp.</p>
-						</div>
-						{#if hasCurrencyColumn}
-							<div class="mt-4 pt-4 border-t border-hairline">
-								<p class="block text-sm font-medium text-body mb-1.5">Multimoneda</p>
-								<p class="text-xs text-muted-soft mb-3">
-									El catálogo se muestra en <span class="font-semibold text-ink">USD</span>, tu moneda principal. Elige las otras monedas que tus clientes podrán ver.
-								</p>
-								<div class="flex items-center gap-2 mb-3">
-<span class="inline-flex items-center px-3 py-1.5 rounded-full bg-ember/10 text-ember border border-ember/30 text-xs font-semibold">
-									USD · Moneda principal
-								</span>
-								</div>
-								<label class="flex items-center gap-2 cursor-pointer select-none mb-3">
-									<input
-										type="checkbox"
-										bind:checked={settings.show_cup}
-										class="w-4 h-4 accent-ember cursor-pointer"
-									/>
-									<span class="text-sm text-ink font-medium">Mostrar también CUP</span>
-								</label>
-								<label for="s-usd-rate" class="block text-sm font-medium text-body mb-1.5">Tasa de cambio (1 USD = ___ CUP)</label>
-								<input
-									id="s-usd-rate"
-									type="text"
-									inputmode="decimal"
-									bind:value={settings.usd_rate}
-									placeholder="Ej: 670"
-									class="input"
-								/>
-								{#if settings.usd_rate.trim() && (usdRateParsed === null || Number.isNaN(usdRateParsed))}
-									<p class="text-xs text-error mt-1.5">La tasa debe ser un número mayor que 0.</p>
-								{:else if usdRateParsed !== null && !Number.isNaN(usdRateParsed)}
-									<p class="text-xs text-muted-soft mt-1.5">
-										1 USD = {usdRateParsed} CUP · Ej: un precio de {formatPrice(100000, 'CUP')} ≈ {formatPrice(100000 / usdRateParsed, 'USD')}
-									</p>
-								{:else}
-									<p class="text-xs text-muted-soft mt-1.5">Sin tasa: tus precios se muestran tal como los publicas (en CUP).</p>
-								{/if}
-							</div>
-						{/if}
-						<div class="mt-4 pt-4 border-t border-hairline">
-							<div class="flex items-center justify-between mb-1.5">
-								<p class="block text-sm font-medium text-body">Métodos de pago manual</p>
-								{#if settings.payments.length > 0}
-									<button type="button" onclick={addPaymentMethod} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer">
-										+ Agregar método
-									</button>
-								{/if}
-							</div>
-							<p class="text-xs text-muted-soft mb-3">
-								Cada método es libre: ponle un nombre (PayPal, Transfermóvil, BTC, tu banco...), filas copiables con tus datos
-								e instrucciones de cómo pagar. El cliente paga, sube el comprobante y el pedido se queda esperando tu confirmación.
-							</p>
-							{#if settings.payments.length > 0}
-								<div class="space-y-2">
-									{#each settings.payments as pm, i}
-										<div class="border border-hairline rounded-btn p-3">
-											<div class="flex items-center justify-between gap-2">
-												<input
-													type="text"
-													bind:value={pm.title}
-													placeholder="Nombre del método (ej. PayPal, Transfermóvil)"
-													class="input input-sm flex-1 min-w-0"
-												/>
-												<button
-													type="button"
-													onclick={() => removePaymentMethod(i)}
-													class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
-													aria-label="Quitar método de pago"
-												>
-													<i class="ri-close-line"></i>
-												</button>
-											</div>
-											<div class="mt-2 space-y-2">
-												{#each pm.fields as f, fi}
-													<div class="flex items-center gap-2">
-														<input
-															type="text"
-															bind:value={f.label}
-															placeholder="Etiqueta (Nº de cuenta, correo, titular...)"
-															class="input input-sm w-1/3 min-w-0"
-														/>
-														<input
-															type="text"
-															bind:value={f.value}
-															placeholder="Dato copiable"
-															class="input input-sm flex-1 min-w-0"
-														/>
-														<button
-															type="button"
-															onclick={() => removePaymentField(pm, fi)}
-															class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
-															aria-label="Quitar fila"
-														>
-															<i class="ri-close-line"></i>
-														</button>
-													</div>
-												{/each}
-												<button
-													type="button"
-													onclick={() => addPaymentField(i)}
-													class="w-full px-3 py-1.5 bg-bone border border-dashed border-hairline rounded-btn text-xs font-medium text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-												>
-													+ Añadir fila
-												</button>
-												<textarea
-													bind:value={pm.instructions}
-													rows="2"
-													placeholder="Instrucciones de pago (opcional): 'Paga solo con tu nombre de usuario y envíame la foto del comprobante'..."
-													class="input input-sm resize-none"
-												></textarea>
-											</div>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<button
-									type="button"
-									onclick={addPaymentMethod}
-									class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-								>
-									+ Agregar método de pago manual
-								</button>
-							{/if}
-						</div>
-						<div class="mt-4 pt-4 border-t border-hairline">
-							<label class="flex items-center gap-2 cursor-pointer select-none mb-3">
-								<input
-									type="checkbox"
-									bind:checked={settings.delivery.enabled}
-									class="w-4 h-4 accent-ember cursor-pointer"
-								/>
-								<span class="text-sm font-medium text-ink">Cobrar mensajería (envío)</span>
-							</label>
-							{#if settings.delivery.enabled}
-								<p class="text-xs text-muted-soft mb-3">
-									Define zonas con su costo de envío. El cliente elige una al pagar.
-								</p>
-								{#if settings.delivery.zones.length > 0}
-									<div class="space-y-1.5 mb-2">
-										{#each settings.delivery.zones as _, zi}
-											<div class="flex items-center gap-2">
-												<input
-													type="text"
-													bind:value={settings.delivery.zones[zi].name}
-													placeholder="Zona (ej: La Habana)"
-class="input input-sm flex-1 min-w-0"
-												/>
-												<input
-													type="number"
-													step="any"
-													min="0"
-													bind:value={settings.delivery.zones[zi].price}
-													placeholder="Costo"
-													class="input input-sm w-28 text-right"
-												/>
-												<button
-													type="button"
-													onclick={() => removeZone(zi)}
-													class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer"
-													aria-label="Quitar zona"
-												>
-													<i class="ri-close-line"></i>
-												</button>
-											</div>
-										{/each}
-									</div>
-								{/if}
-								<button type="button" onclick={addZone} class="text-xs font-semibold text-ember hover:underline transition-colors cursor-pointer mb-2">
-									+ Agregar zona
-								</button>
-								<textarea
-									bind:value={settings.delivery.note}
-									rows="2"
-									placeholder="Nota de mensajería (opcional): días de entrega, gratis por compras mayores... (opcional)"
-									class="input resize-none"
-								></textarea>
-							{/if}
-						</div>
-					</div>
-				</div>
-
-				<div class="space-y-5">
-					<div class="bg-card border border-hairline rounded-card p-6 sm:p-7">
-						<h2 class="font-bold text-ink mb-1">Redes sociales</h2>
-						<p class="text-xs text-muted mb-4">Se muestran al pie de tu tienda. Deja vacío lo que no uses.</p>
-						<div class="space-y-3">
-							{#each SOCIAL_NETWORKS as net}
-								{@const handle = socialHandle(net.key, social[net.key] ?? '')}
-								<div>
-									<label for={`s-${net.key}`} class="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5">
-										<img src={socialIcon(net.key, theme.resolved === 'dark')} alt="" class="w-3.5 h-3.5" />
-										{net.label}
-									</label>
-									<div class="relative">
-										<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft pointer-events-none select-none">
-											{net.prefix}
-										</span>
-										<input
-											id={`s-${net.key}`}
-											type="text"
-											value={handle}
-											oninput={(e) => (social[net.key] = (e.target as HTMLInputElement).value)}
-											placeholder={net.placeholder}
-											autocomplete="off"
-											spellcheck="false"
-											class="input pr-10 {net.prefix ? 'pl-8' : 'pl-4'}"
-										/>
-										{#if handle}
-											<button
-												type="button"
-												onclick={() => (social[net.key] = '')}
-												aria-label={`Quitar ${net.label}`}
-												class="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-muted-soft hover:text-error hover:bg-ember/10 transition-colors cursor-pointer"
-											>
-												<i class="ri-close-line"></i>
-											</button>
-										{/if}
-									</div>
-									{#if handle}
-										<p class="text-[11px] text-muted-soft mt-1.5 flex items-center gap-1">
-											<i class="ri-link text-[10px]"></i>
-											<span class="truncate">{socialUrl(net.key, handle)}</span>
-										</p>
-									{/if}
-								</div>
-							{/each}
-						</div>
-					</div>
-
-					{#if settingsError}
-						<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{settingsError}</p>
-					{/if}
-				</div>
-			</div>
 		{/if}
 			</div>
 		</div>
 
-		{#if (tab === 'apariencia' || tab === 'configuracion') && dirty}
-			<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70]">
-				<button
-					onclick={saveAll}
-					disabled={settingsSaving}
-					class="inline-flex items-center gap-2 bg-ember text-white pl-6 pr-8 py-3 rounded-full text-sm font-semibold shadow-xl shadow-black/40 hover:bg-ember-active transition-all duration-200 active:scale-[0.98] cursor-pointer disabled:opacity-50"
-				>
-				{#if justSaved}
-					<i class="ri-check-line"></i>
-					Guardado
-				{:else if settingsSaving}
-					<i class="ri-loader-4-line animate-spin"></i>
-					Guardando...
-				{:else}
-					Guardar cambios
-				{/if}
-				</button>
-			</div>
-		{/if}
 
 		{#if tab === 'productos' && productModalOpen}
 			<!-- Product form modal -->

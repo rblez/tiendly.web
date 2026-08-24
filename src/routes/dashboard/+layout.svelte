@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import AppNavbar from '$lib/components/AppNavbar.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 
 	let { children } = $props();
@@ -15,7 +14,6 @@
 
 {#if auth.ready && auth.session}
 	<div class="flex flex-col min-h-screen">
-		<AppNavbar />
 		<div class="flex-1">
 			{@render children()}
 		</div>
