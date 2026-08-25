@@ -62,6 +62,9 @@ jobs:
           echo "Next version: $VERSION"
 
           git checkout -b "$BRANCH"
+          git config user.name "release-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: release $VERSION [release-bot skip]"
           git push origin "$BRANCH"
 
           PR_URL="$(gh pr create \
