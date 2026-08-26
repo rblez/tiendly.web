@@ -215,16 +215,26 @@
 		loadStores();
 	});
 
-	// Reanuda al volver a la pestaña sin causar bucle de efectos: usa onMount, no $effect
+	// Reanuda al volver sin bloquear: debounced, sin retrigger infinito
 	onMount(() => {
-		const onVisible = () => {
-			if (document.visibilityState === 'visible' && auth.session) {
-				auth.refresh().then(() => loadStores());
+		let lastRefresh = 0;
+		let pending = false;
+		const COOLDOWN = 15000;
+		const doRefresh = async () => {
+			if (pending || !auth.session) return;
+			if (Date.now() - lastRefresh < COOLDOWN) return;
+			pending = true;
+			lastRefresh = Date.now();
+			try {
+				await loadStores();
+			} finally {
+				pending = false;
 			}
 		};
-		const onFocus = () => {
-			if (auth.session) auth.refresh().then(() => loadStores());
+		const onVisible = () => {
+			if (document.visibilityState === 'visible') void doRefresh();
 		};
+		const onFocus = () => void doRefresh();
 		document.addEventListener('visibilitychange', onVisible);
 		window.addEventListener('focus', onFocus);
 		return () => {
@@ -238,9 +248,9 @@
 	<title>Mis tiendas | Tiendly</title>
 </svelte:head>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-7 sm:pb-10">
 	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-		<div>
+		<div class="pt-1">
 			<h1 class="text-2xl sm:text-3xl font-bold text-ink">Mis tiendas</h1>
 			<p class="text-sm text-muted mt-1">Administra tus tiendas y compártelas</p>
 		</div>
@@ -248,7 +258,7 @@
 			{#if atLimit}
 				<button
 					onclick={() => (upgradeOpen = true)}
-					class="btn btn-3d btn-md cursor-pointer"
+					class="btn btn-3d btn-md w-full sm:w-auto cursor-pointer"
 				>
 					<i class="ri-add-line"></i>
 					Nueva tienda
@@ -256,7 +266,7 @@
 			{:else}
 				<a
 					href="/wizard"
-					class="btn btn-3d btn-md no-underline"
+					class="btn btn-3d btn-md w-full sm:w-auto no-underline"
 				>
 					<i class="ri-add-line"></i>
 					Nueva tienda
@@ -323,9 +333,9 @@
 			</a>
 		</div>
 	{:else}
-		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
 			{#each stores as store}
-				<a href={`/dashboard/s/${store.code}`} class="relative bg-card border border-hairline rounded-card transition-all duration-200 hover:border-ember/50 hover:shadow-lg hover:shadow-ink/5 hover:-translate-y-0.5 no-underline block group">
+				<a href={`/dashboard/s/${store.code}`} class="relative acrylic bg-card/90 border border-hairline rounded-card transition-all duration-200 hover:border-ember/50 hover:shadow-lg hover:shadow-ink/5 hover:-translate-y-0.5 no-underline block group">
 					<div class="p-5 sm:p-6">
 						<div class="flex items-start gap-3 pr-10">
 							<div class="h-12 w-12 rounded-xl overflow-hidden bg-canvas border border-hairline flex-shrink-0">
@@ -457,7 +467,7 @@
 							aria-label={store.active ? 'Ocultar tienda' : 'Mostrar tienda'}
 						>
 							<span class={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${store.active ? 'bg-ember' : 'bg-bone border border-hairline'}`}>
-								<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${store.active ? 'left-[18px]' : 'left-0.5'}"></span>
+								<span class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all {store.active ? 'left-[18px]' : 'left-0.5'}"></span>
 							</span>
 							<span class={`text-xs font-medium ${store.active ? 'text-ink' : 'text-muted-soft'}`}>{store.active ? 'Visible' : 'Oculta'}</span>
 						</button>
