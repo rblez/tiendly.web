@@ -31,11 +31,16 @@
 		<SettingsRow icon="ri-map-pin-line" color="#F59E0B" label="Información adicional" sublabel="Ubicación, horario, enlaces" href={`/dashboard/s/${storeCode}/configuracion/adicional`} />
 	</SettingsSection>
 
+	<SettingsSection title="Catálogo">
+		<SettingsRow icon="ri-box-3-line" color="#6366F1" label="Productos" sublabel="Gestiona tu catálogo de productos" href={`/dashboard/s/${storeCode}/productos`} />
+		<SettingsRow icon="ri-price-tag-3-line" color="#8B5CF6" label="Categorías" sublabel="Gestiona las categorías de tus productos" href={`/dashboard/s/${storeCode}/configuracion/categorias`} />
+		<SettingsRow icon="ri-coupon-3-line" color="#EC4899" label="Cupones" sublabel="Descuentos para tus clientes" href={`/dashboard/s/${storeCode}/cupones`} />
+	</SettingsSection>
+
 	<SettingsSection title="Ventas">
 		<SettingsRow icon="ri-exchange-dollar-line" color="#6366F1" label="Moneda" sublabel="USD principal, CUP y tasa" href={`/dashboard/s/${storeCode}/configuracion/moneda`} />
 		<SettingsRow icon="ri-bank-card-line" color="#10B981" label="Pagos" sublabel="Métodos manuales" href={`/dashboard/s/${storeCode}/configuracion/pagos`} />
 		<SettingsRow icon="ri-truck-line" color="#F97316" label="Envíos" sublabel="Zonas y costo de mensajería" href={`/dashboard/s/${storeCode}/configuracion/envios`} />
-		<SettingsRow icon="ri-coupon-3-line" color="#EC4899" label="Cupones" sublabel="Descuentos para tus clientes" href={`/dashboard/s/${storeCode}/cupones`} />
 	</SettingsSection>
 
 	<SettingsSection title="Sistema">
