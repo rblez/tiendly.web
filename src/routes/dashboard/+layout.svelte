@@ -25,8 +25,9 @@
 						<i class="ri-user-line"></i>
 					{/if}
 				</a>
-				<a href="/dashboard" class="px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-bone hover:text-ink transition-colors no-underline">
-					Inicio
+				<a href="/dashboard" class="px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-bone hover:text-ink transition-colors no-underline flex items-center gap-2">
+					<i class="ri-home-line" aria-hidden="true"></i>
+					<span>Inicio</span>
 				</a>
 			</div>
 		</header>
