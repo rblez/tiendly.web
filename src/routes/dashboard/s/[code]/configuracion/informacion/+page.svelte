@@ -18,14 +18,20 @@
 	let error = $state('');
 	let initial = $state('');
 
-	function onSlugInput() { slug = slugify(slug); }
+	function normalizeSlug(value: string) {
+		return slugify(value.replace(/^@+/, ''));
+	}
+
+	function onSlugInput() {
+		slug = normalizeSlug(slug);
+	}
 
 	onMount(async () => {
 		const { data } = await supabase.from('stores').select('*').eq('code', storeCode).maybeSingle();
 		if (!data) { error = 'No se encontró la tienda.'; loading=false; return; }
 		storeId = (data as any).id;
 		name = (data as any).name ?? '';
-		slug = (data as any).slug ?? '';
+		slug = normalizeSlug((data as any).slug ?? '');
 		description = (data as any).description ?? '';
 		category = (data as any).category ?? '';
 		initial = JSON.stringify({ name, slug, description, category });
@@ -64,11 +70,11 @@
 			</div>
 			<div>
 				<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Usuario</label>
-				<div class="relative">
-					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-soft">@</span>
-					<input id="s-slug" type="text" bind:value={slug} oninput={onSlugInput} class="input pl-8 w-full" />
+				<div class="flex overflow-hidden rounded-btn border border-hairline bg-canvas transition-colors focus-within:border-ember focus-within:ring-2 focus-within:ring-ember/20">
+					<span class="flex items-center border-r border-hairline px-3 text-sm font-semibold text-muted-soft" aria-hidden="true">@</span>
+					<input id="s-slug" type="text" bind:value={slug} oninput={onSlugInput} class="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="s-slug-preview" />
 				</div>
-				<p class="text-xs text-muted-soft mt-1">tiendly.lat/@{slug || 'usuario'}</p>
+				<p id="s-slug-preview" class="mt-2 text-xs text-muted-soft">Tu tienda: <span class="font-medium text-body">tiendly.lat/@{slug || 'usuario'}</span></p>
 			</div>
 			<div>
 				<label for="s-desc" class="block text-sm font-medium text-body mb-1.5">Descripción</label>
@@ -77,7 +83,7 @@
 			<div>
 				<p class="block text-sm font-medium text-body mb-1.5">Categoría</p>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
-					{#each STORE_CATEGORIES as c}
+					{#each STORE_CATEGORIES as c (c.name)}
 						<label class="flex items-center gap-2.5 border border-hairline rounded-btn px-3.5 py-2.5 cursor-pointer hover:border-ember/50 {category===c.name?'border-ember/60 bg-ember/5':''}">
 							<input type="radio" name="cat" value={c.name} checked={category===c.name} onchange={()=>category=c.name} class="w-4 h-4 accent-ember" />
 							<span class="text-sm text-ink">{c.name}</span>
