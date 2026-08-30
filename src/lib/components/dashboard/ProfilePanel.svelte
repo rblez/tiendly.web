@@ -251,7 +251,8 @@
 			</div>
 
 	{#if tab === 'perfil'}
-		<div class="acrylic bg-card/90 border border-hairline rounded-card p-5 sm:p-8 space-y-8 shadow-sm">
+		<SettingsSection title="Perfil">
+		<div class="p-5 sm:p-8 space-y-8">
 			<div class="flex items-center gap-5">
 				<div class="h-16 w-16 flex-shrink-0 rounded-full overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
 					{#if auth.profile?.avatar_url}
@@ -376,9 +377,11 @@
 					Guardar cambios
 				</button>
 			</div>
-		</div>
-	{:else if tab === 'general'}
-		<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
+			</div>
+		</SettingsSection>
+		{:else if tab === 'general'}
+			<SettingsSection title="General">
+			<div class="space-y-8 p-5 sm:p-8">
 			<h2 class="font-bold text-ink mb-1">Notificaciones de pedidos</h2>
 			<p class="text-sm text-muted mb-5">Se aplican al panel de tu tienda cuando llega un pedido nuevo.</p>
 			<div class="space-y-5">
@@ -451,9 +454,11 @@
 			{#if secMsg}
 				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-3">{secMsg}</p>
 			{/if}
-		</div>
-	{:else}
-		<div class="space-y-8">
+			</div>
+			</SettingsSection>
+		{:else}
+			<SettingsSection title="Privacidad">
+			<div class="space-y-8 p-5 sm:p-8">
 			<div class="bg-card border border-error/30 rounded-card p-6 sm:p-8">
 				<h2 class="font-bold text-error mb-1">Eliminar cuenta</h2>
 				<p class="text-sm text-body mb-4">
@@ -486,8 +491,9 @@
 					<i class="ri-logout-box-r-line"></i>
 					{loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
 				</button>
+				</div>
 			</div>
-			</div>
+			</SettingsSection>
 		{/if}
 	</div>
 </div>

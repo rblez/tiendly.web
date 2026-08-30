@@ -1320,13 +1320,20 @@ async function duplicateProduct(p: Product) {
 			</div>
 		</div>
 	{:else}
-		<div class="flex items-center justify-between gap-3 mb-5 pt-2 sm:pt-3">
-			<div class="flex items-center gap-3 min-w-0">
-				<h1 class="text-lg font-bold text-ink truncate pt-1">{store.name}</h1>
+			<div class="mb-7 pt-1">
+				<h1 class="text-2xl sm:text-3xl font-bold text-ink">
+					{tab === 'resumen' ? 'Estadísticas' : tab === 'productos' ? 'Productos' : 'Pedidos'}
+				</h1>
+				<p class="text-sm text-muted mt-1">
+					{tab === 'resumen'
+						? 'Consulta el rendimiento y la actividad reciente de tu tienda.'
+						: tab === 'productos'
+							? 'Gestiona el catálogo de productos de tu tienda.'
+							: 'Consulta y administra los pedidos recibidos en tu tienda.'}
+				</p>
 			</div>
-		</div>
 
-		<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
+			<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 			<aside class="hidden lg:flex flex-col gap-4 lg:sticky lg:top-20">
 				<nav class="acrylic bg-card border border-hairline rounded-card p-2 space-y-1">
 					<a
