@@ -39,15 +39,18 @@
 	</SettingsSection>
 
 	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
-		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href="/dashboard/profile/general" />
-		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
+		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${storeCode}/configuracion/cuenta/perfil`} />
+		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href={`/dashboard/s/${storeCode}/configuracion/cuenta/notificaciones`} />
+		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${storeCode}/configuracion/cuenta/seguridad`} />
 	</SettingsSection>
 
 	<SettingsSection title="Sistema">
-		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href="/dashboard/profile/general" />
-		<SettingsRow icon="ri-link-m" color="#6366F1" label="Dominio o enlace de tienda" sublabel="Comparte la URL pública de tu tienda" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
-		<SettingsRow icon="ri-history-line" color="#64748B" label="Registro de cambios" sublabel="Novedades y actualizaciones de Tiendly" href="/changelog" />
+		<SettingsRow icon="ri-history-line" color="#64748B" label="Novedades" sublabel="Cambios y actualizaciones de Tiendly" href="/changelog" />
 		<SettingsRow icon="ri-information-line" color="#475569" label="Acerca de Tiendly" sublabel="Versión, términos y privacidad" href={`/dashboard/s/${storeCode}/configuracion/acerca`} />
 	</SettingsSection>
+
+	<button type="button" onclick={() => auth.signOut()} class="mt-2 mb-6 w-full min-h-14 rounded-card border border-error/25 bg-error/10 px-5 text-left text-error font-semibold flex items-center gap-3 hover:bg-error/15 transition-colors">
+		<span class="w-10 h-10 rounded-lg bg-error/15 flex items-center justify-center text-lg"><i class="ri-logout-box-r-line" aria-hidden="true"></i></span>
+		<span>Cerrar sesión</span>
+	</button>
 </section>

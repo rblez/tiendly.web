@@ -18,7 +18,7 @@
 	<div class="flex flex-col min-h-screen">
 		<header class="sticky top-0 z-40 border-b border-hairline acrylic">
 			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
-				<a href="/dashboard/profile" class="h-9 w-9 rounded-full bg-bone border border-hairline flex items-center justify-center text-body hover:text-ember transition-colors no-underline shrink-0" aria-label="Perfil">
+				<a href={storeCode ? `/dashboard/s/${storeCode}/configuracion` : '/dashboard'} class="h-9 w-9 rounded-full bg-bone border border-hairline flex items-center justify-center text-body hover:text-ember transition-colors no-underline shrink-0" aria-label="Configuración">
 					{#if auth.profile?.avatar_url}
 						<img src={auth.profile.avatar_url} alt="" class="h-full w-full rounded-full object-cover" />
 					{:else}
