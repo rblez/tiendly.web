@@ -11,12 +11,11 @@
 	<title>Configuración | Tiendly</title>
 </svelte:head>
 
-<SettingsHeader backHref={`/dashboard/s/${storeCode}`} />
+<SettingsHeader backHref={`/dashboard/s/${storeCode}`} title="Configuración" />
 
-<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-10">
-	<div class="mb-7 pt-1">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">Configuración</h1>
-		<p class="text-sm text-muted mt-1">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
+<section class="mx-auto max-w-2xl px-4 pb-10 sm:px-6 lg:px-8">
+	<div class="mb-8 px-1 pt-2">
+		<p class="text-sm leading-6 text-muted">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
 	</div>
 
 	<SettingsSection title="Tienda">
@@ -38,13 +37,13 @@
 	</SettingsSection>
 
 	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
-		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href="/dashboard/profile/general" />
-		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
+		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${storeCode}/configuracion/cuenta/perfil`} />
+		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
+		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${storeCode}/configuracion/cuenta/privacidad`} />
 	</SettingsSection>
 
 	<SettingsSection title="Sistema">
-		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href="/dashboard/profile/general" />
+		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
 		<SettingsRow icon="ri-link-m" color="#6366F1" label="Dominio o enlace de tienda" sublabel="Comparte la URL pública de tu tienda" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
 		<SettingsRow icon="ri-history-line" color="#64748B" label="Registro de cambios" sublabel="Novedades y actualizaciones de Tiendly" href="/changelog" />
 		<SettingsRow icon="ri-information-line" color="#475569" label="Acerca de Tiendly" sublabel="Versión, términos y privacidad" href={`/dashboard/s/${storeCode}/configuracion/acerca`} />

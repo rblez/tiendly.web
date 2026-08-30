@@ -1121,8 +1121,21 @@ $effect(() => {
 	);
 
 	async function updateOrderStatus(order: Order, status: string) {
-		await supabase.from('orders').update({ status }).eq('id', order.id);
-		order.status = status;
+		if (!store || order.status === status) return;
+
+		const previousStatus = order.status;
+		orders = orders.map((item) => (item.id === order.id ? { ...item, status } : item));
+
+		const { error } = await supabase
+			.from('orders')
+			.update({ status })
+			.eq('id', order.id)
+			.eq('store_id', store.id);
+
+		if (error) {
+			orders = orders.map((item) => (item.id === order.id ? { ...item, status: previousStatus } : item));
+			console.error('[v0] No se pudo actualizar el estado del pedido:', error.message);
+		}
 	}
 
 	function formatOrderDate(iso: string): string {
