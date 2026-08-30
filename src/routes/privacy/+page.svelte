@@ -19,7 +19,7 @@
 			<h2 class="text-lg font-bold text-ink mb-2">Resumen</h2>
 			<p>
 				Recolectamos lo mínimo necesario para que Tiendly funcione: datos de tu cuenta, de tu tienda y de los pedidos que se generan.
-				No vendemos tus datos ni los utilizas para anunciarte. Puedes pedir la eliminación de tu cuenta y de tu tienda en cualquier momento.
+				No vendemos tus datos ni los usamos para anunciarte. Puedes pedir la eliminación de tu cuenta y de tu tienda en cualquier momento.
 			</p>
 		</section>
 
