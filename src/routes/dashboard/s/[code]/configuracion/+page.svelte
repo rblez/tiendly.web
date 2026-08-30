@@ -3,6 +3,7 @@
 	import SettingsRow from '$lib/components/settings/SettingsRow.svelte';
 	import SettingsSection from '$lib/components/settings/SettingsSection.svelte';
 	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
+	import { auth } from '$lib/stores/auth.svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
 </script>
