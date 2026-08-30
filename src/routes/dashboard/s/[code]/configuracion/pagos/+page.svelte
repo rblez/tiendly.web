@@ -93,12 +93,14 @@
 							</div>
 							<div class="mt-2 space-y-2">
 								{#each pm.fields as f, fi}
-									<div class="flex items-center gap-2">
-										<input type="text" bind:value={f.label} placeholder="Etiqueta (Nº de cuenta, correo...)" class="input input-sm w-1/3 min-w-0" />
-										<input type="text" bind:value={f.value} placeholder="Dato copiable" class="input input-sm flex-1 min-w-0" />
-										<button type="button" onclick={() => removeField(i, fi)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar fila">
-											<i class="ri-close-line"></i>
-										</button>
+									<div class="border border-hairline rounded-btn p-2 space-y-2">
+										<input type="text" bind:value={f.label} placeholder="Etiqueta (Nº de cuenta, correo...)" class="input w-full" />
+										<div class="flex items-center gap-2">
+											<input type="text" bind:value={f.value} placeholder="Dato copiable" class="input flex-1 min-w-0" />
+											<button type="button" onclick={() => removeField(i, fi)} class="w-10 h-10 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar fila">
+												<i class="ri-close-line text-lg"></i>
+											</button>
+										</div>
 									</div>
 								{/each}
 								<button type="button" onclick={() => addField(i)} class="w-full px-3 py-1.5 bg-bone border border-dashed border-hairline rounded-btn text-xs font-medium text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">

@@ -65,14 +65,16 @@
 				<p class="text-xs text-muted-soft">Define zonas con su costo de envío. El cliente elige una al pagar.</p>
 
 				{#if zones.length > 0}
-					<div class="space-y-1.5">
+					<div class="space-y-3">
 						{#each zones as zone, zi}
-							<div class="flex items-center gap-2">
-								<input type="text" bind:value={zone.name} placeholder="Zona (ej: La Habana)" class="input input-sm flex-1 min-w-0" />
-								<input type="number" step="any" min="0" bind:value={zone.price} placeholder="Costo" class="input input-sm w-28 text-right" />
-								<button type="button" onclick={() => removeZone(zi)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar zona">
-									<i class="ri-close-line"></i>
-								</button>
+							<div class="border border-hairline rounded-btn p-3 space-y-2">
+								<input type="text" bind:value={zone.name} placeholder="Zona (ej: La Habana)" class="input w-full" />
+								<div class="flex items-center gap-2">
+									<input type="number" step="any" min="0" bind:value={zone.price} placeholder="Costo" class="input flex-1 min-w-0 text-right" />
+									<button type="button" onclick={() => removeZone(zi)} class="w-10 h-10 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar zona">
+										<i class="ri-close-line text-lg"></i>
+									</button>
+								</div>
 							</div>
 						{/each}
 					</div>
