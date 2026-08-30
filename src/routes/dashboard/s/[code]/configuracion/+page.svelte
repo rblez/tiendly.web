@@ -14,15 +14,16 @@
 
 <SettingsHeader backHref={`/dashboard/s/${storeCode}`} />
 
-<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-10">
-	<div class="mb-7 pt-1">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">Configuración</h1>
-		<p class="text-sm text-muted mt-1">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
+<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10">
+	<div class="mb-8 pt-1">
+		<p class="text-xs font-bold uppercase tracking-[0.14em] text-muted-soft">Preferencias</p>
+		<h1 class="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-ink">Configuración</h1>
+		<p class="mt-2 max-w-xl text-sm leading-6 text-muted">Ajusta cómo funciona tu tienda, cómo recibes pedidos y cómo administras tu cuenta.</p>
 	</div>
 
 	<SettingsSection title="Tienda">
 		<SettingsRow icon="ri-store-2-line" color="#3B82F6" label="Información general" sublabel="Nombre, @usuario, descripción, categoría" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
-		<SettingsRow icon="ri-image-edit-line" color="#8B5CF6" label="Apariencia" sublabel="Logo, color, banner" href={`/dashboard/s/${storeCode}/configuracion/apariencia`} />
+		<SettingsRow icon="ri-image-edit-line" color="#8B5CF6" label="Apariencia" sublabel="Logo y colores" href={`/dashboard/s/${storeCode}/configuracion/apariencia`} />
 		<SettingsRow icon="ri-eye-line" color="#14B8A6" label="Visibilidad" sublabel="Visible u oculta en tiendly.lat" href={`/dashboard/s/${storeCode}/configuracion/visibilidad`} />
 	</SettingsSection>
 
