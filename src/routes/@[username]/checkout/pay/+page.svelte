@@ -244,7 +244,7 @@
 		return [
 			`Hola ${data.store.name} 👋`,
 			``,
-			`*El cliente acabó de pagar* y envió su comprobante:`,
+			`*He acabado de pagar* y envié el comprobante:`,
 			``,
 			...(draft.id ? [`🧾 Nº pedido: *${draft.id}*`, ``] : []),
 			items,
@@ -254,7 +254,7 @@
 			`📍 Total: *${formatPrice(draft.total, currency)}*`,
 			`👤 ${draft.name}`,
 			`📱 ${draft.phone}`,
-			...(pmTitle ? [`💳 Pagó con: ${pmTitle}`, ``] : []),
+			...(pmTitle ? [`💳 Pagué con: ${pmTitle}`, ``] : []),
 			...(receiptUrl ? [`📎 Comprobante: ${receiptUrl}`, ``] : []),
 			...(draft.notes ? [`📝 ${draft.notes}`, ``] : [``]),
 			`Confírmalo en el panel de Tiendly ✅`,
