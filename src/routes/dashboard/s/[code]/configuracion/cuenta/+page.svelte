@@ -14,7 +14,7 @@
 	<title>Cuenta | Tiendly</title>
 </svelte:head>
 
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
+<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} title="Cuenta" />
 
 <section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
 	<div class="mx-4 mb-5 acrylic bg-card/90 border border-hairline rounded-card p-5 flex items-center gap-4 shadow-sm">
@@ -32,8 +32,8 @@
 	</div>
 
 	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Foto, nombre y teléfono" href={`cuenta/perfil`} />
-		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Avisos de pedidos nuevos" href={`cuenta/notificaciones`} />
-		<SettingsRow icon="ri-lock-password-line" color="#EF4444" label="Seguridad" sublabel="Contraseña, correo y sesiones" href={`cuenta/seguridad`} />
+		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Foto, nombre y teléfono" href={`/dashboard/s/${storeCode}/configuracion/cuenta/perfil`} />
+		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Avisos de pedidos nuevos" href={`/dashboard/s/${storeCode}/configuracion/cuenta/notificaciones`} />
+		<SettingsRow icon="ri-lock-password-line" color="#EF4444" label="Seguridad" sublabel="Contraseña, correo y sesiones" href={`/dashboard/s/${storeCode}/configuracion/cuenta/seguridad`} />
 	</SettingsSection>
 </section>

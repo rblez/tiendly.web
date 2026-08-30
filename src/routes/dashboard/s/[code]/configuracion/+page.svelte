@@ -37,9 +37,7 @@
 	</SettingsSection>
 
 	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${storeCode}/configuracion/cuenta/perfil`} />
-		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
-		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${storeCode}/configuracion/cuenta/privacidad`} />
+		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Cuenta" sublabel="Perfil, notificaciones y seguridad" href={`/dashboard/s/${storeCode}/configuracion/cuenta`} />
 	</SettingsSection>
 
 	<SettingsSection title="Sistema">
