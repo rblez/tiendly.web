@@ -7,6 +7,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import SettingsRow from '$lib/components/settings/SettingsRow.svelte';
 	import SettingsSection from '$lib/components/settings/SettingsSection.svelte';
+	import ImageCropper from '$lib/components/ImageCropper.svelte';
 	import { onMount } from 'svelte';
 
 	type Prefs = { sound: boolean; browser: boolean; badge: boolean };
@@ -79,6 +80,7 @@
 	let profileMsg = $state('');
 	let saving = $state(false);
 	let profileError = $state('');
+	let cropFile = $state<File | null>(null);
 
 	$effect(() => {
 		if (auth.profile) {
@@ -91,6 +93,13 @@
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file || !auth.session) return;
+		cropFile = file;
+		input.value = '';
+	}
+
+	async function confirmAvatar(file: File) {
+		cropFile = null;
+		if (!auth.session) return;
 		uploading = true;
 		profileError = '';
 		try {
@@ -98,9 +107,9 @@
 			await auth.updateProfile({ avatar_url: url });
 		} catch {
 			profileError = 'No se pudo subir la foto. Intenta con otra imagen.';
+		} finally {
+			uploading = false;
 		}
-		uploading = false;
-		input.value = '';
 	}
 
 	function removeAvatar() {
@@ -235,7 +244,7 @@
 	<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 		<aside class="hidden lg:flex flex-col gap-4">
 			<SettingsSection title="Cuenta">
-				<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile" />
+				<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
 				<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href="/dashboard/profile/general" />
 				<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
 			</SettingsSection>
@@ -244,7 +253,7 @@
 		<div class="min-w-0">
 			<div class="lg:hidden mb-5">
 				<SettingsSection title="Cuenta">
-					<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile" />
+<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
 					<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href="/dashboard/profile/general" />
 					<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
 				</SettingsSection>
@@ -260,35 +269,23 @@
 					{:else}
 						<span class="text-2xl font-black text-ember">
 							{name ? name.charAt(0).toUpperCase() : 'T'}
-						</span>
-					{/if}
-				</div>
-				<div class="space-y-2">
-					<div class="flex items-center gap-2">
-						<label
-							class="btn btn-3d btn-sm cursor-pointer"
-							title={auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
-						>
-							{#if uploading}
-								<i class="ri-loader-4-line animate-spin"></i>
-							{:else}
-								<i class="ri-camera-line"></i>
-							{/if}
-							{uploading ? 'Subiendo...' : auth.profile?.avatar_url ? 'Cambiar' : 'Subir'}
-							<input type="file" accept="image/*" class="hidden" onchange={handleAvatar} />
-						</label>
-						{#if auth.profile?.avatar_url}
-							<button onclick={removeAvatar} class="inline-flex items-center gap-1 text-xs text-muted-soft hover:text-error transition-colors cursor-pointer" title="Quitar foto">
-								<i class="ri-delete-bin-6-line"></i>
-								Quitar
-							</button>
+							</span>
 						{/if}
 					</div>
-					<p class="text-xs text-muted-soft">Foto opcional. Aparecerá junto a tu cuenta.</p>
+					<div class="space-y-2">
+						<div class="flex items-center gap-2">
+							<label class="btn btn-3d btn-sm cursor-pointer" title={auth.profile?.avatar_url ? 'Cambiar foto' : 'Subir foto'}>
+								{#if uploading}<i class="ri-loader-4-line animate-spin"></i>{:else}<i class="ri-camera-line"></i>{/if}
+								{uploading ? 'Subiendo...' : auth.profile?.avatar_url ? 'Cambiar' : 'Subir'}
+								<input type="file" accept="image/*" class="hidden" onchange={handleAvatar} />
+							</label>
+							{#if auth.profile?.avatar_url}<button onclick={removeAvatar} class="inline-flex items-center gap-1 text-xs text-muted-soft hover:text-error transition-colors cursor-pointer" title="Quitar foto"><i class="ri-delete-bin-6-line"></i>Quitar</button>{/if}
+						</div>
+						<p class="text-xs text-muted-soft">Foto opcional. Aparecerá junto a tu cuenta.</p>
+					</div>
 				</div>
-			</div>
 
-			<div class="grid gap-4 sm:grid-cols-2">
+				<div class="grid gap-4 sm:grid-cols-2">
 				<div>
 					<label for="p-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
 					<input
@@ -349,7 +346,8 @@
 								<span class="font-semibold text-ink tabular-nums">{productsCount} de {plan.limitProducts * plan.limitStores}</span>
 							{:else}
 								<span class="font-semibold text-ink">Ilimitados</span>
-							{/if}
+	{/if}
+
 						</div>
 						<div class="h-1.5 bg-bone rounded-full overflow-hidden">
 							<div class="h-full bg-ember rounded-full transition-all" style="width:{Math.min(100, (productsCount / (Number.isFinite(plan.limitProducts) ? plan.limitProducts * plan.limitStores : 1)) * 100)}%"></div>
@@ -497,4 +495,8 @@
 		{/if}
 	</div>
 </div>
-</section>
+	</section>
+	{#if cropFile}
+		<ImageCropper file={cropFile} onconfirm={confirmAvatar} oncancel={() => (cropFile = null)} />
+	{/if}
+

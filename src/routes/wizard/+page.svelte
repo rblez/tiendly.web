@@ -5,6 +5,7 @@
 	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, slugify, uniqueProductId, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_CATEGORIES } from '$lib/categories';
+	import ImageCropper from '$lib/components/ImageCropper.svelte';
 
 	type WizardProduct = {
 		name: string;
@@ -21,6 +22,9 @@
 	let whatsapp = $state('');
 	let products = $state<WizardProduct[]>([{ name: '', price: '', images: [] }]);
 	let uploadingImages = $state(0);
+	let cropFile = $state<File | null>(null);
+	let cropProductIndex = $state<number | null>(null);
+	let cropQueue = $state<File[]>([]);
 
 	let error = $state('');
 	let creating = $state(false);
@@ -90,27 +94,41 @@
 		products = products.filter((_, i) => i !== index);
 	}
 
-	async function handleProductImages(e: Event, index: number) {
+	function handleProductImages(e: Event, index: number) {
 		const input = e.target as HTMLInputElement;
 		const files = Array.from(input.files ?? []);
 		if (files.length === 0) return;
 		error = '';
-		uploadingImages += files.length;
+		cropProductIndex = index;
+		cropQueue = files.slice(1);
+		cropFile = files[0];
+		input.value = '';
+	}
+
+	async function confirmProductCrop(file: File) {
+		const index = cropProductIndex;
+		cropFile = null;
+		if (index === null) return;
+		uploadingImages += 1;
 		try {
-			for (const file of files) {
-				if (auth.session) {
-					const url = await uploadImage(file, "product");
-					products[index].images.push(url);
-				} else {
-					const dataUrl = await fileToDataUrl(file);
-					products[index].images.push(dataUrl);
-				}
+			const image = auth.session ? await uploadImage(file, "product") : await fileToDataUrl(file);
+			products[index].images = [...products[index].images, image];
+			if (cropQueue.length > 0) {
+				cropFile = cropQueue[0];
+				cropQueue = cropQueue.slice(1);
 			}
 		} catch {
 			error = 'No se pudieron subir las imágenes.';
+			cropQueue = [];
+		} finally {
+			uploadingImages -= 1;
 		}
-		uploadingImages -= files.length;
-		input.value = '';
+	}
+
+	function cancelProductCrop() {
+		cropFile = null;
+		cropQueue = [];
+		cropProductIndex = null;
 	}
 
 	function removeProductImage(index: number, imgIndex: number) {
@@ -500,5 +518,8 @@
 				{/if}
 			</div>
 		</div>
+	{/if}
+	{#if cropFile}
+		<ImageCropper file={cropFile} onconfirm={confirmProductCrop} oncancel={cancelProductCrop} />
 	{/if}
 </section>
