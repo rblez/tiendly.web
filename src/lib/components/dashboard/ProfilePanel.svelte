@@ -69,7 +69,7 @@
 	$effect(() => {
 		const t = $page.url.searchParams.get('tab');
 		if (t && (TABS as readonly string[]).includes(t)) {
-			goto(`/dashboard/profile/${t}`, { replaceState: true });
+			goto(`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/${t}`, { replaceState: true });
 		}
 	});
 
@@ -244,18 +244,18 @@
 	<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 		<aside class="hidden lg:flex flex-col gap-4">
 			<SettingsSection title="Cuenta">
-				<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
-				<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href="/dashboard/profile/general" />
-				<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
+				<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/perfil`} />
+				<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/general`} />
+				<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/privacidad`} />
 			</SettingsSection>
 		</aside>
 
 		<div class="min-w-0">
 			<div class="lg:hidden mb-5">
 				<SettingsSection title="Cuenta">
-<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
-					<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href="/dashboard/profile/general" />
-					<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
+<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Perfil" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/perfil`} />
+					<SettingsRow icon="ri-settings-3-line" color="#F59E0B" label="General" sublabel="Notificaciones y seguridad" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/general`} />
+					<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/cuenta/privacidad`} />
 				</SettingsSection>
 			</div>
 

@@ -38,13 +38,13 @@
 	</SettingsSection>
 
 	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href="/dashboard/profile/perfil" />
-		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href="/dashboard/profile/general" />
-		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href="/dashboard/profile/privacidad" />
+		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Información personal" sublabel="Nombre, foto y teléfono" href={`/dashboard/s/${storeCode}/configuracion/cuenta/perfil`} />
+		<SettingsRow icon="ri-notification-3-line" color="#F59E0B" label="Notificaciones" sublabel="Preferencias de avisos" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
+		<SettingsRow icon="ri-shield-check-line" color="#10B981" label="Privacidad y seguridad" sublabel="Sesiones y eliminación" href={`/dashboard/s/${storeCode}/configuracion/cuenta/privacidad`} />
 	</SettingsSection>
 
 	<SettingsSection title="Sistema">
-		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href="/dashboard/profile/general" />
+		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
 		<SettingsRow icon="ri-link-m" color="#6366F1" label="Dominio o enlace de tienda" sublabel="Comparte la URL pública de tu tienda" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
 		<SettingsRow icon="ri-history-line" color="#64748B" label="Registro de cambios" sublabel="Novedades y actualizaciones de Tiendly" href="/changelog" />
 		<SettingsRow icon="ri-information-line" color="#475569" label="Acerca de Tiendly" sublabel="Versión, términos y privacidad" href={`/dashboard/s/${storeCode}/configuracion/acerca`} />
