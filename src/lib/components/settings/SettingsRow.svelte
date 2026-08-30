@@ -29,6 +29,7 @@
 			<span class="block text-xs text-muted truncate">{sublabel}</span>
 		{/if}
 	</span>
+	<span class="ri-arrow-right-s-line shrink-0 text-lg text-muted-soft" aria-hidden="true"></span>
 {/snippet}
 
 {#if href}
