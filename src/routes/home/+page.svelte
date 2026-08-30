@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Tiendly | Tu tienda online, sin intermediarios</title>
+	<title>Tu panel | Tiendly</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

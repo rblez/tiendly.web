@@ -5,7 +5,7 @@
 	const releases = [
 		{
 			date: '2026-08-08',
-			title: 'Próximamente — Mejoras de interfaz',
+			title: '1.1.13-beta — Mejoras de interfaz',
 			items: [
 				'Mejoras de interfaz en el checkout: número de pedido visible para el cliente (ej: ABC345).',
 				'Mejoras de interfaz en el panel de pedidos: búsqueda por número de pedido y código visible en cada tarjeta y en la exportación.',

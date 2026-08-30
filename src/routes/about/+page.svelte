@@ -4,8 +4,8 @@
 </script>
 
 <svelte:head>
-	<title>Acerca de Tiendly | Nuestra historia</title>
-	<meta name="description" content="Tiendly nació para que cualquier persona pueda tener su catálogo online y recibir pedidos por WhatsApp, sin comisiones ni intermediarios." />
+	<title>Acerca de Tiendly | Catálogos y pedidos online</title>
+	<meta name="description" content="Conoce Tiendly, una herramienta sencilla para crear tu catálogo online, mostrar tus productos y recibir pedidos de tus clientes." />
 </svelte:head>
 
 <MarketingNav />

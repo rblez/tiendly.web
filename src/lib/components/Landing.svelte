@@ -62,10 +62,10 @@
 	<div class="absolute inset-0 bg-gradient-to-b from-canvas/85 via-canvas/60 to-canvas/85" aria-hidden="true"></div>
 	<div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
 		<h1 class="text-4xl sm:text-6xl font-black tracking-tight text-ink max-w-3xl mx-auto leading-[1.05]">
-			Tu tienda online y los pedidos en tu <span class="text-ember">WhatsApp</span>
+			Tu catálogo online para recibir pedidos <span class="text-ember">sin complicaciones</span>
 		</h1>
 		<p class="text-lg text-body mt-5 max-w-xl mx-auto">
-			Crea tu catálogo en minutos, comparte tu link y recibe pedidos directo. Sin comisiones, sin intermediarios y sin plataformas de pago ajenas.
+			Crea tu catálogo en minutos, comparte tu enlace y recibe los pedidos organizados de tus clientes. Tú decides cómo coordinar cada venta.
 		</p>
 		<div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-8">
 			<a href="/wizard" class="cta-primary">Crear mi tienda gratis</a>

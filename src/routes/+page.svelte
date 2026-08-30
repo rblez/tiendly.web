@@ -15,8 +15,8 @@
 </script>
 
 <svelte:head>
-	<title>Tiendly | Tu tienda online, sin intermediarios</title>
-	<meta name="description" content="Crea tu catálogo, comparte tu link y recibe pedidos directo en tu WhatsApp. Sin comisiones, sin plataformas de pago ajenas: tu tienda, tus reglas." />
+	<title>Tiendly | Catálogo online y pedidos para tu negocio</title>
+	<meta name="description" content="Crea tu catálogo online, compártelo y recibe pedidos organizados de tus clientes. Tiendly te ayuda a mostrar tus productos y vender de forma sencilla." />
 	<script type="application/ld+json">
 		{JSON.stringify({
 			'@context': 'https://schema.org',
