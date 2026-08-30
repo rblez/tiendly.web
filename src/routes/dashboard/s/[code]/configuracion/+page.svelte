@@ -11,12 +11,11 @@
 	<title>Configuración | Tiendly</title>
 </svelte:head>
 
-<SettingsHeader backHref={`/dashboard/s/${storeCode}`} />
+<SettingsHeader backHref={`/dashboard/s/${storeCode}`} title="Configuración" />
 
-<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-10">
-	<div class="mb-7 pt-1">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">Configuración</h1>
-		<p class="text-sm text-muted mt-1">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
+<section class="mx-auto max-w-2xl px-4 pb-10 sm:px-6 lg:px-8">
+	<div class="mb-8 px-1 pt-2">
+		<p class="text-sm leading-6 text-muted">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
 	</div>
 
 	<SettingsSection title="Tienda">

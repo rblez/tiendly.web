@@ -34,14 +34,14 @@
 {#if href}
 	<a
 		{href}
-		class="flex items-center gap-3.5 px-4 py-3.5 sm:px-5 bg-transparent hover:bg-bone/50 active:bg-bone transition-colors cursor-pointer no-underline min-h-[68px]"
+		class="flex items-center gap-4 px-4 py-4 sm:px-5 bg-transparent hover:bg-bone/50 active:bg-bone transition-colors cursor-pointer no-underline min-h-[76px]"
 	>
 		{@render row()}
 	</a>
 {:else}
 	<button
 		onclick={onclick}
-		class="w-full flex items-center gap-3.5 px-4 py-3.5 sm:px-5 bg-transparent hover:bg-bone/50 active:bg-bone transition-colors cursor-pointer text-left min-h-[68px]"
+		class="w-full flex items-center gap-4 px-4 py-4 sm:px-5 bg-transparent hover:bg-bone/50 active:bg-bone transition-colors cursor-pointer text-left min-h-[76px]"
 	>
 		{@render row()}
 	</button>
