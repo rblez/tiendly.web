@@ -7,7 +7,7 @@
 		{
 			icon: "ri-user-3-line",
 			color: "#3B82F6",
-			label: "Perfil",
+			label: "Información personal",
 			sublabel: "Nombre, foto y teléfono",
 			href: "/dashboard/profile/perfil"
 		},
@@ -21,7 +21,7 @@
 		{
 			icon: "ri-shield-check-line",
 			color: "#10B981",
-			label: "Privacidad",
+			label: "Privacidad y seguridad",
 			sublabel: "Sesiones y eliminación",
 			href: "/dashboard/profile/privacidad"
 		}
