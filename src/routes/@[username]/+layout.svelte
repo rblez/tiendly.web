@@ -6,7 +6,7 @@
 	import TrackOrderModal from '$lib/components/TrackOrderModal.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { env as publicEnv } from '$env/dynamic/public';
-const { PUBLIC_SUPABASE_URL } = publicEnv;
+const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { currency } from '$lib/stores/currency.svelte';
 	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
