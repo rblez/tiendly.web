@@ -20,6 +20,14 @@ SvelteKit app for **Tiendly** — a multi-store storefront platform. Public stor
 - `@sveltejs/adapter-vercel` — deployed on Vercel
 - Env vars: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`)
 
+## Base44 Dev Environment
+
+- Runs via `docker compose -f docker-compose.base44.yml up -d` — a single `web` service (node:22) bind-mounting the repo, running `npm install && npm run dev` (Vite dev on port 5173, mapped to host 3000).
+- `vite.config.ts` sets `server.host: true` and `server.allowedHosts: true` so the preview's external hostname is accepted.
+- Secrets (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) are delivered to `/run/base44/app.env`; `.env.base44-defaults` holds empty placeholders so the app boots before credentials exist. Real secrets always win (env_file order).
+- The landing page (`/`) renders without Supabase; storefront (`/@[username]`), dashboard, and auth require the Supabase credentials to function.
+- Verify: `curl -sf -H "Host: external-preview.example.com" http://localhost:3000/` returns the Tiendly page.
+
 ## Structure
 
 - `src/routes/@[username]/` — public storefront (product list, product detail, cart, checkout)
