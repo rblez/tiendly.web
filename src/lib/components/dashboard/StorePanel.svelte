@@ -1596,7 +1596,7 @@ async function duplicateProduct(p: Product) {
 			{:else}
 				<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
 					{#each filteredProducts as product}
-						<div class="acrylic bg-card/90 border border-hairline rounded-card group relative overflow-hidden">
+						<div class="bg-card/90 border border-hairline rounded-card group relative overflow-hidden">
 							<div class="relative aspect-square bg-canvas">
 								{#if productImage(product)}
 									<img src={productImage(product)!} alt={product.name} class="w-full h-full object-cover rounded-t-card" loading="lazy" />
