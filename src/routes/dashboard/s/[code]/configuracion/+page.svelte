@@ -22,7 +22,7 @@
 	</div>
 
 	<SettingsSection title="Tienda">
-		<SettingsRow icon="ri-store-2-line" color="#3B82F6" label="Información general" sublabel="Nombre, @usuario, descripción, categoría" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
+		<SettingsRow icon="ri-store-2-line" color="#3B82F6" label="Información general" sublabel="Nombre, @usuario y descripción" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
 		<SettingsRow icon="ri-image-edit-line" color="#8B5CF6" label="Apariencia" sublabel="Logo y colores" href={`/dashboard/s/${storeCode}/configuracion/apariencia`} />
 		<SettingsRow icon="ri-eye-line" color="#14B8A6" label="Visibilidad" sublabel="Visible u oculta en tiendly.lat" href={`/dashboard/s/${storeCode}/configuracion/visibilidad`} />
 	</SettingsSection>
@@ -50,7 +50,7 @@
 		<SettingsRow icon="ri-information-line" color="#475569" label="Acerca de Tiendly" sublabel="Versión, términos y privacidad" href={`/dashboard/s/${storeCode}/configuracion/acerca`} />
 	</SettingsSection>
 
-	<button type="button" onclick={() => auth.signOut()} class="mt-2 mb-6 w-full min-h-14 rounded-card border border-error/25 bg-error/10 px-5 text-left text-error font-semibold flex items-center gap-3 hover:bg-error/15 transition-colors">
+	<button type="button" onclick={() => auth.signOut()} class="mt-2 mb-6 w-full min-h-16 rounded-card border border-error/25 bg-error/10 px-5 text-left text-error font-semibold flex items-center gap-3 hover:bg-error/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error transition-colors">
 		<span class="w-10 h-10 rounded-lg bg-error/15 flex items-center justify-center text-lg"><i class="ri-logout-box-r-line" aria-hidden="true"></i></span>
 		<span>Cerrar sesión</span>
 	</button>
