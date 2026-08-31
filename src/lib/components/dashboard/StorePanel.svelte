@@ -7,7 +7,7 @@ import { supabase } from '$lib/supabase/client';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { Coupon, DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
-	import { formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, waLink } from '$lib/utils';
+	import { formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, vendorCurrency, waLink } from '$lib/utils';
 	import { migratePayment, renderPayment } from '$lib/payments';
 	import { exportOrdersCsv, exportProductsCsv } from '$lib/export';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
@@ -167,7 +167,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formImages = $state<string[]>([]);
 	let formSaving = $state(false);
 	let productError = $state('');
-	let pickerCurrencyOpen = $state(false);
 	let pickerCategoryOpen = $state(false);
 	let atProductLimit = $state(false);
 	let qrOpen = $state(false);
@@ -228,7 +227,6 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	);
 
 	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
-	const CURRENCIES = ['CUP', 'USD', 'MXN', 'ARS', 'EUR'];
 
 	let formCreatingCategory = $state(false);
 	let hasActionColumn = $state(true);
@@ -590,7 +588,7 @@ $effect(() => {
 		formDescription = '';
 		formPrice = '';
 		formStock = '';
-		formCurrency = 'CUP';
+		formCurrency = vendorCurrency(store);
 		formCategory = 'General';
 		formCreatingCategory = false;
 		formAgotado = false;
@@ -612,7 +610,7 @@ $effect(() => {
 		formDescription = p.description ?? '';
 		formPrice = String(p.price);
 		formStock = p.stock == null ? '' : String(p.stock);
-		formCurrency = p.currency;
+		formCurrency = vendorCurrency(store);
 		formCategory = p.category;
 		formCreatingCategory = false;
 		formAgotado = p.agotado;
@@ -2150,14 +2148,10 @@ async function duplicateProduct(p: Product) {
 							</div>
 						<div>
 							<label for="p-currency" class="block text-sm font-medium text-body mb-1.5">Moneda</label>
-							<button
-								type="button"
-								onclick={() => (pickerCurrencyOpen = true)}
-								class="btn btn-secondary btn-md w-full"
-							>
-								<span>{formCurrency}</span>
-								<i class="ri-arrow-down-s-line text-muted"></i>
-							</button>
+							<div id="p-currency" class="input flex items-center text-muted-soft cursor-not-allowed select-none">
+								{formCurrency}
+							</div>
+							<p class="text-xs text-muted-soft mt-1.5">Moneda principal de tu tienda. Se cambia en Ajustes &gt; Ventas &gt; Moneda.</p>
 </div>
 					</div>
 					{#if hasStockColumn}
@@ -2459,29 +2453,6 @@ class="btn btn-secondary btn-sm"
 					</div>
 				</div>
 			</div>
-		{/if}
-
-		{#if pickerCurrencyOpen}
-			<OptionModal title="Elegir moneda" open onClose={() => (pickerCurrencyOpen = false)}>
-				<div class="space-y-1">
-					{#each CURRENCIES as c}
-						<button
-							onclick={() => {
-								formCurrency = c;
-								pickerCurrencyOpen = false;
-							}}
-							class={`w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-btn text-sm font-medium transition-colors cursor-pointer ${
-								formCurrency === c ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'
-							}`}
-						>
-							<span>{c}</span>
-							{#if formCurrency === c}
-								<i class="ri-check-line text-ember"></i>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			</OptionModal>
 		{/if}
 
 		{#if pickerCategoryOpen}
