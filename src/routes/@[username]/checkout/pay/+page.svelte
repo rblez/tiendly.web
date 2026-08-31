@@ -54,6 +54,9 @@
 			.map((p) => migratePayment(p))
 			.filter((p): p is PaymentMethod => p !== null),
 	);
+	const availablePayments = $derived(
+		payments.filter((pm) => !pm.currency || pm.currency === 'ambas' || pm.currency === draft?.currency),
+	);
 
 	let draftReady = false;
 
@@ -75,8 +78,8 @@
 			return;
 		}
 		draft = saved;
-		if (payments.length > 0) {
-			selectedPayment = payments[0] as PaymentMethod;
+		if (availablePayments.length > 0) {
+			selectedPayment = availablePayments[0];
 		}
 		draftReady = true;
 		loading = false;
@@ -92,7 +95,7 @@
 	const referenceLabel = $derived(proofType === 'hash' ? 'Hash de la transacción' : 'Número de transacción');
 	const referencePlaceholder = $derived(proofType === 'hash' ? 'Ej. 0xabc123...' : 'Ej. TX-12345');
 	const proofComplete = $derived(
-		payments.length === 0 ||
+		availablePayments.length === 0 ||
 			(!!selectedPayment && (!needsPhoto || !!receiptUrl) && (!needsReference || proofReference.trim().length > 0)),
 	);
 
@@ -151,15 +154,15 @@
 	async function confirmPayment() {
 		if (!draft || sending || orderPlaced) return;
 
-		if (payments.length > 0 && !selectedPayment) {
+		if (availablePayments.length > 0 && !selectedPayment) {
 			orderError = 'Elige un método de pago para continuar.';
 			return;
 		}
-		if (payments.length > 0 && needsPhoto && !receiptUrl) {
+		if (availablePayments.length > 0 && needsPhoto && !receiptUrl) {
 			orderError = 'Sube la foto del comprobante antes de confirmar.';
 			return;
 		}
-		if (payments.length > 0 && needsReference && !proofReference.trim()) {
+		if (availablePayments.length > 0 && needsReference && !proofReference.trim()) {
 			orderError = `Escribe el ${referenceLabel.toLowerCase()} antes de confirmar.`;
 			return;
 		}
@@ -349,13 +352,13 @@
 			</div>
 		</div>
 
-		{#if payments.length > 0}
+		{#if availablePayments.length > 0}
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-6 mb-6">
 				<h2 class="text-lg font-bold text-ink mb-1">Elige cómo pagar</h2>
 				<p class="text-xs text-muted-soft mb-4">Copia los datos del método que elijas, paga y confirma tu pedido.</p>
 
 				<div class="space-y-2 mb-5">
-					{#each payments as pm}
+					{#each availablePayments as pm}
 						<button
 							type="button"
 							onclick={() => selectPayment(pm)}
