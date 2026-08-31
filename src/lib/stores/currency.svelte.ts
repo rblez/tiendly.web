@@ -1,15 +1,12 @@
 import { convertPrice, currencyRate, formatPrice, vendorCurrency } from '$lib/utils';
 import type { Store } from '$lib/types';
 
-export const CURRENCIES = ['USD', 'CUP', 'MLC', 'EUR'] as const;
-export type Currency = (typeof CURRENCIES)[number];
-
 const STORAGE_KEY = 'tiendly-currency';
 
 function loadStored(): string {
 	try {
 		const v = localStorage.getItem(STORAGE_KEY);
-		return v && CURRENCIES.includes(v as Currency) ? v : '';
+		return v?.trim().toUpperCase() || '';
 	} catch {
 		return '';
 	}
@@ -57,8 +54,7 @@ export function availableCurrencies(store: Store | null | undefined): string[] {
 }
 
 export function mainCurrency(store: Store | null | undefined): string {
-	const avail = availableCurrencies(store);
-	return avail.includes('USD') ? 'USD' : (avail[0] ?? 'CUP');
+	return vendorCurrency(store);
 }
 
 export function displayCurrency(store: Store | null | undefined): string {
