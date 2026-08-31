@@ -3,6 +3,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { migratePayment } from '$lib/payments';
+	import { fileToDataUrl } from '$lib/utils';
 	import type { PaymentMethod } from '$lib/types';
 	import { onMount } from 'svelte';
 
@@ -37,6 +38,12 @@
 		payments = [...payments, { id: newId(), title: '', fields: [{ id: newId(), label: '', value: '' }], instructions: null }];
 	}
 	function removeMethod(i: number) { payments = payments.filter((_, pi) => pi !== i); }
+	async function handleMethodImage(event: Event, index: number) {
+		const file = (event.target as HTMLInputElement).files?.[0];
+		if (!file || !file.type.startsWith('image/')) return;
+		if (file.size > 4 * 1024 * 1024) { error = 'La foto no puede superar 4 MB.'; return; }
+		try { payments[index].image = await fileToDataUrl(file); payments = [...payments]; error = ''; } catch { error = 'No se pudo cargar la foto.'; }
+	}
 	function addField(i: number) { payments[i].fields.push({ id: newId(), label: '', value: '' }); }
 	function removeField(i: number, fi: number) { payments[i].fields.splice(fi, 1); }
 
@@ -50,7 +57,8 @@
 				fields: p.fields
 					.filter((f) => f.value.trim() || f.label.trim())
 					.map((f) => ({ id: f.id, label: f.label.trim(), value: f.value.trim() })),
-				instructions: p.instructions?.trim() || null
+				instructions: p.instructions?.trim() || null,
+				image: p.image || null
 			}));
 		const { error: err } = await supabase.from('stores').update({ payments: clean }).eq('id', storeId);
 		saving = false;
@@ -83,16 +91,20 @@
 
 			{#if payments.length > 0}
 				<div class="space-y-2">
-					{#each payments as pm, i}
+						{#each payments as pm, i (pm.id)}
 						<div class="border border-hairline rounded-btn p-3">
-							<div class="flex items-center justify-between gap-2">
+							<div class="flex items-start gap-3">
+								<div class="shrink-0">
+									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-hairline flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
+									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline"><span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span><input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} /></label>
+								</div>
 								<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm flex-1 min-w-0" />
 								<button type="button" onclick={() => removeMethod(i)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar método de pago">
 									<i class="ri-close-line"></i>
 								</button>
 							</div>
 							<div class="mt-2 space-y-2">
-								{#each pm.fields as f, fi}
+								{#each pm.fields as f, fi (f.id)}
 									<div class="border border-hairline rounded-btn p-2 space-y-2">
 										<input type="text" bind:value={f.label} placeholder="Etiqueta (Nº de cuenta, correo...)" class="input w-full" />
 										<div class="flex items-center gap-2">

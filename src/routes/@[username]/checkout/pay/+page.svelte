@@ -43,6 +43,8 @@
 	let receiptFile = $state<File | null>(null);
 	let receiptUrl = $state('');
 	let receiptUploading = $state(false);
+	let proofType = $state('');
+	let proofReference = $state('');
 	let copyFeedback = $state<string | null>(null);
 	let sending = $state(false);
 	let orderError = $state('');
@@ -181,8 +183,8 @@
 				utm_source: draft.utm.utm_source ?? null,
 				utm_medium: draft.utm.utm_medium ?? null,
 				utm_campaign: draft.utm.utm_campaign ?? null,
-				...(selectedPayment ? { payment: selectedPayment as unknown as import('$lib/database.types').Json } : {}),
-				...(receiptUrl ? { payment_receipt: receiptUrl } : {}),
+					...(selectedPayment ? { payment: { ...selectedPayment, proof_type: proofType || null, proof_reference: proofReference.trim() || null } as unknown as import('$lib/database.types').Json } : {}),
+					...(receiptUrl ? { payment_receipt: receiptUrl } : {}),
 				...(draft.delivery ? { delivery: draft.delivery as unknown as import('$lib/database.types').Json } : {}),
 			});
 			if (err) {
@@ -336,9 +338,7 @@
 								? 'border-ember/60 bg-ember/5'
 								: 'border-hairline hover:border-ember/50 hover:bg-bone'}"
 						>
-							<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">
-								{pm.title.slice(0, 4)}
-							</span>
+								{#if pm.image}<img src={pm.image} alt="" class="h-9 w-9 rounded-btn object-cover border border-hairline flex-shrink-0" />{:else}<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">{pm.title.slice(0, 4)}</span>{/if}
 							<span class="flex-1 min-w-0">
 								<span class="block text-sm font-semibold text-ink truncate">{pm.title}</span>
 								<span class="block text-xs text-muted-soft truncate">{(pm.fields ?? []).filter((f) => f.value).length} datos para copiar</span>
@@ -407,10 +407,18 @@
 								<i class="ri-image-add-line"></i>
 								Subir foto del comprobante
 							{/if}
-							<input type="file" accept="image/*" class="hidden" disabled={receiptUploading} onchange={handleReceipt} />
+							<input type="file" accept="image/*,.pdf,.heic,.webp" class="hidden" disabled={receiptUploading} onchange={handleReceipt} />
 						</label>
-						<p class="text-xs text-muted-soft mt-1.5">Debe verse la fecha, la hora y el nº de transacción.</p>
-					{/if}
+							<p class="text-xs text-muted-soft mt-1.5">Puedes subir una captura, factura o PDF.</p>
+						{/if}
+						<div class="mt-4 grid gap-3 sm:grid-cols-2">
+							<label class="text-xs font-medium text-body">Tipo de comprobante
+								<select bind:value={proofType} class="input input-sm mt-1.5 w-full"><option value="">Selecciona una opción</option><option value="screenshot">Captura de pantalla</option><option value="transaction">ID de transacción</option><option value="hash">Hash</option><option value="invoice">Factura</option><option value="other">Otro</option></select>
+							</label>
+							<label class="text-xs font-medium text-body">ID, hash o referencia <span class="font-normal text-muted-soft">(opcional)</span>
+								<input bind:value={proofReference} type="text" placeholder="Ej. TX-12345 o 0xabc..." class="input input-sm mt-1.5 w-full" autocomplete="off" />
+							</label>
+						</div>
 				</div>
 			</div>
 		{/if}

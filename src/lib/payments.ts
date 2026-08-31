@@ -39,6 +39,7 @@ export function migratePayment(pm: unknown): PaymentMethod | null {
 				.filter((f) => f && typeof f === 'object')
 				.map((f) => ({ id: f.id || newId(), label: (f.label ?? '').trim(), value: (f.value ?? '').trim() })),
 			instructions: ((pm as { instructions?: string | null }).instructions ?? '').trim() || null,
+		image: typeof (pm as { image?: unknown }).image === 'string' ? (pm as { image: string }).image : null,
 		};
 	}
 	const p = pm as {
