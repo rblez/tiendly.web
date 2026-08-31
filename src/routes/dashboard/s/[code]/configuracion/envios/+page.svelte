@@ -54,7 +54,7 @@
 		saving = false;
 		if (err) { error = err.message; return; }
 		zones = cleanZones;
-		initial = JSON.stringify({ enabled, zones, note: payload.note ?? '' });
+		initial = JSON.stringify({ enabled, mode, requestOtherZone, zones, note: payload.note ?? '' });
 		msg = 'Guardado.';
 		setTimeout(() => (msg = ''), 2000);
 	}

@@ -23,7 +23,7 @@
 
 	const mode = $derived(data.store.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar');
 	const deliveryZones = $derived(
-		data.store.delivery?.enabled && data.store.delivery?.mode !== 'pickup' && cartLines.some((line) => line.product.delivery_type !== 'none' && line.product.delivery_type !== 'pickup')
+		data.store.delivery?.enabled && data.store.delivery?.mode !== 'pickup'
 			? (data.store.delivery?.zones ?? [])
 			: [],
 	);
@@ -548,7 +548,7 @@
 						{#if data.store.delivery?.request_other_zone}
 							<label class="mt-3 block text-xs font-medium text-body">
 								¿No ves tu zona? Solicitar otra zona
-								<input type="text" bind:value={customZone} oninput={() => (deliveryZone = customZone.trim() ? { name: customZone.trim(), cup: 0, usd: 0 } : null)} placeholder="Escribe tu zona" class="input input-sm mt-1.5" />
+								<input type="text" bind:value={customZone} oninput={() => (deliveryZone = customZone.trim() ? { name: customZone.trim(), cup: 0, usd: 0, price: 0 } : null)} placeholder="Escribe tu zona" class="input input-sm mt-1.5" />
 							</label>
 							{#if customZone.trim()}<p class="mt-1.5 text-xs text-muted-soft">El costo de esta zona será confirmado por la tienda.</p>{/if}
 						{/if}

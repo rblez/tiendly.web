@@ -617,7 +617,7 @@ $effect(() => {
 		formCreatingCategory = false;
 		formAgotado = p.agotado;
 		formBajoPedido = p.bajo_pedido ?? false;
-		formDeliveryType = p.delivery_type ?? 'both';
+		formDeliveryType = p.delivery_type === 'none' || p.delivery_type === 'pickup' || p.delivery_type === 'delivery' || p.delivery_type === 'both' ? p.delivery_type : 'both';
 		formActive = p.active;
 		formVariantsList = Array.isArray(p.variants)
 			? p.variants.map((v) => ({ ...v, options: (v.options ?? []).map((o) => ({ ...o })) }))
