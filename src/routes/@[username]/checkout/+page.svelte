@@ -19,12 +19,22 @@
 	let orderPlaced = $state(false);
 	let askValues = $state<Record<string, string>>({});
 	let deliveryZone = $state<DeliveryZone | null>(null);
+	let customZone = $state('');
 
 	const mode = $derived(data.store.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar');
 	const deliveryZones = $derived(
-		data.store.delivery?.enabled ? (data.store.delivery?.zones ?? []) : [],
+		data.store.delivery?.enabled && data.store.delivery?.mode !== 'pickup'
+			? (data.store.delivery?.zones ?? [])
+			: [],
 	);
-	const deliveryCost = $derived(deliveryZone?.price ?? 0);
+	const orderCurrency = $derived(viewCurrency(data.store));
+	function deliveryPrice(zone: DeliveryZone | null) {
+		if (!zone) return 0;
+		if (orderCurrency === 'USD' && zone.usd !== undefined) return zone.usd ?? 0;
+		if (orderCurrency === 'CUP' && zone.cup !== undefined) return zone.cup ?? 0;
+		return zone.price ?? 0;
+	}
+	const deliveryCost = $derived(deliveryPrice(deliveryZone));
 
 	const askFields = $derived.by(() => {
 		const seen = new Set<string>();
@@ -130,10 +140,10 @@
 
 	let subtotal = $derived(cartLines.reduce((sum, cp) => sum + cp.display * cp.quantity, 0));
 	let discount = $derived(couponDiscount(appliedCoupon, subtotal));
-	let total = $derived(subtotal + displayPrice(deliveryCost, data.store) - discount);
+	let total = $derived(subtotal + deliveryCost - discount);
 	let totalFormatted = $derived(formatPrice(total, viewCurrency(data.store)));
 	let cartEmpty = $derived(cartLines.length === 0);
-	let orderCurrency = $derived(viewCurrency(data.store));
+
 
 	$effect(() => {
 		if (cartEmpty && cacheReady && !orderPlaced) {
@@ -163,7 +173,7 @@
 			``,
 			...(orderId ? [`🧾 Nº pedido: *${orderId}*`, ``] : []),
 			...(deliveryZone
-				? [`🚚 Mensajería: ${deliveryZone.name} — ${formatPrice(displayPrice(deliveryZone.price, data.store), currency)}`, ``]
+				? [`🚚 Mensajería: ${deliveryZone.name} — ${formatPrice(deliveryPrice(deliveryZone), currency)}`, ``]
 				: []),
 			...(appliedCoupon ? [`🎟️ Cupón ${appliedCoupon.code} (-${couponLabelText(appliedCoupon)})`, ``] : []),
 			`📍 Total: *${totalFormatted}*`,
@@ -510,7 +520,7 @@
 										type="radio"
 										name="delivery"
 										checked={deliveryZone === null}
-										onchange={() => (deliveryZone = null)}
+										onchange={() => { deliveryZone = null; customZone = ''; }}
 										class="w-4 h-4 accent-ember cursor-pointer"
 									/>
 									Recoger en tienda
@@ -526,15 +536,22 @@
 											type="radio"
 											name="delivery"
 											checked={deliveryZone?.name === z.name}
-											onchange={() => (deliveryZone = z)}
+											onchange={() => { deliveryZone = z; customZone = ''; }}
 											class="w-4 h-4 accent-ember cursor-pointer"
 										/>
 										{z.name}
 									</span>
-									<span class="font-medium">{formatPrice(displayPrice(z.price, data.store), viewCurrency(data.store))}</span>
+									<span class="font-medium">{formatPrice(deliveryPrice(z), orderCurrency)}</span>
 								</label>
 							{/each}
 						</div>
+						{#if data.store.delivery?.request_other_zone}
+							<label class="mt-3 block text-xs font-medium text-body">
+								¿No ves tu zona? Solicitar otra zona
+								<input type="text" bind:value={customZone} oninput={() => (deliveryZone = customZone.trim() ? { name: customZone.trim(), cup: 0, usd: 0, price: 0 } : null)} placeholder="Escribe tu zona" class="input input-sm mt-1.5" />
+							</label>
+							{#if customZone.trim()}<p class="mt-1.5 text-xs text-muted-soft">El costo de esta zona será confirmado por la tienda.</p>{/if}
+						{/if}
 {#if data.store.delivery?.note}
 						<p class="text-xs text-muted-soft mt-1.5">{data.store.delivery.note}</p>
 					{/if}

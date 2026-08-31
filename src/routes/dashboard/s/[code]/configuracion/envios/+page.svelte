@@ -8,6 +8,8 @@
 	let storeCode = $derived($page.params.code ?? '');
 	let storeId = $state('');
 	let enabled = $state(false);
+	let mode = $state<'pickup' | 'delivery' | 'both'>('both');
+	let requestOtherZone = $state(true);
 	let zones = $state<DeliveryZone[]>([]);
 	let note = $state('');
 	let loading = $state(true);
@@ -20,28 +22,39 @@
 		const { data } = await supabase.from('stores').select('id, delivery').eq('code', storeCode).maybeSingle();
 		if (!data) { error = 'No se encontró la tienda.'; loading = false; return; }
 		storeId = (data as any).id;
-		const raw = (data as any).delivery as { enabled?: boolean; zones?: DeliveryZone[]; note?: string | null } | null;
+		const raw = (data as any).delivery as { enabled?: boolean; zones?: DeliveryZone[]; note?: string | null; mode?: 'pickup' | 'delivery' | 'both'; request_other_zone?: boolean } | null;
 		enabled = !!raw?.enabled;
-		zones = raw?.zones ?? [];
+		mode = raw?.mode ?? 'both';
+		requestOtherZone = raw?.request_other_zone ?? true;
+		zones = (raw?.zones ?? []).map((zone) => ({ ...zone, cup: zone.cup ?? zone.price ?? null, usd: zone.usd ?? null }));
 		note = raw?.note ?? '';
-		initial = JSON.stringify({ enabled, zones, note });
+		initial = JSON.stringify({ enabled, mode, requestOtherZone, zones, note });
 		loading = false;
 	});
 
-	let dirty = $derived(JSON.stringify({ enabled, zones, note }) !== initial);
+	let dirty = $derived(JSON.stringify({ enabled, mode, requestOtherZone, zones, note }) !== initial);
 
-	function addZone() { zones = [...zones, { name: '', price: 0 }]; }
+	function addZone() { zones = [...zones, { name: '', cup: null, usd: null, price: 0 }]; }
 	function removeZone(i: number) { zones = zones.filter((_, zi) => zi !== i); }
+	function zonePrice(zone: DeliveryZone, currency: 'CUP' | 'USD') {
+		const value = currency === 'USD' ? zone.usd : zone.cup;
+		return value ?? zone.price ?? null;
+	}
 
 	async function save() {
 		saving = true; error = ''; msg = '';
-		const cleanZones = zones.filter((z) => z.name.trim()).map((z) => ({ name: z.name.trim(), price: Number.isFinite(Number(z.price)) ? Number(z.price) : 0 }));
-		const payload = { enabled, zones: cleanZones, note: note.trim() || null };
+		const cleanZones = zones.filter((z) => z.name.trim()).map((z) => ({
+			name: z.name.trim(),
+			cup: z.cup == null ? null : Number(z.cup),
+			usd: z.usd == null ? null : Number(z.usd),
+			price: z.price ?? 0,
+		}));
+		const payload = { enabled, mode, request_other_zone: requestOtherZone, zones: cleanZones, note: note.trim() || null };
 		const { error: err } = await supabase.from('stores').update({ delivery: payload }).eq('id', storeId);
 		saving = false;
 		if (err) { error = err.message; return; }
 		zones = cleanZones;
-		initial = JSON.stringify({ enabled, zones, note: payload.note ?? '' });
+		initial = JSON.stringify({ enabled, mode, requestOtherZone, zones, note: payload.note ?? '' });
 		msg = 'Guardado.';
 		setTimeout(() => (msg = ''), 2000);
 	}
@@ -62,15 +75,28 @@
 			</label>
 
 			{#if enabled}
-				<p class="text-xs text-muted-soft">Define zonas con su costo de envío. El cliente elige una al pagar.</p>
+				<div>
+					<label for="delivery-mode" class="block text-sm font-medium text-body mb-1.5">Modalidad de la tienda</label>
+					<select id="delivery-mode" bind:value={mode} class="input">
+						<option value="both">Domicilio y recogida en local</option>
+						<option value="delivery">Solo entrega a domicilio</option>
+						<option value="pickup">Solo recogida en local</option>
+					</select>
+				</div>
+				<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
+					<input type="checkbox" bind:checked={requestOtherZone} class="w-4 h-4 accent-ember" />
+					Solicitar zonas no configuradas
+				</label>
+				<p class="text-xs text-muted-soft">Define zonas y tarifas separadas en CUP y USD. Un campo vacío significa entrega gratis.</p>
 
 				{#if zones.length > 0}
 					<div class="space-y-3">
 						{#each zones as zone, zi}
 							<div class="border border-hairline rounded-btn p-3 space-y-2">
 								<input type="text" bind:value={zone.name} placeholder="Zona (ej: La Habana)" class="input w-full" />
-								<div class="flex items-center gap-2">
-									<input type="number" step="any" min="0" bind:value={zone.price} placeholder="Costo" class="input flex-1 min-w-0 text-right" />
+								<div class="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+									<input type="number" step="any" min="0" bind:value={zone.cup} placeholder="CUP (vacío = gratis)" aria-label={`Costo en CUP para ${zone.name || 'la zona'}`} class="input min-w-0 text-right" />
+									<input type="number" step="any" min="0" bind:value={zone.usd} placeholder="USD (vacío = gratis)" aria-label={`Costo en USD para ${zone.name || 'la zona'}`} class="input min-w-0 text-right" />
 									<button type="button" onclick={() => removeZone(zi)} class="w-10 h-10 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar zona">
 										<i class="ri-close-line text-lg"></i>
 									</button>

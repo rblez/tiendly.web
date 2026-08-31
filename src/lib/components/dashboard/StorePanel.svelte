@@ -161,6 +161,7 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formCategory = $state('General');
 	let formAgotado = $state(false);
 	let formBajoPedido = $state(false);
+	let formDeliveryType = $state<'none' | 'pickup' | 'delivery' | 'both'>('both');
 	let formActive = $state(true);
 	let formVariantsList = $state<Variant[]>([]);
 	let formAskList = $state<string[]>([]);
@@ -593,6 +594,7 @@ $effect(() => {
 		formCreatingCategory = false;
 		formAgotado = false;
 		formBajoPedido = false;
+		formDeliveryType = 'both';
 		formActive = true;
 		formVariantsList = [];
 		formAskList = [];
@@ -615,6 +617,7 @@ $effect(() => {
 		formCreatingCategory = false;
 		formAgotado = p.agotado;
 		formBajoPedido = p.bajo_pedido ?? false;
+		formDeliveryType = p.delivery_type === 'none' || p.delivery_type === 'pickup' || p.delivery_type === 'delivery' || p.delivery_type === 'both' ? p.delivery_type : 'both';
 		formActive = p.active;
 		formVariantsList = Array.isArray(p.variants)
 			? p.variants.map((v) => ({ ...v, options: (v.options ?? []).map((o) => ({ ...o })) }))
@@ -729,8 +732,9 @@ $effect(() => {
 			currency: formCurrency,
 			category: formCategory.trim() || 'General',
 			agotado: formAgotado,
-			bajo_pedido: formBajoPedido,
-			active: formActive,
+		bajo_pedido: formBajoPedido,
+		delivery_type: formDeliveryType,
+		active: formActive,
 			variants: variants as unknown as import('$lib/database.types').Json,
 			images: formImages,
 			image: formImages[0] ?? null,
@@ -2089,7 +2093,7 @@ async function duplicateProduct(p: Product) {
 									onclick={() => deleteCoupon(c)}
 									disabled={couponDeleting === c.id}
 									class="flex-shrink-0 p-2 text-muted-soft hover:text-error hover:bg-error/10 rounded-full transition-colors cursor-pointer disabled:opacity-40"
-									aria-label={`Eliminar cupón ${c.code}`}
+									aria-label={`Eliminar cup��n ${c.code}`}
 								>
 									<i class="ri-delete-bin-line text-lg"></i>
 								</button>
@@ -2440,8 +2444,18 @@ class="btn btn-secondary btn-sm"
 							</label>
 							<p class="text-xs text-muted-soft mt-2">La primera foto es la portada. Puedes subir varias a la vez.</p>
 						</div>
-						<div class="flex gap-4">
-							<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
+							<div>
+								<label for="p-delivery" class="block text-sm font-medium text-body mb-1.5">Entrega del producto</label>
+								<select id="p-delivery" bind:value={formDeliveryType} class="input">
+									<option value="both">Domicilio y recogida en local</option>
+									<option value="delivery">Solo entrega a domicilio</option>
+									<option value="pickup">Solo recogida en local</option>
+									<option value="none">No requiere entrega</option>
+								</select>
+								<p class="text-xs text-muted-soft mt-1.5">Define cómo puede recibirlo el cliente.</p>
+							</div>
+							<div class="flex gap-4">
+								<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
 								<input type="checkbox" bind:checked={formAgotado} class="w-4 h-4 accent-ember cursor-pointer" />
 								Agotado
 							</label>

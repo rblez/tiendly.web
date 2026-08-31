@@ -22,7 +22,8 @@
 		{ value: '#fbbf24', label: 'Ámbar' },
 		{ value: '#fb7185', label: 'Coral' },
 		{ value: '#2dd4bf', label: 'Turquesa' },
-		{ value: '#a3e635', label: 'Lima' }
+		{ value: '#a3e635', label: 'Lima' },
+		{ value: '#d1d5db', label: 'Blanco gris' }
 	];
 
 	onMount(async()=>{

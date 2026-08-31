@@ -15,6 +15,8 @@ export interface Variant {
 	options?: VariantOption[];
 }
 
+export type ProductDeliveryType = 'none' | 'pickup' | 'delivery' | 'both';
+
 export interface Product {
 	id: string;
 	store_id: string;
@@ -29,6 +31,7 @@ export interface Product {
 	ask: string[];
 	agotado: boolean;
 	bajo_pedido: boolean;
+	delivery_type?: string;
 	active: boolean;
 	stock?: number | null;
 	discount_type?: string | null;
@@ -120,13 +123,19 @@ export interface PaymentMethod {
 
 export interface DeliveryZone {
 	name: string;
+	cup?: number | null;
+	usd?: number | null;
 	price: number;
 }
+
+export type StoreDeliveryMode = 'pickup' | 'delivery' | 'both';
 
 export interface DeliveryConfig {
 	zones: DeliveryZone[];
 	note?: string | null;
 	enabled: boolean;
+	mode?: StoreDeliveryMode;
+	request_other_zone?: boolean;
 }
 
 export interface Store {

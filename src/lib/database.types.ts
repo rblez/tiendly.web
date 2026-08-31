@@ -147,6 +147,7 @@ export type Database = {
           description: string | null
           discount_type: string | null
           discount_value: number | null
+          delivery_type: string
           id: string
           image: string | null
           images: Json
@@ -168,6 +169,7 @@ export type Database = {
           description?: string | null
           discount_type?: string | null
           discount_value?: number | null
+          delivery_type?: string
           id?: string
           image?: string | null
           images?: Json
@@ -189,6 +191,7 @@ export type Database = {
           description?: string | null
           discount_type?: string | null
           discount_value?: number | null
+          delivery_type?: string
           id?: string
           image?: string | null
           images?: Json
