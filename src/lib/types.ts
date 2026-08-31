@@ -109,6 +109,7 @@ export interface PaymentMethod {
 	title: string;
 	fields: PaymentField[];
 	instructions?: string | null;
+	image?: string | null;
 }
 
 export interface DeliveryZone {
