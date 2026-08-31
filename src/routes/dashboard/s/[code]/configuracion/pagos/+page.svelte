@@ -35,7 +35,7 @@
 	let dirty = $derived(JSON.stringify(payments) !== initial);
 
 	function addMethod() {
-		payments = [...payments, { id: newId(), title: '', fields: [{ id: newId(), label: '', value: '' }], instructions: null }];
+		payments = [...payments, { id: newId(), title: '', fields: [{ id: newId(), label: '', value: '' }], instructions: null, proof_type: 'captura' }];
 	}
 	function removeMethod(i: number) { payments = payments.filter((_, pi) => pi !== i); }
 	async function handleMethodImage(event: Event, index: number) {
@@ -58,7 +58,8 @@
 					.filter((f) => f.value.trim() || f.label.trim())
 					.map((f) => ({ id: f.id, label: f.label.trim(), value: f.value.trim() })),
 				instructions: p.instructions?.trim() || null,
-				image: p.image || null
+				image: p.image || null,
+				proof_type: p.proof_type || 'captura'
 			}));
 		const { error: err } = await supabase.from('stores').update({ payments: clean }).eq('id', storeId);
 		saving = false;
@@ -118,6 +119,14 @@
 								<button type="button" onclick={() => addField(i)} class="w-full px-3 py-1.5 bg-bone border border-dashed border-hairline rounded-btn text-xs font-medium text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
 									+ Añadir fila
 								</button>
+								<label class="block text-xs font-medium text-body">Comprobante que solicitarás
+									<select bind:value={pm.proof_type} class="input input-sm mt-1.5 w-full">
+										<option value="captura">Captura de pantalla</option>
+										<option value="captura_y_tx">Captura + número de transacción</option>
+										<option value="hash">Hash de transacción</option>
+										<option value="ninguno">Ninguno</option>
+									</select>
+								</label>
 								<textarea bind:value={pm.instructions} rows="2" placeholder="Instrucciones de pago (opcional)" class="input input-sm resize-none"></textarea>
 							</div>
 						</div>
