@@ -74,13 +74,24 @@
 				<p class="text-xs text-muted-soft mb-3">Menús PDF, catálogos, tu web, lo que quieras.</p>
 				{#if links.length > 0}
 					<div class="space-y-2">
-						{#each links as link, i}
-							<div class="flex items-center gap-2">
-								<input type="text" bind:value={link.title} placeholder="Título (Ver menú)" class="input input-sm w-1/3 min-w-0" />
-								<input type="url" bind:value={link.url} placeholder="https://..." class="input input-sm flex-1 min-w-0" />
-								<button type="button" onclick={() => removeLink(i)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar enlace">
-									<i class="ri-close-line"></i>
-								</button>
+						{#each links as link, i (i)}
+							<div class="rounded-btn border border-hairline bg-canvas p-3">
+								<div class="flex items-center justify-between gap-3 pb-2">
+									<span class="text-xs font-semibold text-muted-soft">Enlace {i + 1}</span>
+									<button type="button" onclick={() => removeLink(i)} class="flex h-8 w-8 shrink-0 items-center justify-center rounded-btn text-muted hover:bg-error/10 hover:text-error transition-colors cursor-pointer" aria-label={`Quitar enlace ${i + 1}`}>
+										<i class="ri-close-line" aria-hidden="true"></i>
+									</button>
+								</div>
+								<div class="space-y-3">
+									<div>
+										<label for={`s-link-title-${i}`} class="mb-1.5 block text-xs font-medium text-body">Título</label>
+										<input id={`s-link-title-${i}`} type="text" bind:value={link.title} placeholder="Ej: Ver menú" class="input input-sm w-full" />
+									</div>
+									<div>
+										<label for={`s-link-url-${i}`} class="mb-1.5 block text-xs font-medium text-body">URL</label>
+										<input id={`s-link-url-${i}`} type="url" bind:value={link.url} placeholder="https://ejemplo.com" class="input input-sm w-full" inputmode="url" autocomplete="url" />
+									</div>
+								</div>
 							</div>
 						{/each}
 					</div>
