@@ -228,17 +228,39 @@
 			}
 		} catch (e) {
 			console.error('wizard createStore:', e);
-			const msg = e instanceof Error ? e.message : '';
-			const friendly =
-				/link ya est[áa] en uso/i.test(msg) || /already exists/i.test(msg) || /duplicate/i.test(msg)
-					? 'Ese link ya está en uso. Elige otro en el paso 1.'
-					: /RLS|row-level security|permission denied/i.test(msg)
-						? 'No se pudo guardar la tienda. Intenta de nuevo en unos segundos.'
-						: 'No se pudo crear tu tienda. Revisa tu conexión e inténtalo de nuevo.';
-			error = friendly;
+			error = friendlyStoreError(e);
 		} finally {
 			creating = false;
 		}
+	}
+
+	function isNetworkError(e: unknown): boolean {
+		if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+		const msg = (e instanceof Error ? e.message : String(e ?? '')).toLowerCase();
+		// Errores reales de red: fetch abortado, DNS caído, sin conexión, etc.
+		return /failed to fetch|network ?error|network request failed|load failed|err_internet|err_network|err_connection|timeout|timed out/i.test(msg);
+	}
+
+	function friendlyStoreError(e: unknown): string {
+		const rawMsg = e instanceof Error ? e.message : typeof e === 'string' ? e : '';
+		const msg = rawMsg.trim();
+
+		// 1) Link duplicado
+		if (/link ya est[áa] en uso/i.test(msg) || /already exists/i.test(msg) || /duplicate|unique constraint|unique violation/i.test(msg)) {
+			return 'Ese link ya está en uso. Elige otro en el paso 1.';
+		}
+		// 2) Permisos / RLS
+		if (/RLS|row-level security|permission denied|not authorized|violates .* policy/i.test(msg)) {
+			return 'No se pudo guardar la tienda por un problema de permisos. Intenta de nuevo en unos segundos.';
+		}
+		// 3) Conexión real (solo cuando de verdad es un error de red)
+		if (isNetworkError(e)) {
+			return 'Parece que se perdió la conexión. Revisa tu internet e inténtalo de nuevo.';
+		}
+		// 4) Error real desconocido: mostrarlo en vez de fingir que es "sin internet"
+		return msg
+			? `No se pudo crear tu tienda: ${msg}`
+			: 'No se pudo crear tu tienda. Inténtalo de nuevo.';
 	}
 
 	function next() {
