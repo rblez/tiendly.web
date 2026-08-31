@@ -4,7 +4,7 @@
 	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { migratePayment } from '$lib/payments';
 	import { fileToDataUrl } from '$lib/utils';
-	import type { PaymentMethod } from '$lib/types';
+	import type { PaymentCurrency, PaymentMethod } from '$lib/types';
 	import { onMount } from 'svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -35,7 +35,7 @@
 	let dirty = $derived(JSON.stringify(payments) !== initial);
 
 	function addMethod() {
-		payments = [...payments, { id: newId(), title: '', fields: [{ id: newId(), label: '', value: '' }], instructions: null, proof_type: 'captura' }];
+		payments = [...payments, { id: newId(), title: '', currency: 'ambas', fields: [{ id: newId(), label: '', value: '' }], instructions: null, proof_type: 'captura' }];
 	}
 	function removeMethod(i: number) { payments = payments.filter((_, pi) => pi !== i); }
 	async function handleMethodImage(event: Event, index: number) {
@@ -59,7 +59,8 @@
 					.map((f) => ({ id: f.id, label: f.label.trim(), value: f.value.trim() })),
 				instructions: p.instructions?.trim() || null,
 				image: p.image || null,
-				proof_type: p.proof_type || 'captura'
+				proof_type: p.proof_type || 'captura',
+				currency: (p.currency === 'CUP' || p.currency === 'USD' ? p.currency : 'ambas') as PaymentCurrency
 			}));
 		const { error: err } = await supabase.from('stores').update({ payments: clean }).eq('id', storeId);
 		saving = false;
@@ -99,7 +100,14 @@
 									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-hairline flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
 									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline"><span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span><input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} /></label>
 								</div>
-								<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm flex-1 min-w-0" />
+								<div class="flex-1 min-w-0 space-y-2">
+									<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm w-full" />
+									<select bind:value={pm.currency} class="input input-sm w-full" aria-label="Moneda del método de pago">
+										<option value="ambas">Disponible en CUP y USD</option>
+										<option value="CUP">Solo CUP</option>
+										<option value="USD">Solo USD</option>
+									</select>
+								</div>
 								<button type="button" onclick={() => removeMethod(i)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar método de pago">
 									<i class="ri-close-line"></i>
 								</button>

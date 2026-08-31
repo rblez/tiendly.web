@@ -32,9 +32,11 @@ function isFreeForm(p: unknown): p is PaymentMethod {
 export function migratePayment(pm: unknown): PaymentMethod | null {
 	if (!pm || typeof pm !== 'object') return null;
 	if (isFreeForm(pm)) {
+		const rawCurrency = String((pm as { currency?: string }).currency ?? 'ambas').toUpperCase();
 		return {
 			id: String((pm as { id: string }).id ?? newId()),
 			title: (pm as { title: string }).title.trim(),
+			currency: rawCurrency === 'CUP' || rawCurrency === 'USD' ? rawCurrency : 'ambas',
 			fields: (pm as { fields: PaymentField[] }).fields
 				.filter((f) => f && typeof f === 'object')
 				.map((f) => ({ id: f.id || newId(), label: (f.label ?? '').trim(), value: (f.value ?? '').trim() })),

@@ -106,9 +106,12 @@ export interface PaymentField {
 
 export type PaymentProofType = 'captura' | 'captura_y_tx' | 'hash' | 'ninguno';
 
+export type PaymentCurrency = 'CUP' | 'USD' | 'ambas';
+
 export interface PaymentMethod {
 	id: string;
 	title: string;
+	currency?: PaymentCurrency;
 	fields: PaymentField[];
 	instructions?: string | null;
 	image?: string | null;
