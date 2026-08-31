@@ -42,20 +42,26 @@
 	href={productUrl}
 	class="bg-card border border-hairline rounded-card overflow-hidden transition-all duration-200 hover:shadow-lg hover:shadow-ink/5 hover:-translate-y-0.5 no-underline block"
 >
-	<div class="aspect-[4/3] bg-canvas overflow-hidden">
+	<div class="aspect-[4/3] bg-canvas overflow-hidden relative">
 		{#if img && !imgError}
-<img
-					src={img}
-					srcset={imageSrcset(img) ?? undefined}
-					sizes="(min-width: 1024px) 25vw, 50vw"
-					alt={product.name}
-					width="640"
-					height="480"
-					class="w-full h-full object-cover"
-					loading="lazy"
-					decoding="async"
-					onerror={() => imgError = true}
-				/>
+			<img
+				src={img}
+				srcset={imageSrcset(img) ?? undefined}
+				sizes="(min-width: 1024px) 25vw, 50vw"
+				alt={product.name}
+				width="640"
+				height="480"
+				class="w-full h-full object-cover"
+				loading="lazy"
+				decoding="async"
+				onerror={() => imgError = true}
+			/>
+		{/if}
+		{#if product.bajo_pedido}
+			<span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-warning px-2.5 py-1 text-xs font-semibold text-canvas shadow-sm">
+				<i class="ri-time-line" aria-hidden="true"></i>
+				Bajo pedido
+			</span>
 		{/if}
 	</div>
 	<div class="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3">
@@ -87,7 +93,7 @@
 		<span
 			class="btn btn-sm w-full mt-2 {isAgotado ? 'btn-secondary text-muted-soft cursor-not-allowed' : 'btn-3d'}"
 		>
-			{isAgotado ? 'Agotado' : 'Ver producto'}
+			{isAgotado ? 'Agotado' : product.variants.length > 0 ? 'Ver opciones' : 'Ver producto'}
 		</span>
 	</div>
 </a>
