@@ -57,38 +57,33 @@
 				onerror={() => imgError = true}
 			/>
 		{/if}
-		{#if product.bajo_pedido}
-			<span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-warning px-2.5 py-1 text-xs font-semibold text-canvas shadow-sm">
-				<i class="ri-time-line" aria-hidden="true"></i>
-				Bajo pedido
+		<span class="absolute left-3 top-3 inline-flex flex-col items-start gap-0.5 rounded-lg bg-card/95 px-3 py-2 text-ink shadow-sm backdrop-blur-sm">
+			<span class="text-sm font-bold leading-tight text-ember sm:text-base">
+				{#if product.variants.length > 0}
+					Desde {displayFormat(minPrice, store)}
+				{:else}
+					{displayFormat(product.price, store)}
+				{/if}
 			</span>
-		{/if}
+			{#if product.bajo_pedido}
+				<span class="inline-flex items-center gap-1 text-[11px] font-semibold leading-tight text-warning">
+					<i class="ri-time-line" aria-hidden="true"></i>
+					Bajo pedido
+				</span>
+			{/if}
+		</span>
 	</div>
 	<div class="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3">
 		<h3 class="text-sm sm:text-lg font-semibold text-ink leading-tight">{product.name}</h3>
 		{#if product.description}
 			<p class="text-xs sm:text-sm text-body leading-relaxed line-clamp-2">{product.description}</p>
 		{/if}
-
-	<p class="text-base sm:text-xl font-bold text-ember">
-		{#if product.variants.length > 0}
-			Desde {displayFormat(minPrice, store)}
-		{:else}
-			{displayFormat(product.price, store)}
-		{/if}
-		{#if !isAgotado && product.bajo_pedido}
-			<span class="ml-2 align-middle chip bg-warning/15 text-warning">
-				<i class="ri-time-line"></i>
-				Bajo pedido
-			</span>
-		{/if}
 		{#if !isAgotado && curStock != null}
-			<span class="ml-2 align-middle chip bg-ember/10 text-ember">
+			<span class="chip w-fit bg-ember/10 text-ember">
 				<i class="ri-truck-line"></i>
 				Quedan {curStock}
 			</span>
 		{/if}
-	</p>
 
 		<span
 			class="btn btn-sm w-full mt-2 {isAgotado ? 'btn-secondary text-muted-soft cursor-not-allowed' : 'btn-3d'}"
