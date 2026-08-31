@@ -104,12 +104,15 @@ export interface PaymentField {
 	value: string;
 }
 
+export type PaymentProofType = 'captura' | 'captura_y_tx' | 'hash' | 'ninguno';
+
 export interface PaymentMethod {
 	id: string;
 	title: string;
 	fields: PaymentField[];
 	instructions?: string | null;
 	image?: string | null;
+	proof_type?: PaymentProofType;
 }
 
 export interface DeliveryZone {

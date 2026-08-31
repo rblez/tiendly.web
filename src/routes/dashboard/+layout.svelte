@@ -5,6 +5,7 @@
 
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
+	let isSettingsSubpage = $derived(page.url.pathname.includes('/configuracion/'));
 
 	$effect(() => {
 		auth.init();
@@ -16,25 +17,20 @@
 
 {#if auth.ready && auth.session}
 	<div class="flex flex-col min-h-screen">
-		<header class="sticky top-0 z-40 border-b border-hairline acrylic">
-			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
-				<a href="/dashboard" class="h-9 w-9 rounded-full bg-bone border border-hairline flex items-center justify-center text-body hover:text-ember transition-colors no-underline shrink-0" aria-label="Perfil">
-					{#if auth.profile?.avatar_url}
-						<img src={auth.profile.avatar_url} alt="" class="h-full w-full rounded-full object-cover" />
-					{:else}
-						<i class="ri-user-line"></i>
-					{/if}
-				</a>
-				<a href="/dashboard" class="px-3 py-2 rounded-btn text-sm font-medium text-body hover:bg-bone hover:text-ink transition-colors no-underline flex items-center gap-2">
-					<i class="ri-home-line" aria-hidden="true"></i>
-					<span>Inicio</span>
-				</a>
-			</div>
-		</header>
-		<div class="flex-1 pb-24 lg:pb-0">
+		{#if storeCode && !isSettingsSubpage}
+			<header class="sticky top-0 z-40 border-b border-hairline acrylic">
+				<div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+					<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-bone text-body transition-colors hover:text-ember" aria-label="Abrir cuenta">
+						{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Cuenta" class="h-full w-full rounded-full object-cover" />{:else}<i class="ri-user-line"></i>{/if}
+					</a>
+					<span class="rounded-full border border-ember/20 bg-ember/10 px-3 py-1 text-xs font-semibold text-ember">{auth.plan === 'free' ? 'Gratis' : auth.plan}</span>
+				</div>
+			</header>
+		{/if}
+		<div class:flex-1={!isSettingsSubpage} class="{isSettingsSubpage ? 'flex-1' : 'flex-1 pb-24 lg:pb-0'}">
 			{@render children()}
 		</div>
-		{#if storeCode}
+		{#if storeCode && !isSettingsSubpage}
 			{@const seg = page.url.pathname.split('/').filter(Boolean).pop() ?? ''}
 			<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 acrylic border-t border-hairline shadow-2xl px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] grid grid-cols-4 gap-1" aria-label="Navegación de la tienda">
 				<a href={`/dashboard/s/${storeCode}`} class:active-nav={seg === storeCode || seg === 'resumen' || seg === 'inicio' || seg === 'estadisticas'} class="flex flex-col items-center justify-center gap-0.5 min-h-14 rounded-xl text-[10px] font-semibold text-muted no-underline transition-colors">

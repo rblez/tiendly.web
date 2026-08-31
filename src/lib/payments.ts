@@ -39,7 +39,8 @@ export function migratePayment(pm: unknown): PaymentMethod | null {
 				.filter((f) => f && typeof f === 'object')
 				.map((f) => ({ id: f.id || newId(), label: (f.label ?? '').trim(), value: (f.value ?? '').trim() })),
 			instructions: ((pm as { instructions?: string | null }).instructions ?? '').trim() || null,
-		image: typeof (pm as { image?: unknown }).image === 'string' ? (pm as { image: string }).image : null,
+			image: typeof (pm as { image?: unknown }).image === 'string' ? (pm as { image: string }).image : null,
+			proof_type: ['captura', 'captura_y_tx', 'hash', 'ninguno'].includes(String((pm as { proof_type?: string }).proof_type)) ? (pm as { proof_type: PaymentMethod['proof_type'] }).proof_type : 'captura'
 		};
 	}
 	const p = pm as {
@@ -62,7 +63,7 @@ export function migratePayment(pm: unknown): PaymentMethod | null {
 	const title =
 		(p.bank && LEGACY_BANK_LABELS[p.bank]) ||
 		(p.type === 'transfermovil' ? 'Transfermóvil' : p.type === 'enzona' ? 'EnZona' : 'Pago manual');
-	return { id: String((p as { id?: string }).id ?? newId()), title: title.trim(), fields, instructions: null };
+	return { id: String((p as { id?: string }).id ?? newId()), title: title.trim(), fields, instructions: null, proof_type: 'captura' };
 }
 
 export function renderPayment(pm: unknown): RenderedPayment | null {

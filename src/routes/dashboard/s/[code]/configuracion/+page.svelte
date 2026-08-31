@@ -1,49 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import SettingsRow from '$lib/components/settings/SettingsRow.svelte';
-	import SettingsSection from '$lib/components/settings/SettingsSection.svelte';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
-
-	let storeCode = $derived($page.params.code ?? '');
+ import { page } from '$app/stores';
+ import { auth } from '$lib/stores/auth.svelte';
+ const code = $derived($page.params.code ?? '');
+ const base = $derived(`/dashboard/s/${code}/configuracion`);
+ const sections = [
+  { title: 'Tienda', items: [['ri-store-2-line','Información general','Nombre, usuario y descripción','informacion'],['ri-image-edit-line','Apariencia','Logo y color de tu tienda','apariencia'],['ri-price-tag-3-line','Categorías','Organiza tus productos','categorias'],['ri-eye-line','Visibilidad','Visible u oculta en Tiendly','visibilidad']] },
+  { title: 'Comunicación', items: [['ri-whatsapp-line','Contacto','WhatsApp y recepción de pedidos','contacto'],['ri-share-line','Redes sociales','Conecta tus perfiles','redes'],['ri-map-pin-line','Información adicional','Ubicación, horario y enlaces','adicional']] },
+  { title: 'Ventas', items: [['ri-exchange-dollar-line','Moneda','CUP y USD · tasa editable','moneda'],['ri-bank-card-line','Pagos','Métodos de cobro','pagos'],['ri-truck-line','Envíos','Zonas y costos de entrega','envios']] },
+  { title: 'Sistema', items: [['ri-vip-crown-line','Plan y límites','Plan Gratis y capacidad','cuenta/general'],['ri-link-m','Dominio y enlace','Comparte tu tienda','informacion'],['ri-history-line','Registro de cambios','Novedades de Tiendly','/changelog'],['ri-information-line','Acerca de Tiendly','Versión, términos y privacidad','acerca']] }
+ ];
 </script>
-
-<svelte:head>
-	<title>Configuración | Tiendly</title>
-</svelte:head>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}`} title="Configuración" />
-
-<section class="mx-auto max-w-2xl px-4 pb-10 sm:px-6 lg:px-8">
-	<div class="mb-8 px-1 pt-2">
-		<p class="text-sm leading-6 text-muted">Administra tu tienda, tus ventas y tu cuenta en Tiendly.</p>
-	</div>
-
-	<SettingsSection title="Tienda">
-		<SettingsRow icon="ri-store-2-line" color="#3B82F6" label="Información general" sublabel="Nombre, @usuario, descripción, categoría" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
-		<SettingsRow icon="ri-image-edit-line" color="#8B5CF6" label="Apariencia" sublabel="Logo, color, banner" href={`/dashboard/s/${storeCode}/configuracion/apariencia`} />
-		<SettingsRow icon="ri-eye-line" color="#14B8A6" label="Visibilidad" sublabel="Visible u oculta en tiendly.lat" href={`/dashboard/s/${storeCode}/configuracion/visibilidad`} />
-	</SettingsSection>
-
-	<SettingsSection title="Comunicación">
-		<SettingsRow icon="ri-whatsapp-line" color="#22C55E" label="Contacto" sublabel="WhatsApp y cómo recibes pedidos" href={`/dashboard/s/${storeCode}/configuracion/contacto`} />
-		<SettingsRow icon="ri-share-line" color="#EC4899" label="Redes sociales" sublabel="Facebook, Instagram, X, YouTube, Telegram" href={`/dashboard/s/${storeCode}/configuracion/redes`} />
-		<SettingsRow icon="ri-map-pin-line" color="#F59E0B" label="Información adicional" sublabel="Ubicación, horario, enlaces" href={`/dashboard/s/${storeCode}/configuracion/adicional`} />
-	</SettingsSection>
-
-	<SettingsSection title="Ventas">
-		<SettingsRow icon="ri-exchange-dollar-line" color="#6366F1" label="Moneda" sublabel="USD principal, CUP y tasa" href={`/dashboard/s/${storeCode}/configuracion/moneda`} />
-		<SettingsRow icon="ri-bank-card-line" color="#10B981" label="Pagos" sublabel="Métodos manuales" href={`/dashboard/s/${storeCode}/configuracion/pagos`} />
-		<SettingsRow icon="ri-truck-line" color="#F97316" label="Envíos" sublabel="Zonas y costo de mensajería" href={`/dashboard/s/${storeCode}/configuracion/envios`} />
-	</SettingsSection>
-
-	<SettingsSection title="Cuenta">
-		<SettingsRow icon="ri-user-3-line" color="#3B82F6" label="Cuenta" sublabel="Perfil, notificaciones y seguridad" href={`/dashboard/s/${storeCode}/configuracion/cuenta`} />
-	</SettingsSection>
-
-	<SettingsSection title="Sistema">
-		<SettingsRow icon="ri-vip-crown-line" color="#EAB308" label="Plan y límites" sublabel="Gratis, productos y tiendas disponibles" href={`/dashboard/s/${storeCode}/configuracion/cuenta/general`} />
-		<SettingsRow icon="ri-link-m" color="#6366F1" label="Dominio o enlace de tienda" sublabel="Comparte la URL pública de tu tienda" href={`/dashboard/s/${storeCode}/configuracion/informacion`} />
-		<SettingsRow icon="ri-history-line" color="#64748B" label="Registro de cambios" sublabel="Novedades y actualizaciones de Tiendly" href="/changelog" />
-		<SettingsRow icon="ri-information-line" color="#475569" label="Acerca de Tiendly" sublabel="Versión, términos y privacidad" href={`/dashboard/s/${storeCode}/configuracion/acerca`} />
-	</SettingsSection>
-</section>
+<svelte:head><title>Ajustes | Tiendly</title></svelte:head>
+<div class="mx-auto min-h-full max-w-2xl px-4 pb-28 pt-7 sm:px-6">
+ <div class="mb-8 flex items-end justify-between"><div><p class="mb-2 text-xs font-semibold uppercase tracking-widest text-ember">Tienda</p><h1 class="text-3xl font-semibold tracking-tight text-ink">Ajustes</h1><p class="mt-2 text-sm text-muted">Configura cómo funciona tu tienda.</p></div><a href={`/dashboard/s/${code}/configuracion/cuenta`} aria-label="Abrir cuenta" class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-hairline bg-card text-ember no-underline">{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Cuenta" class="h-full w-full object-cover" />{:else}<i class="ri-user-3-line text-lg"></i>{/if}</a></div>
+ {#each sections as section}
+  <section class="mb-7"><h2 class="mb-2 px-3 text-xs font-semibold uppercase tracking-widest text-muted">{section.title}</h2><div class="overflow-hidden rounded-card border border-hairline bg-card shadow-sm">{#each section.items as item (item[3])}<a href={item[3].startsWith('/') ? item[3] : `${base}/${item[3]}`} class="group flex items-center gap-4 px-4 py-4 text-ink no-underline transition-colors hover:bg-ember/5"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-btn bg-ember/10 text-lg text-ember"><i class={item[0]} aria-hidden="true"></i></span><span class="min-w-0 flex-1"><strong class="block text-sm font-medium">{item[1]}</strong><small class="mt-0.5 block truncate text-xs text-muted">{item[2]}</small></span><i class="ri-arrow-right-s-line text-lg text-muted-soft transition-transform group-hover:translate-x-0.5" aria-hidden="true"></i></a>{/each}</div></section>
+ {/each}
+ <button type="button" onclick={() => auth.signOut()} class="flex w-full items-center justify-center gap-2 rounded-card border border-error/20 bg-error/5 px-4 py-4 text-sm font-semibold text-error transition-colors hover:bg-error/10"><i class="ri-logout-box-r-line" aria-hidden="true"></i>Cerrar sesión</button>
+</div>

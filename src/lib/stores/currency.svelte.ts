@@ -42,15 +42,10 @@ export const currency = (() => {
 })();
 
 export function availableCurrencies(store: Store | null | undefined): string[] {
-	const map = store?.exchange_rates;
-	if (map && typeof map === 'object' && Object.keys(map).length > 0) {
-		return Object.keys(map).filter((c) => Number.isFinite(map[c]) && (map[c] ?? 0) > 0);
-	}
-	const out: string[] = [];
-	const cur = vendorCurrency(store);
-	if (cur !== 'CUP' && currencyRate(store, cur)) out.push(cur);
-	out.push('CUP');
-	return out;
+	const currencies = ['CUP'];
+	const usdRate = currencyRate(store, 'USD');
+	if (usdRate && usdRate > 0) currencies.push('USD');
+	return currencies;
 }
 
 export function mainCurrency(store: Store | null | undefined): string {
