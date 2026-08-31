@@ -64,24 +64,37 @@
 {:else}
 	<div class="max-w-2xl mx-auto px-4 py-6 space-y-4">
 		<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
-			<div>
-				<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
-				<input id="s-name" type="text" bind:value={name} class="input w-full" />
-			</div>
-			<div>
-				<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Usuario</label>
-				<div class="flex overflow-hidden rounded-btn border border-hairline bg-canvas transition-colors focus-within:border-ember focus-within:ring-2 focus-within:ring-ember/20">
-					<span class="flex items-center border-r border-hairline px-3 text-sm font-semibold text-muted-soft" aria-hidden="true">@</span>
-					<input id="s-slug" type="text" bind:value={slug} oninput={onSlugInput} class="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="s-slug-preview" />
+			<h2 class="text-base font-semibold text-ink">Nombre y usuario</h2>
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				<div>
+					<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
+					<input id="s-name" type="text" bind:value={name} class="input w-full" />
 				</div>
-				<p id="s-slug-preview" class="mt-2 text-xs text-muted-soft">Tu tienda: <span class="font-medium text-body">tiendly.lat/@{slug || 'usuario'}</span></p>
+				<div>
+					<label for="s-slug" class="block text-sm font-medium text-body mb-1.5">Usuario</label>
+					<div class="flex overflow-hidden rounded-btn border border-hairline bg-canvas transition-colors focus-within:border-ember focus-within:ring-2 focus-within:ring-ember/20">
+						<span class="flex items-center border-r border-hairline px-3 text-sm font-semibold text-muted-soft" aria-hidden="true">@</span>
+						<input id="s-slug" type="text" bind:value={slug} oninput={onSlugInput} class="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="s-slug-preview" />
+					</div>
+					<p id="s-slug-preview" class="mt-2 text-xs text-muted-soft">Tu tienda: <span class="font-medium text-body">tiendly.lat/@{slug || 'usuario'}</span></p>
+				</div>
+			</div>
+		</div>
+
+		<div class="bg-card border border-hairline rounded-card p-5 space-y-3">
+			<div>
+				<h2 class="text-base font-semibold text-ink">Descripción</h2>
+				<p class="mt-1 text-xs text-muted-soft">Explica brevemente qué ofrece tu tienda.</p>
+			</div>
+			<textarea id="s-desc" bind:value={description} rows="6" class="input min-h-36 w-full resize-y" aria-label="Descripción de la tienda"></textarea>
+		</div>
+
+		<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
+			<div>
+				<h2 class="text-base font-semibold text-ink">Nicho</h2>
+				<p class="mt-1 text-xs text-muted-soft">Selecciona la categoría principal de tu tienda.</p>
 			</div>
 			<div>
-				<label for="s-desc" class="block text-sm font-medium text-body mb-1.5">Descripción</label>
-				<textarea id="s-desc" bind:value={description} rows="2" class="input w-full resize-none"></textarea>
-			</div>
-			<div>
-				<p class="block text-sm font-medium text-body mb-1.5">Categoría</p>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
 					{#each STORE_CATEGORIES as c (c.name)}
 						<label class="flex items-center gap-2.5 border border-hairline rounded-btn px-3.5 py-2.5 cursor-pointer hover:border-ember/50 {category===c.name?'border-ember/60 bg-ember/5':''}">
