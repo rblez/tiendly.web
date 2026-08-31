@@ -43,7 +43,6 @@
 	let receiptFile = $state<File | null>(null);
 	let receiptUrl = $state('');
 	let receiptUploading = $state(false);
-	let proofType = $state('');
 	let proofReference = $state('');
 	let copyFeedback = $state<string | null>(null);
 	let sending = $state(false);
@@ -84,6 +83,28 @@
 	});
 
 	const rendered = $derived(selectedPayment ? renderPayment(selectedPayment) : null);
+
+	// El vendedor ya fijó el tipo de comprobante en Ajustes > Pagos.
+	// El comprador no elige: solo ve lo que corresponde a su método de pago.
+	const proofType = $derived(selectedPayment?.proof_type ?? 'captura');
+	const needsPhoto = $derived(proofType === 'captura' || proofType === 'captura_y_tx');
+	const needsReference = $derived(proofType === 'captura_y_tx' || proofType === 'hash');
+	const referenceLabel = $derived(proofType === 'hash' ? 'Hash de la transacción' : 'Número de transacción');
+	const referencePlaceholder = $derived(proofType === 'hash' ? 'Ej. 0xabc123...' : 'Ej. TX-12345');
+	const proofComplete = $derived(
+		payments.length === 0 ||
+			(!!selectedPayment && (!needsPhoto || !!receiptUrl) && (!needsReference || proofReference.trim().length > 0)),
+	);
+
+	function selectPayment(pm: PaymentMethod) {
+		if (selectedPayment?.id === pm.id) return;
+		selectedPayment = pm;
+		// Cada método puede exigir un comprobante distinto: no arrastramos datos previos.
+		receiptFile = null;
+		receiptUrl = '';
+		proofReference = '';
+		orderError = '';
+	}
 
 	async function copyText(text: string, label: string) {
 		try {
@@ -134,8 +155,12 @@
 			orderError = 'Elige un método de pago para continuar.';
 			return;
 		}
-		if (payments.length > 0 && !receiptUrl) {
-			orderError = 'Sube el comprobante del pago antes de confirmar.';
+		if (payments.length > 0 && needsPhoto && !receiptUrl) {
+			orderError = 'Sube la foto del comprobante antes de confirmar.';
+			return;
+		}
+		if (payments.length > 0 && needsReference && !proofReference.trim()) {
+			orderError = `Escribe el ${referenceLabel.toLowerCase()} antes de confirmar.`;
 			return;
 		}
 
@@ -183,7 +208,7 @@
 				utm_source: draft.utm.utm_source ?? null,
 				utm_medium: draft.utm.utm_medium ?? null,
 				utm_campaign: draft.utm.utm_campaign ?? null,
-					...(selectedPayment ? { payment: { ...selectedPayment, proof_type: proofType || null, proof_reference: proofReference.trim() || null } as unknown as import('$lib/database.types').Json } : {}),
+					...(selectedPayment ? { payment: { ...selectedPayment, proof_type: proofType, proof_reference: proofReference.trim() || null } as unknown as import('$lib/database.types').Json } : {}),
 					...(receiptUrl ? { payment_receipt: receiptUrl } : {}),
 				...(draft.delivery ? { delivery: draft.delivery as unknown as import('$lib/database.types').Json } : {}),
 			});
@@ -327,13 +352,13 @@
 		{#if payments.length > 0}
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-6 mb-6">
 				<h2 class="text-lg font-bold text-ink mb-1">Elige cómo pagar</h2>
-				<p class="text-xs text-muted-soft mb-4">Copia los datos del método que elijas, paga y sube el comprobante.</p>
+				<p class="text-xs text-muted-soft mb-4">Copia los datos del método que elijas, paga y confirma tu pedido.</p>
 
 				<div class="space-y-2 mb-5">
 					{#each payments as pm}
 						<button
 							type="button"
-							onclick={() => (selectedPayment = pm)}
+							onclick={() => selectPayment(pm)}
 							class="w-full flex items-center gap-2.5 px-3.5 py-3 border rounded-btn text-left transition-colors cursor-pointer {selectedPayment?.id === pm.id
 								? 'border-ember/60 bg-ember/5'
 								: 'border-hairline hover:border-ember/50 hover:bg-bone'}"
@@ -377,49 +402,58 @@
 					</div>
 				{/if}
 
+				{#if proofType !== 'ninguno'}
 				<div class="mt-5">
 					<p class="text-sm font-medium text-body mb-1.5">Comprobante de pago</p>
-					{#if receiptUrl}
-						<div class="flex items-center justify-between gap-2 border border-hairline rounded-btn px-3.5 py-2.5 bg-bone">
-							<span class="flex items-center gap-2 text-sm text-body min-w-0">
-								<i class="ri-checkbox-circle-line text-ember flex-shrink-0"></i>
-								<span class="truncate">{receiptFile?.name ?? 'Comprobante subido'}</span>
-							</span>
-							<button
-								type="button"
-								onclick={() => {
-									receiptFile = null;
-									receiptUrl = '';
-								}}
-								class="flex-shrink-0 text-xs font-medium text-muted hover:text-error transition-colors cursor-pointer"
+					{#if needsPhoto}
+						{#if receiptUrl}
+							<div class="flex items-center justify-between gap-2 border border-hairline rounded-btn px-3.5 py-2.5 bg-bone">
+								<span class="flex items-center gap-2 text-sm text-body min-w-0">
+									<i class="ri-checkbox-circle-line text-ember flex-shrink-0"></i>
+									<span class="truncate">{receiptFile?.name ?? 'Comprobante subido'}</span>
+								</span>
+								<button
+									type="button"
+									onclick={() => {
+										receiptFile = null;
+										receiptUrl = '';
+									}}
+									class="flex-shrink-0 text-xs font-medium text-muted hover:text-error transition-colors cursor-pointer"
+								>
+									Quitar
+								</button>
+							</div>
+						{:else}
+							<label
+								class="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
 							>
-								Quitar
-							</button>
-						</div>
-					{:else}
-						<label
-							class="flex items-center justify-center gap-2 w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-						>
-							{#if receiptUploading}
-								<i class="ri-loader-4-line animate-spin"></i>
-								Subiendo...
-							{:else}
-								<i class="ri-image-add-line"></i>
-								Subir foto del comprobante
-							{/if}
-							<input type="file" accept="image/*,.pdf,.heic,.webp" class="hidden" disabled={receiptUploading} onchange={handleReceipt} />
-						</label>
-							<p class="text-xs text-muted-soft mt-1.5">Puedes subir una captura, factura o PDF.</p>
+								{#if receiptUploading}
+									<i class="ri-loader-4-line animate-spin"></i>
+									Subiendo...
+								{:else}
+									<i class="ri-image-add-line"></i>
+									Subir foto del comprobante
+								{/if}
+								<input type="file" accept="image/*,.pdf,.heic,.webp" class="hidden" disabled={receiptUploading} onchange={handleReceipt} />
+							</label>
+							<p class="text-xs text-muted-soft mt-1.5">Requerido. Puedes subir una captura, factura o PDF.</p>
 						{/if}
-						<div class="mt-4 grid gap-3 sm:grid-cols-2">
-							<label class="text-xs font-medium text-body">Tipo de comprobante
-								<select bind:value={proofType} class="input input-sm mt-1.5 w-full"><option value="">Selecciona una opción</option><option value="screenshot">Captura de pantalla</option><option value="transaction">ID de transacción</option><option value="hash">Hash</option><option value="invoice">Factura</option><option value="other">Otro</option></select>
-							</label>
-							<label class="text-xs font-medium text-body">ID, hash o referencia <span class="font-normal text-muted-soft">(opcional)</span>
-								<input bind:value={proofReference} type="text" placeholder="Ej. TX-12345 o 0xabc..." class="input input-sm mt-1.5 w-full" autocomplete="off" />
-							</label>
-						</div>
+					{/if}
+					{#if needsReference}
+						<label class="block text-xs font-medium text-body {needsPhoto ? 'mt-4' : ''}">
+							{referenceLabel} <span class="font-normal text-error">*</span>
+							<input
+								bind:value={proofReference}
+								type="text"
+								required
+								placeholder={referencePlaceholder}
+								class="input input-sm mt-1.5 w-full"
+								autocomplete="off"
+							/>
+						</label>
+					{/if}
 				</div>
+				{/if}
 			</div>
 		{/if}
 
@@ -432,7 +466,7 @@
 
 		<button
 			onclick={confirmPayment}
-			disabled={sending || orderPlaced}
+			disabled={sending || orderPlaced || !proofComplete}
 			class="btn btn-3d btn-lg w-full disabled:opacity-50"
 		>
 			{#if sending}
