@@ -48,7 +48,7 @@ export function currencyRate(store: RateStore | null | undefined, currency: stri
 export function convertPrice(price: number, store: RateStore | null | undefined, currency?: string): number {
 	const rate = currencyRate(store, currency ?? vendorCurrency(store));
 	if (!rate || rate <= 0) return price;
-	return price / rate;
+	return price * rate;
 }
 
 export function slugify(input: string): string {
