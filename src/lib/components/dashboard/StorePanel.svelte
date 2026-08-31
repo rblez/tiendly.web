@@ -1118,21 +1118,32 @@ $effect(() => {
 			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
 	);
 
+	let orderStatusError = $state('');
+
 	async function updateOrderStatus(order: Order, status: string) {
 		if (!store || order.status === status) return;
 
 		const previousStatus = order.status;
 		orders = orders.map((item) => (item.id === order.id ? { ...item, status } : item));
+		orderStatusError = '';
 
-		const { error } = await supabase
+		const { data: updated, error } = await supabase
 			.from('orders')
 			.update({ status })
 			.eq('id', order.id)
-			.eq('store_id', store.id);
+			.eq('store_id', store.id)
+			.select('id, status');
 
 		if (error) {
 			orders = orders.map((item) => (item.id === order.id ? { ...item, status: previousStatus } : item));
-			console.error('[v0] No se pudo actualizar el estado del pedido:', error.message);
+			orderStatusError = `No se pudo cambiar el estado del pedido: ${error.message}`;
+			console.error('No se pudo actualizar el estado del pedido:', error);
+			return;
+		}
+		if (!updated || updated.length === 0) {
+			// El update no tocó ninguna fila: normalmente falta permiso (RLS) sobre este pedido.
+			orders = orders.map((item) => (item.id === order.id ? { ...item, status: previousStatus } : item));
+			orderStatusError = 'No se pudo cambiar el estado del pedido: no tienes permiso para editarlo.';
 		}
 	}
 
@@ -1777,6 +1788,13 @@ async function duplicateProduct(p: Product) {
 				</div>
 			{:else}
 				<div class="space-y-3">
+					{#if orderStatusError}
+						<div class="flex items-start gap-2 bg-error/10 text-error border border-error/30 rounded-btn px-4 py-3 text-sm mb-4">
+							<i class="ri-alert-line mt-0.5 flex-shrink-0"></i>
+							<span class="flex-1">{orderStatusError}</span>
+							<button type="button" onclick={() => (orderStatusError = '')} class="text-xs font-medium underline cursor-pointer">Cerrar</button>
+						</div>
+					{/if}
 					{#each filteredOrders as order}
 						{@const status = statusInfo(order.status)}
 						<div
