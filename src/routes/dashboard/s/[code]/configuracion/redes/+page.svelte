@@ -13,7 +13,7 @@
 		if(!data){ error='No se encontró la tienda.'; loading=false; return; }
 		storeId=(data as any).id;
 		const raw=(data as any).social as Record<string,unknown>|null;
-		social={}; for(const n of SOCIAL_NETWORKS){ const v=raw?.[n.key]; if(typeof v==='string'&&v.trim()) social[n.key]=v; }
+		social={}; for(const n of SOCIAL_NETWORKS){ const v=raw?.[n.key]; if(typeof v==='string'&&v.trim()) social[n.key]=socialHandle(n.key, v); }
 		initial=JSON.stringify(social); loading=false;
 	});
 	let dirty=$derived(JSON.stringify(social)!==initial);
@@ -31,16 +31,16 @@
 <div class="max-w-2xl mx-auto px-4 py-6 space-y-4">
 	<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
 		<p class="text-xs text-muted mb-2">Deja vacío lo que no uses.</p>
-		{#each SOCIAL_NETWORKS as net}
+		{#each SOCIAL_NETWORKS as net (net.key)}
 			{@const handle = socialHandle(net.key, social[net.key]??'')}
 			<div>
 				<label for={`s-${net.key}`} class="flex items-center gap-1.5 text-sm font-medium text-body mb-1.5"><SocialBrandIcon name={net.icon} color={theme.resolved==='dark'?'#FFFFFF':net.color} class="w-3.5 h-3.5" />{net.label}</label>
-				<div class="relative">
-					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-soft">{net.prefix}</span>
-					<input id={`s-${net.key}`} type="text" value={handle} oninput={(e)=>social[net.key]=(e.target as HTMLInputElement).value} placeholder={net.placeholder} class="input pr-10 {net.prefix?'pl-8':'pl-4'} w-full" />
-					{#if handle}<button type="button" onclick={()=>social[net.key]=''} class="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full text-muted-soft hover:text-error">×</button>{/if}
+				<div class="flex overflow-hidden rounded-btn border border-hairline bg-canvas transition-colors focus-within:border-ember focus-within:ring-2 focus-within:ring-ember/20">
+					{#if net.prefix}<span class="flex items-center border-r border-hairline px-3 text-sm font-semibold text-muted-soft" aria-hidden="true">{net.prefix}</span>{/if}
+					<input id={`s-${net.key}`} type="text" value={handle} oninput={(e)=>social[net.key]=(e.target as HTMLInputElement).value.replace(/^@+/, '')} placeholder={net.placeholder} class="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby={`s-${net.key}-preview`} />
+					{#if handle}<button type="button" aria-label={`Limpiar ${net.label}`} onclick={()=>social[net.key]=''} class="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-soft hover:bg-error/10 hover:text-error">×</button>{/if}
 				</div>
-				{#if handle}<p class="text-[11px] text-muted-soft mt-1 truncate">{socialUrl(net.key, handle)}</p>{/if}
+				{#if handle}<p id={`s-${net.key}-preview`} class="mt-2 truncate text-xs text-muted-soft">Enlace: <span class="text-body">{socialUrl(net.key, handle)}</span></p>{/if}
 			</div>
 		{/each}
 	</div>
