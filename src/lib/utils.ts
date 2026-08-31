@@ -29,7 +29,7 @@ export function formatPrice(price: number, currency: string): string {
 type RateStore = { currency?: string | null; exchange_rate?: number | null; exchange_rates?: Record<string, number> | null };
 
 export function vendorCurrency(store: RateStore | null | undefined): string {
-	return store?.currency?.trim() || 'CUP';
+	return store?.currency?.trim().toUpperCase() === 'USD' ? 'USD' : 'CUP';
 }
 
 export function currencyRate(store: RateStore | null | undefined, currency: string): number | null {

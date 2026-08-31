@@ -31,7 +31,7 @@
 	</SettingsSection>
 
 	<SettingsSection title="Ventas">
-		<SettingsRow icon="ri-exchange-dollar-line" color="#6366F1" label="Moneda" sublabel="USD principal, CUP y tasa" href={`/dashboard/s/${storeCode}/configuracion/moneda`} />
+		<SettingsRow icon="ri-exchange-dollar-line" color="#6366F1" label="Moneda" sublabel="CUP principal, USD y tasa editable" href={`/dashboard/s/${storeCode}/configuracion/moneda`} />
 		<SettingsRow icon="ri-bank-card-line" color="#10B981" label="Pagos" sublabel="Métodos manuales" href={`/dashboard/s/${storeCode}/configuracion/pagos`} />
 		<SettingsRow icon="ri-truck-line" color="#F97316" label="Envíos" sublabel="Zonas y costo de mensajería" href={`/dashboard/s/${storeCode}/configuracion/envios`} />
 	</SettingsSection>

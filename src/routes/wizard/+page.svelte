@@ -183,8 +183,11 @@
 						category,
 						description: description.trim() || null,
 						whatsapp: whatsapp.trim() || null,
-						theme_color: '#22c55e',
-					})
+							theme_color: '#22c55e',
+							currency: 'CUP',
+							exchange_rate: 980,
+							exchange_rates: { USD: 980 },
+						})
 					.select('id, code')
 					.single();
 
@@ -208,8 +211,11 @@
 					p_category: category,
 					p_description: description.trim() || null,
 					p_whatsapp: whatsapp.trim() || null,
-					p_theme_color: '#22c55e',
-					p_preview_token: token,
+						p_theme_color: '#22c55e',
+						p_currency: 'CUP',
+						p_exchange_rate: 980,
+						p_exchange_rates: { USD: 980 },
+						p_preview_token: token,
 					p_preview_expires_at: expiresAt,
 					p_products: buildProducts('') as unknown as import('$lib/database.types').Json,
 				});
