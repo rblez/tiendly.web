@@ -34,7 +34,8 @@ export function vendorCurrency(store: RateStore | null | undefined): string {
 
 export function currencyRate(store: RateStore | null | undefined, currency: string): number | null {
 	const c = currency?.trim() || 'CUP';
-	if (c === 'CUP') return 1;
+	if (c === store?.currency?.trim()) return 1;
+	if (!store?.currency && c === 'CUP') return 1;
 	const map = store?.exchange_rates;
 	if (map && typeof map === 'object' && Number.isFinite(map[c]) && (map[c] ?? 0) > 0) return map[c] as number;
 	if (c === store?.currency?.trim()) {

@@ -541,21 +541,7 @@
 				</div>
 			{/if}
 
-			{#if mode === 'sin_contactar'}
-				<div class="bg-card border border-hairline rounded-card px-4 sm:px-5 py-4">
-					<div class="flex items-center gap-3">
-						<span class="h-10 w-10 flex items-center justify-center rounded-btn bg-ember/10 text-ember flex-shrink-0">
-							<i class="ri-qr-scan-line text-xl"></i>
-						</span>
-						<div class="min-w-0">
-							<p class="text-sm font-semibold text-ink">Siguiente paso: el pago</p>
-							<p class="text-xs text-muted-soft">
-								Elige tu método de pago, copia los datos, paga y sube el comprobante en el paso siguiente.
-							</p>
-						</div>
-					</div>
-				</div>
-			{/if}
+
 
 			{#if orderError}
 					<div class="flex items-start gap-2 bg-error/10 text-error border border-error/30 rounded-btn px-4 py-3 text-sm">
