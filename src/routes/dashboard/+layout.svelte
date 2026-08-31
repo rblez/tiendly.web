@@ -19,6 +19,19 @@
 	<div class="flex flex-col min-h-screen">
 		{#if storeCode && !isSettingsSubpage}
 			<header class="sticky top-0 z-40 border-b border-hairline acrylic">
+				<div class="border-b border-ember/15 bg-ember/10">
+					<div class="mx-auto flex min-h-11 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+						<p class="text-xs font-medium leading-5 text-body sm:text-sm">
+							<span class="font-bold text-ember">Tiendly está en beta.</span>
+							<span class="hidden sm:inline"> Déjanos tu feedback para seguir mejorando.</span>
+							<span class="sm:hidden"> Déjanos tu feedback.</span>
+						</p>
+						<a href="https://t.me/+ucm1fCkeH5dmNTJh" target="_blank" rel="noreferrer" class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ember px-3 py-1.5 text-xs font-bold text-canvas no-underline transition-transform hover:-translate-y-0.5" aria-label="Unirse al grupo de feedback en Telegram">
+							<i class="ri-telegram-line text-sm" aria-hidden="true"></i>
+							<span>Únete al grupo</span>
+						</a>
+					</div>
+				</div>
 				<div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
 					<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-bone text-body transition-colors hover:text-ember" aria-label="Abrir cuenta">
 						{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Cuenta" class="h-full w-full rounded-full object-cover" />{:else}<i class="ri-user-line"></i>{/if}
