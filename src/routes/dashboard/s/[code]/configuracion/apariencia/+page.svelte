@@ -13,7 +13,17 @@
 	let saving = $state(false);
 	let msg = $state(''); let error = $state(''); let initial = $state('');
 
-	const PRESET_COLORS = ['#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6'];
+	const PRESET_COLORS = [
+		{ value: '#22c55e', label: 'Esmeralda' },
+		{ value: '#38bdf8', label: 'Cielo' },
+		{ value: '#818cf8', label: 'Índigo' },
+		{ value: '#c084fc', label: 'Violeta' },
+		{ value: '#f472b6', label: 'Rosa' },
+		{ value: '#fbbf24', label: 'Ámbar' },
+		{ value: '#fb7185', label: 'Coral' },
+		{ value: '#2dd4bf', label: 'Turquesa' },
+		{ value: '#a3e635', label: 'Lima' }
+	];
 
 	onMount(async()=>{
 		const { data } = await supabase.from('stores').select('id, theme_color, logo').eq('code', storeCode).maybeSingle();
@@ -60,8 +70,20 @@
 	</div>
 	<div class="bg-card border border-hairline rounded-card p-5">
 		<p class="text-sm font-medium text-body mb-3">Color de la tienda</p>
-		<div class="flex flex-wrap gap-3">
-			{#each PRESET_COLORS as c}<button onclick={()=>theme_color=c} aria-label={`Color ${c}`} title={c} class="h-8 w-8 rounded-full border-2 {theme_color===c?'border-ink scale-110':'border-transparent'}" style={`background:${c}`}></button>{/each}
+		<p class="mb-4 text-xs leading-5 text-muted">Colores ajustados para destacar sobre fondos oscuros y mantener buen contraste.</p>
+		<div class="grid grid-cols-5 gap-4 sm:grid-cols-9" role="radiogroup" aria-label="Color de la tienda">
+			{#each PRESET_COLORS as c (c.value)}
+				<button
+					type="button"
+					onclick={() => (theme_color = c.value)}
+					aria-label={c.label}
+					aria-checked={theme_color === c.value}
+					role="radio"
+					title={c.label}
+					class="h-10 w-10 rounded-full border-2 transition-transform hover:scale-105 {theme_color === c.value ? 'scale-110 border-ink ring-2 ring-ink/20' : 'border-transparent'}"
+					style={`background:${c.value}`}
+				></button>
+			{/each}
 		</div>
 	</div>
 	{#if error}<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{error}</p>{/if}
