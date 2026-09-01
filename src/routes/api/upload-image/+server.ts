@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import sharp from 'sharp';
 import { supabase, createAdminClient } from '$lib/supabase/server';
+import { clientKey, rateLimit } from '$lib/server/rate-limit';
 const MAX_BYTES = 8 * 1024 * 1024;
 
 export const POST = async (event) => {
@@ -10,6 +11,9 @@ export const POST = async (event) => {
 			data: { user },
 		} = await supabase.auth.getUser(token);
 		if (!user) return json({ error: 'No autorizado' }, { status: 401 });
+		if (!rateLimit(clientKey(event.request, `upload:${user.id}`), 20, 60 * 60_000)) {
+			return json({ error: 'Límite de subidas alcanzado' }, { status: 429 });
+		}
 
 		const form = await event.request.formData();
 		const file = form.get('file');
