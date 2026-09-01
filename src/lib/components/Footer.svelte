@@ -81,7 +81,7 @@ let trackError = $state('');
 								target="_blank"
 								rel="noopener noreferrer"
 								onclick={() => trackSocialClick(s)}
-								class="h-9 w-9 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
+								class="h-11 w-11 flex items-center justify-center rounded-full border border-hairline bg-card text-body hover:text-ember hover:border-ember/50 transition-colors"
 								aria-label={s.label}
 							>
 								{#if brand}
