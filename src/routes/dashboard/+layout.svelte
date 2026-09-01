@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { Box, Folders, Home, Loader2, Settings, UserRound } from '@lucide/svelte';
+	import { Bell, Box, Folders, Home, Loader2, Settings, UserRound } from '@lucide/svelte';
 
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
@@ -30,9 +30,14 @@
 					</div>
 				</div>
 				<div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+					<div class="flex items-center gap-2">
+					<a href={`/dashboard/s/${storeCode}/configuracion/cuenta/notificaciones`} class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-bone text-body transition-colors hover:text-ember" aria-label="Abrir notificaciones" title="Notificaciones">
+						<Bell size={18} strokeWidth={1.8} aria-hidden="true" />
+					</a>
 					<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-bone text-body transition-colors hover:text-ember" aria-label="Abrir cuenta">
 						{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Cuenta" class="h-full w-full rounded-full object-cover" />{:else}<UserRound size={18} strokeWidth={1.8} aria-hidden="true" />{/if}
 					</a>
+					</div>
 					<span class="rounded-full border border-ember/20 bg-ember/10 px-3 py-1 text-xs font-semibold text-ember">{auth.plan === 'free' ? 'Gratis' : auth.plan}</span>
 				</div>
 			</header>
