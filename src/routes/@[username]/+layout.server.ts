@@ -1,9 +1,22 @@
 import { supabase, createAdminClient } from '$lib/supabase/server';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { planFromProfile } from '$lib/plans';
 
-export const load = async ({ params, url }) => {
-	const token = url.searchParams.get('preview');
+export const load = async ({ params, url, cookies }) => {
+	const cookieName = `preview_${params.username}`;
+	const queryToken = url.searchParams.get('preview');
+	const token = queryToken ?? cookies.get(cookieName);
+
+	if (queryToken) {
+		cookies.set(cookieName, queryToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			path: `/@${params.username}`,
+			maxAge: 600,
+		});
+		throw redirect(303, `/@${params.username}`);
+	}
 
 	const { data: normal } = await supabase
 		.from('stores')
