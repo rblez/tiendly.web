@@ -2,7 +2,7 @@
  import { page } from '$app/stores';
  import { auth } from '$lib/stores/auth.svelte';
  const code = $derived($page.params.code ?? '');
- const items = [['ri-user-3-line','Perfil','Foto, nombre y teléfono','perfil'],['ri-vip-crown-line','Plan y límites','Tu plan y capacidad','general'],['ri-lock-password-line','Seguridad','Contraseña, correo y sesiones','seguridad'],['ri-shield-check-line','Privacidad','Sesiones y eliminación de cuenta','privacidad']];
+ const items = [['ri-user-3-line','Perfil y plan','Perfil, plan y límites de tu cuenta','perfil'],['ri-lock-password-line','Seguridad y privacidad','Contraseña, correo, sesiones y datos','seguridad']];
 </script>
 <svelte:head><title>Cuenta | Tiendly</title></svelte:head>
 <div class="mx-auto min-h-full max-w-2xl px-4 pb-10 pt-5 sm:px-6">
