@@ -1,7 +1,7 @@
 import { supabase } from '$lib/supabase/client';
 import type { Variant } from '$lib/types';
 
-export const SITE_URL = 'https://www.tiendly.lat';
+export const SITE_URL = 'https://tiendly.lat';
 
 export function appUrl(): string {
 	if (typeof window !== 'undefined') return window.location.origin;

@@ -68,7 +68,7 @@
 		if (data.session) {
 			await afterAuth();
 		} else {
-			info = 'Revisa tu correo para confirmar la cuenta, luego inicia sesión para activar tu tienda.';
+			goto(`/auth/confirm?type=signup&email=${encodeURIComponent(email.trim())}`);
 		}
 	}
 

@@ -276,7 +276,7 @@
 <section class="max-w-lg mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col min-h-dvh">
 	<div class="flex justify-center mb-10">
 		<a href="/" aria-label="Tiendly">
-			<img src="/tiendly-logo-completo.webp" alt="Tiendly" class="h-9 object-contain" />
+			<img src="/tiendly-logo.webp" alt="Tiendly" class="h-9 object-contain" />
 		</a>
 	</div>
 
