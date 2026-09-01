@@ -11,11 +11,18 @@
 	let success = $state(false);
 
 	onMount(() => {
-		const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-			if (event === 'PASSWORD_RECOVERY') ready = true;
+		let active = true;
+		void supabase.auth.getSession().then(({ data: sessionData }) => {
+			if (active && sessionData.session) ready = true;
 		});
-		ready = true;
-		return () => listener.subscription.unsubscribe();
+
+		const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+			if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) ready = true;
+		});
+		return () => {
+			active = false;
+			listener.subscription.unsubscribe();
+		};
 	});
 
 	async function updatePassword(e: SubmitEvent) {
@@ -35,7 +42,9 @@
 <svelte:head><title>Crear nueva contraseña | Tiendly</title></svelte:head>
 <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-16">
 	<div class="w-full max-w-sm text-center">
-		<img src="/tiendly-logo.webp" alt="Tiendly" class="h-10 object-contain mx-auto mb-8" />
+		<a href="/" aria-label="Ir al inicio de Tiendly" class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 shadow-sm mb-8">
+			<img src="/tiendly-logo.webp" alt="Tiendly" class="h-10 w-auto object-contain" />
+		</a>
 		<h1 class="text-3xl font-black text-ink mb-2">Nueva contraseña</h1>
 		{#if success}<p class="text-sm text-ember">Contraseña actualizada. Volviendo al inicio de sesión…</p>
 		{:else if ready}<form onsubmit={updatePassword} class="space-y-4 text-left mt-8">
