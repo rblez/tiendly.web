@@ -1,15 +1,5 @@
-import { supabase } from '$lib/supabase/server';
-import { createClient } from '@supabase/supabase-js';
-import { env as privateEnv } from '$env/dynamic/private';
-import { env as publicEnv } from '$env/dynamic/public';
-const SUPABASE_SERVICE_ROLE_KEY = privateEnv.SUPABASE_SERVICE_ROLE_KEY ?? '';
-const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
-import type { Database } from '$lib/database.types';
+import { supabase, createAdminClient } from '$lib/supabase/server';
 import { planFromProfile, type PlanId } from '$lib/plans';
-
-const admin = createClient<Database>(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-	auth: { persistSession: false },
-});
 
 const PLAN_LIMITS: Record<PlanId, number> = { free: 1 };
 
@@ -21,6 +11,7 @@ export const POST = async ({ request }) => {
 		return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
 	}
 
+	const admin = createAdminClient();
 	const body = await request.json().catch(() => null);
 	const previewToken = typeof body?.token === 'string' ? body.token.trim() : '';
 	if (!previewToken) {
