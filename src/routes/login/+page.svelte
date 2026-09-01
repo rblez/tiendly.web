@@ -55,6 +55,13 @@
 		try {
 			const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
 			if (err) {
+				if (err.message.toLowerCase().includes('email not confirmed')) {
+					const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
+					if (!resendError) {
+						navigate(`/auth/confirm?type=signup&email=${encodeURIComponent(email.trim())}`);
+						return;
+					}
+				}
 				error = friendlyAuthError(err.message);
 				return;
 			}

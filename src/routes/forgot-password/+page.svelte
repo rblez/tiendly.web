@@ -15,7 +15,7 @@
 		}
 		loading = true;
 		const { error: err } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-			redirectTo: `${location.origin}/dash/profile?tab=general`,
+			redirectTo: `${location.origin}/auth/reset-password`,
 		});
 		loading = false;
 		if (err) {
