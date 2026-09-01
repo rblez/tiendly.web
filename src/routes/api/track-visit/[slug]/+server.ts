@@ -1,7 +1,11 @@
 import { supabase } from '$lib/supabase/server';
+import { clientKey, rateLimit } from '$lib/server/rate-limit';
 
-export const POST = async ({ params, url }) => {
+export const POST = async ({ params, url, request }) => {
 	const slug = params.slug.trim();
+	if (!rateLimit(clientKey(request, 'visit'), 60, 60_000)) {
+		return new Response(JSON.stringify({ error: 'Demasiadas solicitudes' }), { status: 429 });
+	}
 	if (!/^[a-z0-9-]{3,40}$/.test(slug)) {
 		return new Response(JSON.stringify({ error: 'Slug inválido' }), { status: 400 });
 	}

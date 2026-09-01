@@ -1,11 +1,15 @@
 import { supabase } from '$lib/supabase/server';
 import { SOCIAL_NETWORKS } from '$lib/socials';
 import type { Json } from '$lib/database.types';
+import { clientKey, rateLimit } from '$lib/server/rate-limit';
 
 const ALLOWED_TYPES = new Set(['social_click']);
 
 export const POST = async ({ params, request }) => {
 	const slug = params.slug.trim();
+	if (!rateLimit(clientKey(request, 'event'), 30, 60_000)) {
+		return new Response(JSON.stringify({ error: 'Demasiadas solicitudes' }), { status: 429 });
+	}
 	if (!/^[a-z0-9-]{3,40}$/.test(slug)) {
 		return new Response(JSON.stringify({ error: 'Slug inválido' }), { status: 400 });
 	}
