@@ -21,7 +21,10 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export function formatPrice(price: number, currency: string): string {
-	const n = price.toLocaleString('es-CU');
+	const n =
+		currency === 'USD'
+			? price.toLocaleString('es-CU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+			: price.toLocaleString('es-CU');
 	const sym = CURRENCY_SYMBOLS[currency] ?? '$';
 	return currency === 'CUP' ? `${sym}${n} CUP` : `${sym}${n} ${currency}`;
 }
