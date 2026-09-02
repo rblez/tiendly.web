@@ -250,14 +250,14 @@
 </script>
 
 <svelte:head>
-	<title>Home | Tiendly</title>
+	<title>Inicio | Tiendly</title>
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-7 sm:pb-10">
 	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 		<div class="pt-1">
-<h1 class="text-2xl sm:text-3xl font-bold text-ink">Good to see you, {auth.profile?.name ?? 'there'}</h1>
-				<p class="text-sm text-muted mt-1">A clear view of your stores and today&apos;s priorities.</p>
+<h1 class="text-2xl sm:text-3xl font-bold text-ink">Qué bueno verte, {auth.profile?.name ?? 'de nuevo'}</h1>
+				<p class="text-sm text-muted mt-1">Una vista clara de tus tiendas y las prioridades de hoy.</p>
 		</div>
 		<div class="flex items-center gap-2">
 			{#if atLimit}
@@ -266,7 +266,7 @@
 					class="btn btn-3d btn-md w-full sm:w-auto cursor-pointer"
 				>
 					<i class="ri-add-line"></i>
-					New store
+					Nueva tienda
 				</button>
 			{:else}
 				<a
@@ -274,22 +274,22 @@
 					class="btn btn-3d btn-md w-full sm:w-auto no-underline"
 				>
 					<i class="ri-add-line"></i>
-					New store
+					Nueva tienda
 				</a>
 			{/if}
 		</div>
 		</div>
 
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-			<div class="acrylic border border-hairline rounded-card p-4"><StoreIcon size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{stores.length}</p><p class="text-xs text-muted mt-1">Stores</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><Package size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalProducts}</p><p class="text-xs text-muted mt-1">Active products</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><ShoppingBag size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalOrders}</p><p class="text-xs text-muted mt-1">Orders</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><Eye size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalVisits}</p><p class="text-xs text-muted mt-1">Visits</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><StoreIcon size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{stores.length}</p><p class="text-xs text-muted mt-1">Tiendas</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><Package size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalProducts}</p><p class="text-xs text-muted mt-1">Productos activos</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><ShoppingBag size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalOrders}</p><p class="text-xs text-muted mt-1">Pedidos</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><Eye size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalVisits}</p><p class="text-xs text-muted mt-1">Visitas</p></div>
 		</div>
 		<div class="flex flex-wrap gap-2 mb-8">
-			<a href="/wizard" class="btn btn-3d btn-md no-underline"><Plus size={17} aria-hidden="true" /> Create store</a>
-			{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><ExternalLink size={17} aria-hidden="true" /> View storefront</a>{/if}
-			{#if hiddenStores > 0}<span class="inline-flex items-center rounded-full border border-ember/20 bg-ember/10 px-3 py-2 text-xs font-semibold text-ember">{hiddenStores} hidden store{hiddenStores === 1 ? '' : 's'}</span>{/if}
+			<a href="/wizard" class="btn btn-3d btn-md no-underline"><Plus size={17} aria-hidden="true" /> Crear tienda</a>
+			{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><ExternalLink size={17} aria-hidden="true" /> Ver tienda pública</a>{/if}
+			{#if hiddenStores > 0}<span class="inline-flex items-center rounded-full border border-ember/20 bg-ember/10 px-3 py-2 text-xs font-semibold text-ember">{hiddenStores} {hiddenStores === 1 ? 'tienda oculta' : 'tiendas ocultas'}</span>{/if}
 		</div>
 
 		{#if atLimit}
@@ -460,15 +460,15 @@
 						<div class="grid grid-cols-3 bg-canvas border border-hairline rounded-btn divide-x divide-hairline mt-4 overflow-hidden">
 							<div class="px-2 py-3 text-center">
 								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.products ?? 0}</p>
-								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Products</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Productos</p>
 							</div>
 							<div class="px-2 py-3 text-center">
 								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.orders ?? 0}</p>
-								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Orders</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Pedidos</p>
 							</div>
 							<div class="px-2 py-3 text-center">
 								<p class="text-base font-bold text-ink tabular-nums leading-none">{stats[store.id]?.visits ?? 0}</p>
-								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Visits</p>
+								<p class="text-[10px] text-muted mt-1 uppercase tracking-wider">Visitas</p>
 							</div>
 						</div>
 					</div>
