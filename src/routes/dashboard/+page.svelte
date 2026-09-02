@@ -5,7 +5,6 @@
 	import { ensureUniqueSlug, generateStoreCode, storeUrl } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 	import type { Json } from '$lib/database.types';
-	import { Eye, ExternalLink, Package, Plus, ShoppingBag, Store as StoreIcon } from '@lucide/svelte';
 	import type { Order, Product, Store } from '$lib/types';
 
 	type StoreStats = Record<string, { products: number; orders: number; visits: number }>;
@@ -281,14 +280,14 @@
 		</div>
 
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-			<div class="acrylic border border-hairline rounded-card p-4"><StoreIcon size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{stores.length}</p><p class="text-xs text-muted mt-1">Tiendas</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><Package size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalProducts}</p><p class="text-xs text-muted mt-1">Productos activos</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><ShoppingBag size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalOrders}</p><p class="text-xs text-muted mt-1">Pedidos</p></div>
-			<div class="acrylic border border-hairline rounded-card p-4"><Eye size={20} class="text-ember mb-3" aria-hidden="true" /><p class="text-2xl font-bold text-ink">{totalVisits}</p><p class="text-xs text-muted mt-1">Visitas</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-store-3-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{stores.length}</p><p class="text-xs text-muted mt-1">Tiendas</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-box-3-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{totalProducts}</p><p class="text-xs text-muted mt-1">Productos activos</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-shopping-bag-3-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{totalOrders}</p><p class="text-xs text-muted mt-1">Pedidos</p></div>
+			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-eye-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{totalVisits}</p><p class="text-xs text-muted mt-1">Visitas</p></div>
 		</div>
 		<div class="flex flex-wrap gap-2 mb-8">
-			<a href="/wizard" class="btn btn-3d btn-md no-underline"><Plus size={17} aria-hidden="true" /> Crear tienda</a>
-			{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><ExternalLink size={17} aria-hidden="true" /> Ver tienda pública</a>{/if}
+			<a href="/wizard" class="btn btn-3d btn-md no-underline"><i class="ri-add-line" style="font-size: 17px" aria-hidden="true"></i> Crear tienda</a>
+			{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><i class="ri-external-link-line" style="font-size: 17px" aria-hidden="true"></i> Ver tienda pública</a>{/if}
 			{#if hiddenStores > 0}<span class="inline-flex items-center rounded-full border border-ember/20 bg-ember/10 px-3 py-2 text-xs font-semibold text-ember">{hiddenStores} {hiddenStores === 1 ? 'tienda oculta' : 'tiendas ocultas'}</span>{/if}
 		</div>
 
