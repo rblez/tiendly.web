@@ -1908,7 +1908,7 @@ async function duplicateProduct(p: Product) {
 									<i class="ri-whatsapp-line"></i>
 									Contactar
 								</a>
-								<div class="relative ml-auto">
+								<div class="relative ml-auto" data-order-status-menu>
 									<button
 										onclick={() => (openStatusMenu = openStatusMenu === order.id ? null : order.id)}
 										class={`inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-btn border cursor-pointer transition-colors hover:brightness-110 ${status.selCls}`}
@@ -1944,10 +1944,15 @@ async function duplicateProduct(p: Product) {
 						</div>
 					{/each}
 				</div>
-			{#if openStatusMenu !== null}
-				<div class="fixed inset-0 z-20" role="presentation" aria-hidden="true" tabindex="-1" onclick={() => (openStatusMenu = null)} onkeydown={() => (openStatusMenu = null)}></div>
-			{/if}
 		{/if}
+
+		<svelte:window
+			onclick={(e) => {
+				if (openStatusMenu !== null && !(e.target instanceof Element && e.target.closest('[data-order-status-menu]'))) {
+					openStatusMenu = null;
+				}
+			}}
+		/>
 
 		{:else if tab === 'cupones'}
 			<div class="space-y-5 max-w-2xl">
