@@ -20,6 +20,44 @@
 		return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
 	}
 
+	type PaymentTemplate = {
+		id: string;
+		title: string;
+		currency: PaymentCurrency;
+		fieldLabels: string[];
+		proof_type: PaymentMethod['proof_type'];
+		note?: string;
+	};
+
+	const PAYMENT_TEMPLATES: PaymentTemplate[] = [
+		{ id: 'bandec', title: 'BANDEC', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
+		{ id: 'bpa', title: 'BPA', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
+		{ id: 'banmet', title: 'BANMET', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
+		{ id: 'mitransfer', title: 'MiTransfer', currency: 'CUP', fieldLabels: ['Número de teléfono'], proof_type: 'captura', note: 'Monedero de ETECSA' },
+		{ id: 'saldo_movil', title: 'Saldo Móvil', currency: 'CUP', fieldLabels: ['Número de teléfono'], proof_type: 'captura', note: 'Recarga ETECSA' },
+		{ id: 'qusd', title: 'QUSD', currency: 'USD', fieldLabels: ['Usuario o correo de QvaPay'], proof_type: 'captura_y_tx' },
+		{ id: 'zelle', title: 'Zelle', currency: 'USD', fieldLabels: ['Titular', 'Correo o teléfono'], proof_type: 'captura' },
+		{ id: 'paypal', title: 'PayPal', currency: 'USD', fieldLabels: ['Titular', 'Correo de PayPal'], proof_type: 'captura' },
+		{ id: 'usdt', title: 'USDT', currency: 'USD', fieldLabels: ['Red (TRC20/BEP20/etc.)', 'Dirección de wallet'], proof_type: 'hash' }
+	];
+
+	let templatePickerOpen = $state(false);
+
+	function addFromTemplate(t: PaymentTemplate) {
+		payments = [
+			...payments,
+			{
+				id: newId(),
+				title: t.title,
+				currency: t.currency,
+				fields: t.fieldLabels.map((label) => ({ id: newId(), label, value: '' })),
+				instructions: t.note ?? null,
+				proof_type: t.proof_type
+			}
+		];
+		templatePickerOpen = false;
+	}
+
 	onMount(async () => {
 		const { data } = await supabase.from('stores').select('id, payments').eq('code', storeCode).maybeSingle();
 		if (!data) { error = 'No se encontró la tienda.'; loading = false; return; }
@@ -84,7 +122,7 @@
 			<div class="flex items-center justify-between mb-1.5">
 				<p class="text-sm font-medium text-body">Métodos de pago manual</p>
 				{#if payments.length > 0}
-					<button type="button" onclick={addMethod} class="text-xs font-semibold text-ember hover:underline cursor-pointer">+ Agregar método</button>
+					<button type="button" onclick={() => (templatePickerOpen = true)} class="text-xs font-semibold text-ember hover:underline cursor-pointer">+ Agregar método</button>
 				{/if}
 			</div>
 			<p class="text-xs text-muted-soft mb-3 leading-relaxed">
@@ -141,11 +179,43 @@
 					{/each}
 				</div>
 			{:else}
-				<button type="button" onclick={addMethod} class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+				<button type="button" onclick={() => (templatePickerOpen = true)} class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
 					+ Agregar método de pago manual
 				</button>
 			{/if}
 		</div>
+
+		{#if templatePickerOpen}
+			<div class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/40 p-0 sm:p-4">
+				<div class="w-full sm:max-w-md max-h-[80vh] overflow-y-auto bg-card border border-hairline rounded-t-card sm:rounded-card p-4 space-y-3">
+					<div class="flex items-center justify-between">
+						<p class="text-sm font-semibold text-ink">Elegir método de pago</p>
+						<button type="button" onclick={() => (templatePickerOpen = false)} class="w-8 h-8 flex items-center justify-center text-muted hover:text-error hover:bg-error/10 rounded-btn cursor-pointer" aria-label="Cerrar"><i class="ri-close-line"></i></button>
+					</div>
+					<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide">CUP</p>
+					<div class="space-y-1.5">
+						{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'CUP') as t (t.id)}
+							<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
+								<span>{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
+								<i class="ri-add-line"></i>
+							</button>
+						{/each}
+					</div>
+					<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide">USD</p>
+					<div class="space-y-1.5">
+						{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'USD') as t (t.id)}
+							<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
+								<span>{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
+								<i class="ri-add-line"></i>
+							</button>
+						{/each}
+					</div>
+					<button type="button" onclick={() => { addMethod(); templatePickerOpen = false; }} class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+						+ Método personalizado (en blanco)
+					</button>
+				</div>
+			</div>
+		{/if}
 
 		{#if error}<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-3">{error}</p>{/if}
 		{#if msg}<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-3">{msg}</p>{/if}
