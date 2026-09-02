@@ -49,7 +49,7 @@
 			{@const seg = page.url.pathname.split('/').filter(Boolean).pop() ?? ''}
 			<nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 acrylic border-t border-hairline shadow-2xl px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] grid grid-cols-4 gap-1" aria-label="Navegación de la tienda">
 				<a href={`/dashboard/s/${storeCode}`} class:active-nav={seg === storeCode || seg === 'resumen' || seg === 'inicio' || seg === 'estadisticas'} class="flex flex-col items-center justify-center gap-0.5 min-h-14 rounded-xl text-[10px] font-semibold text-muted no-underline transition-colors">
-					<Home size={24} strokeWidth={1.8} aria-hidden="true" /><span class="hidden sm:inline">Home</span>
+					<Home size={24} strokeWidth={1.8} aria-hidden="true" /><span class="hidden sm:inline">Inicio</span>
 				</a>
 				<a href={`/dashboard/s/${storeCode}/productos`} class:active-nav={seg === 'productos' || seg === 'cupones'} class="flex flex-col items-center justify-center gap-0.5 min-h-14 rounded-xl text-[10px] font-semibold text-muted no-underline transition-colors">
 					<Box size={24} strokeWidth={1.8} aria-hidden="true" /><span class="hidden sm:inline">Productos</span>
