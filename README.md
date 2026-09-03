@@ -1,120 +1,171 @@
 # Tiendly
 
-**Tu tienda online, sin intermediarios.** Plataforma multi-tienda para crear un catálogo público en minutos y recibir pedidos directo por WhatsApp. Sin plataformas de pago ajenas, sin comisiones por venta.
+**Plataforma multi-tienda de ecommerce para Cuba.** Cada tienda vive en `tiendly.lat/@tienda`; el comprador elige productos, elige su método de pago (métodos manuales configurados por el vendedor: BANDEC, BPA, BANMET, Zelle, PayPal, USDT, etc.), sube el comprobante y el pedido queda en el panel del vendedor sin pasar por pasarelas externas ni intermediarios.
 
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-ff3e00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white)](https://vercel.com)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.2.0--beta-blue)](https://github.com/rblez/tiendly.web/releases/tag/v3.2.0-beta)
+[![Version](https://img.shields.io/badge/version-0.0.41-blue)](https://github.com/rblez/tiendly.web)
 
 ---
-
-## ¿Qué es Tiendly?
-
-Una tienda online se publica en `https://tiendly.lat/@tutienda` y cada pedido llega al WhatsApp del dueño. El vendedor cobra como siempre: efectivo, transferencia o su app favorita.
-
-- **Storefront** (`/@[username]`): catálogo público con productos, variantes, fotos, carrito y checkout que abre WhatsApp con el pedido armado.
-- **Panel** (`/dashboard`): dashboard del dueño para gestionar tiendas (`/dashboard/s/[code]`), productos, pedidos, estadísticas y configuración.
-- **Vista previa**: crea tu tienda sin cuenta; queda en preview 10 minutos y se activa al registrarte.
-- **UTM end-to-end**: las visitas se rastrean desde el primer clic del storefront hasta la orden y la página de gracias.
-- **Plan único Gratis**: 1 tienda y hasta 10 productos por tienda, sin comisiones.
-
-## Características
-
-- Catálogo con productos, variantes de dos niveles (variante + opciones que suman precio), múltiples fotos y estados (`agotado`, `bajo_pedido`, oculto).
-- **Control de stock por producto, variante u opción**: aviso "quedan N", bloqueo en checkout si no alcanza y descuento automático en la base de datos al registrar pedidos (trigger `orders_decrement_stock`).
-- Carrito por tienda y checkout que genera el mensaje de pedido para WhatsApp (o pedido directo sin contacto).
-- Multimoneda: cada tienda elige su moneda y tipo de cambio.
-- Panel de pedidos con estados (nuevo, pendiente, entregado, cancelado), contador no leído, exportación a PDF y CSV.
-- "Datos al cliente" (`ask`): campos personalizados que se piden en el checkout.
-- Estadísticas de visitas diarias por tienda, temas claro/oscuro, colores de marca, logo y redes sociales.
-- URLs públicas por slug (`/@tienda`) y panel por código corto de 8 caracteres.
-- Landing, directorio de tiendas por categoría, blog y changelog en la web.
 
 ## Stack
 
 | Capa | Tecnología |
-| --- | --- |
-| Framework | [SvelteKit 2](https://kit.svelte.dev) (Svelte 5 con runes) |
-| Estilos | [Tailwind CSS 4](https://tailwindcss.com) vía `@tailwindcss/vite`, tokens en `src/app.css` |
-| Backend | [Supabase](https://supabase.com) (Postgres + RLS + Auth + Storage + Realtime) |
-| Despliegue | [Vercel](https://vercel.com) con `@sveltejs/adapter-vercel` |
-| Tipografías | Inter Tight (variable) + iconos Remix |
+|---|---|
+| Framework | SvelteKit 2 + **Svelte 5 runes** (`$state`, `$derived`, `$props`) — sin legacy stores ni `$:` |
+| Estilos | Tailwind CSS 4 vía `@tailwindcss/vite` — sin config file, tokens en `src/app.css` |
+| Backend | Supabase: Postgres + RLS + Auth (OTP por correo) + Storage + Realtime |
+| Deploy | Vercel — `@sveltejs/adapter-vercel` |
+| Iconos | Remix Icon (`remixicon`) — sin Lucide ni otras librerías de iconos |
+| PDF / QR | `jspdf` + `qrcode` |
+| Analytics | Vercel Analytics + Speed Insights, GA4 y Meta Pixel (opcionales vía env) |
 
-## Assets de marca
+---
 
-Todas las imágenes de marca viven en `static/` en **WebP** (los favicons y iconos de aplicación se mantienen en PNG/ICO por compatibilidad de navegadores y PWA):
+## Arquitectura
 
-| Asset | Ruta | Uso |
-| --- | --- | --- |
-| Isotipo | `static/isotipo.webp` | AppNavbar y logo JSON-LD de la organización |
-| Wordmark | `static/tiendly-logo.webp` | Pie de la landing |
-| Logo completo | `static/tiendly-logo-completo.webp` | Auth, wizard, página 404 y cabecera de landing |
-| Banner OG | `static/og-banner.webp` | `og:image` / `twitter:image` del sitio |
+```
+tiendly.lat/                    → Landing + directorio de tiendas
+tiendly.lat/@[username]/        → Storefront público (catálogo, producto, carrito, checkout)
+tiendly.lat/dashboard/          → Panel del dueño (requiere auth)
+tiendly.lat/dashboard/s/[code]/ → Panel por tienda (código de 8 chars)
+tiendly.lat/login | /signup     → Auth (OTP por correo, Supabase Auth)
+tiendly.lat/wizard/             → Wizard de creación de tienda (4 pasos)
+```
 
-## Empezar
+No hay API propia — todo va directamente a Supabase vía `@supabase/ssr` (SSR con cookies) y el cliente browser. Los endpoints en `src/routes/api/` son solo para track de visitas, claim de preview y upload de imágenes.
 
-Requisitos: Node.js 20+, npm (o bun), un proyecto Supabase.
+---
+
+## Setup local
+
+**Requisitos:** Node.js 20+, npm, un proyecto Supabase.
 
 ```bash
-# 1. Clona e instala
 git clone https://github.com/rblez/tiendly.web.git
 cd tiendly.web
 npm install
-
-# 2. Configura las variables de entorno
-cp .env.example .env
-#   Rellena PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_APP_URL y SUPABASE_SERVICE_ROLE_KEY
-
-# 3. Levanta el entorno de desarrollo
-npm run dev
+cp .env.example .env   # rellenar variables (ver abajo)
+npm run dev            # http://localhost:5173
 ```
+
+### Variables de entorno
+
+| Variable | Requerida | Descripción |
+|---|---|---|
+| `PUBLIC_SUPABASE_URL` | ✅ | URL del proyecto Supabase |
+| `PUBLIC_SUPABASE_ANON_KEY` | ✅ | Clave anon pública |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Service role (solo server) |
+| `PUBLIC_APP_URL` | ✅ | URL base (`https://tiendly.lat` en prod, `http://localhost:5173` en dev) |
+| `PUBLIC_GA4_MEASUREMENT_ID` | ❌ | ID de GA4 (opcional) |
+| `PUBLIC_META_PIXEL_ID` | ❌ | Meta Pixel ID (opcional) |
 
 ### Scripts
 
 | Comando | Descripción |
-| --- | --- |
-| `npm run dev` | Servidor de desarrollo |
+|---|---|
+| `npm run dev` | Servidor de desarrollo (Vite HMR) |
 | `npm run build` | Build de producción |
-| `npm run preview` | Previsualiza el build |
-| `npm run check` | Typecheck con `svelte-check` |
+| `npm run preview` | Preview del build local |
+| `npm run check` | Typecheck con `svelte-check` — **correr antes de cada commit** |
 
-## Estructura
+---
+
+## Estructura del proyecto
 
 ```
 src/
 ├── routes/
-│   ├── +page.svelte            # Landing
-│   ├── login/ signup/ wizard/  # Autenticación y creación de tienda (4 pasos)
-│   ├── @[username]/            # Storefront público (catálogo, producto, carrito, checkout, gracias)
-│   ├── dashboard/              # Panel del dueño (s/[code] por tienda, profile)
-│   ├── tiendas/ blog/ changelog/  # Directorio, blog y registro de cambios
-│   └── api/                    # Endpoints (track, claim-preview, upload)
+│   ├── +page.svelte                    # Landing
+│   ├── login/ signup/ wizard/          # Auth y onboarding
+│   ├── @[username]/                    # Storefront público
+│   │   ├── +page.svelte                # Catálogo
+│   │   ├── [slug]/+page.svelte         # Producto individual
+│   │   ├── cart/                       # Carrito
+│   │   └── checkout/                   # Checkout + pay + gracias
+│   ├── dashboard/
+│   │   ├── +page.svelte                # Home del dashboard (lista de tiendas)
+│   │   └── s/[code]/                   # Panel por tienda
+│   │       ├── +layout.svelte          # Header (avatar + badge plan) + Navbar (Estadísticas/Productos/Pedidos/Ajustes)
+│   │       ├── +page.svelte            # Estadísticas + lista de productos/pedidos
+│   │       └── configuracion/          # Ajustes: Tienda / Comunicación / Ventas / Sistema / Cuenta
+│   └── api/                            # track, claim-preview, upload
 ├── lib/
-│   ├── supabase/               # Clientes browser y server (tipados con database.types.ts)
-│   ├── components/             # Componentes compartidos (navbars, footers, modales, ProductCard)
-│   ├── stores/                 # Stores con runes (auth, cart, theme, filters, currency, modal)
-│   └── utils.ts                # Helpers (UTM, precios, stock, códigos de tienda, uploads)
+│   ├── supabase/
+│   │   ├── client.ts                   # Cliente browser
+│   │   └── server.ts                   # Cliente SSR (loaders)
+│   ├── database.types.ts               # Tipos generados por Supabase CLI
+│   ├── types.ts                        # Tipos de dominio (Store, Product, Order, PaymentMethod, etc.)
+│   ├── stores/                         # Svelte 5 rune-based stores
+│   │   ├── auth.svelte.ts              # Sesión + perfil + plan
+│   │   ├── cart.svelte.ts              # Carrito por tienda
+│   │   ├── currency.svelte.ts          # Moneda activa + conversión
+│   │   └── modal.svelte.ts             # Control de modales globales
+│   ├── components/
+│   │   ├── dashboard/StorePanel.svelte # Panel central del dashboard (productos + pedidos)
+│   │   └── ...                         # Navbars, footers, ProductCard, modales compartidos
+│   └── utils.ts                        # formatPrice, convertPrice, uploadImage, storeUrl, waLink, etc.
+└── app.css                             # Tokens de diseño (colores, radios, tipografías)
 ```
+
+---
 
 ## Base de datos
 
-- `stores` — slug público, código de 8 chars (único, con trigger), dueño, WhatsApp, color, logo, categoría, moneda y tipo de cambio.
-- `products` — pertenece a una tienda, con `variants` JSON (normalizar siempre con `Array.isArray`) y `stock` (NULL = sin control de stock).
-- `orders` — pedidos con ítems, total, pago, entrega y UTM de origen; un trigger valida y descuenta stock al insertar.
-- `store_visits` — visitas diarias por tienda (deduplicadas por sesión y UTM).
-- `profiles` — perfil de usuario con plan y avatar.
+### Tablas principales
 
-Los cambios de esquema viven en migraciones SQL aplicadas vía Supabase; consulta el historial en la consola del proyecto.
+| Tabla | Descripción clave |
+|---|---|
+| `stores` | Slug público, código de 8 chars (generado por trigger), `owner_id`, moneda (`currency`), tasa de cambio (`exchange_rate`), métodos de pago (`payment_methods` JSON), zonas de envío (`delivery_zones` JSON) |
+| `products` | Pertenece a `store_id`, `variants` JSON (2 niveles: variante + `options[]` con precio sumable), `ask` JSON (campos extra del checkout), `stock` (NULL = sin control) |
+| `orders` | Ítems, total, método de pago, comprobante (`proof_url`, `proof_tx`), estado (`nuevo/enviado/completado/cancelado`), `store_id` |
+| `store_visits` | Visitas diarias deduplicadas por sesión y UTM |
+| `profiles` | Perfil del usuario autenticado (`plan`, `avatar_url`) |
 
-## Despliegue
+### Tipos de pago (`PaymentProofType`)
 
-El proyecto está configurado para Vercel (`@sveltejs/adapter-vercel`). Conecta el repo en Vercel, define las variables de entorno del `.env.example` y despliega.
+El campo `proof_type` en cada método de pago controla qué pide el checkout al comprador:
 
-## Versiones
+| Valor | El checkout pide |
+|---|---|
+| `captura` | Subir foto del comprobante |
+| `captura_y_tx` | Foto + número de transacción |
+| `hash` | Solo hash de transacción (sin foto) |
+| `ninguno` | Nada — confirma directo |
 
-Los releases se etiquetan como `vX.Y.Z-beta` (ej. `v3.2.0-beta`). El historial visible para usuarios vive en `src/routes/changelog/+page.svelte`.
+### Plantillas de métodos de pago
+
+**CUP:** BANDEC, BPA, BANMET (titular + número de tarjeta), MiTransfer, Saldo Móvil (número de teléfono)
+
+**USD:** QUSD/QvaPay (usuario, `captura_y_tx`), Zelle (titular + teléfono/correo), PayPal (titular + correo), USDT (red + wallet, `hash`)
+
+### RLS
+
+Toda la DB tiene RLS activo. La función `is_store_owner(store_id uuid)` (SECURITY DEFINER) es el guard principal: verifica `stores.owner_id = auth.uid()`. Las políticas de `UPDATE` en `orders` usan esta función.
+
+---
+
+## Convenciones de código
+
+- **Indentación:** tabs (no espacios)
+- **Quotes:** dobles en TS/Svelte, simples en CSS
+- **Svelte 5:** solo runes — nunca `$:`, `onMount` mínimo, sin stores legacy
+- **Iconos:** solo `ri-*` (Remix Icon) — no importar de `@lucide/svelte`
+- **`variants` y `ask`:** siempre normalizar con `Array.isArray(x) ? x : []` — pueden ser `null` en datos viejos
+- **Moneda:** `formatPrice(price, currency)` y `convertPrice(price, store, currency)` en `utils.ts` — no calcular conversiones inline
+- **Propiedad del store:** usar `is_store_owner()` en RLS — no hacer checks manuales en el frontend
+- Correr `npm run check` antes de hacer push
+
+---
+
+## Deploy
+
+Conectado a Vercel via GitHub. Cada push a `main` dispara un deploy de producción automático. Las variables de entorno se configuran en el proyecto de Vercel (no en el repo).
+
+No hay rama de staging — `main` es producción.
+
+---
 
 ## Licencia
 
