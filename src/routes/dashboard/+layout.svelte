@@ -15,7 +15,7 @@
 </script>
 
 {#if auth.ready && auth.session}
-	<div class="flex flex-col min-h-screen">
+	<div class="flex flex-col min-h-screen" data-panel>
 		{#if storeCode && !isSettingsSubpage}
 			<header class="sticky top-0 z-40 border-b border-hairline acrylic">
 				<div class="border-b border-ember/15 bg-ember/10">
