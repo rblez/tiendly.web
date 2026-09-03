@@ -196,7 +196,7 @@
 			<div
 				class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
 				use:bodyScrollLock
-				onclick|self={() => (templatePickerOpen = false)}
+				onclick={(e) => { if (e.target === e.currentTarget) templatePickerOpen = false; }}
 			>
 				<!-- Sheet: altura máxima con scroll interno contenido -->
 				<div
