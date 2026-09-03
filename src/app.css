@@ -487,3 +487,32 @@ select option {
 .step-enter {
 	animation: step-in 0.3s ease both;
 }
+
+/* ── Panel (dashboard): HyperOS flat style, sin botones 3D ─────────────── */
+[data-panel] .btn-3d {
+	background: var(--accent);
+	background-image: none;
+	border: none;
+	box-shadow: none;
+	border-radius: var(--radius-btn, 10px);
+	color: #ffffff;
+	font-weight: 600;
+}
+[data-panel] .btn-3d:hover {
+	background: var(--accent-active);
+	background-image: none;
+	box-shadow: none;
+}
+[data-panel] .btn-3d:active {
+	background: var(--accent-active);
+	background-image: none;
+	box-shadow: none;
+	transform: none;
+}
+[data-panel] .btn-3d:disabled,
+[data-panel] .btn-3d.opacity-75 {
+	background: var(--accent);
+	background-image: none;
+	opacity: 0.55;
+	box-shadow: none;
+}
