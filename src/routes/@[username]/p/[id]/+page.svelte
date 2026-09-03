@@ -306,9 +306,9 @@
 				{:else}
 					<button
 						onclick={addToCart}
-						class="btn btn-3d btn-lg w-full {added ? '!bg-success !border-success' : ''}"
+						class="btn btn-3d btn-lg w-full {added ? 'opacity-75 pointer-events-none' : ''}"
 					>
-						{added ? 'Añadido al carrito' : 'Añadir al carrito'}
+						{#if added}<i class="ri-check-line mr-1"></i>{/if}{added ? 'Añadido al carrito' : 'Añadir al carrito'}
 					</button>
 				{/if}
 			</div>
