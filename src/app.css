@@ -34,17 +34,17 @@ html {
 [data-theme='dark'] {
 	color-scheme: dark;
 
-	--c-canvas: #080808;
-	--c-canvas-soft: #0f0f0f;
-	--c-bone: #141414;
+	--c-canvas: #000000;
+	--c-canvas-soft: #0a0a0a;
+	--c-bone: #111111;
 	--c-linen: #1a1a1a;
-	--c-hairline: #222222;
-	--c-hairline-soft: #1a1a1a;
+	--c-hairline: #2a2a2a;
+	--c-hairline-soft: #1f1f1f;
 	--c-ink: #ffffff;
 	--c-body: #a0a0a0;
 	--c-muted: #707070;
 	--c-muted-soft: #505050;
-	--c-card: #111111;
+	--c-card: #1a1a1a;
 	--c-error: #ef4444;
 	--c-warning: #f59e0b;
 	--c-success: #22c55e;
