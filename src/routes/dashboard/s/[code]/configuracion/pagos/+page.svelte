@@ -43,6 +43,12 @@
 
 	let templatePickerOpen = $state(false);
 
+	function bodyScrollLock(node: HTMLElement) {
+		const prev = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return { destroy() { document.body.style.overflow = prev; } };
+	}
+
 	function addFromTemplate(t: PaymentTemplate) {
 		payments = [
 			...payments,
@@ -186,33 +192,61 @@
 		</div>
 
 		{#if templatePickerOpen}
-			<div class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/40 p-0 sm:p-4">
-				<div class="w-full sm:max-w-md max-h-[80vh] overflow-y-auto bg-card border border-hairline rounded-t-card sm:rounded-card p-4 space-y-3">
-					<div class="flex items-center justify-between">
+			<!-- Backdrop: bloquea scroll del body y cierra al tocar fuera -->
+			<div
+				class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
+				use:bodyScrollLock
+				onclick|self={() => (templatePickerOpen = false)}
+			>
+				<!-- Sheet: altura máxima con scroll interno contenido -->
+				<div
+					class="relative w-full sm:max-w-md flex flex-col bg-card border border-hairline rounded-t-card sm:rounded-card shadow-2xl"
+					style="max-height: min(88dvh, 560px)"
+					role="dialog"
+					aria-modal="true"
+					aria-label="Elegir método de pago"
+				>
+					<!-- Header fijo -->
+					<div class="flex items-center justify-between px-4 pt-4 pb-3 border-b border-hairline shrink-0">
 						<p class="text-sm font-semibold text-ink">Elegir método de pago</p>
-						<button type="button" onclick={() => (templatePickerOpen = false)} class="w-8 h-8 flex items-center justify-center text-muted hover:text-error hover:bg-error/10 rounded-btn cursor-pointer" aria-label="Cerrar"><i class="ri-close-line"></i></button>
+						<button
+							type="button"
+							onclick={() => (templatePickerOpen = false)}
+							class="w-8 h-8 flex items-center justify-center text-muted hover:text-error hover:bg-error/10 rounded-btn cursor-pointer"
+							aria-label="Cerrar"
+						><i class="ri-close-line text-base"></i></button>
 					</div>
-					<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide">CUP</p>
-					<div class="space-y-1.5">
-						{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'CUP') as t (t.id)}
-							<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
-								<span>{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
-								<i class="ri-add-line"></i>
-							</button>
-						{/each}
+					<!-- Contenido scrollable (scroll atrapado dentro) -->
+					<div class="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
+						<div>
+							<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide mb-2">CUP</p>
+							<div class="space-y-1.5">
+								{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'CUP') as t (t.id)}
+									<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
+										<span class="text-left">{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
+										<i class="ri-add-circle-line text-base shrink-0"></i>
+									</button>
+								{/each}
+							</div>
+						</div>
+						<div>
+							<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide mb-2">USD</p>
+							<div class="space-y-1.5">
+								{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'USD') as t (t.id)}
+									<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
+										<span class="text-left">{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
+										<i class="ri-add-circle-line text-base shrink-0"></i>
+									</button>
+								{/each}
+							</div>
+						</div>
 					</div>
-					<p class="text-[11px] font-semibold text-muted-soft uppercase tracking-wide">USD</p>
-					<div class="space-y-1.5">
-						{#each PAYMENT_TEMPLATES.filter((t) => t.currency === 'USD') as t (t.id)}
-							<button type="button" onclick={() => addFromTemplate(t)} class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-btn text-sm font-medium text-body hover:bg-ember/10 hover:text-ember transition-colors cursor-pointer border border-hairline">
-								<span>{t.title}{#if t.note}<span class="block text-xs font-normal text-muted-soft">{t.note}</span>{/if}</span>
-								<i class="ri-add-line"></i>
-							</button>
-						{/each}
+					<!-- Footer fijo -->
+					<div class="px-4 pb-4 pt-3 border-t border-hairline shrink-0">
+						<button type="button" onclick={() => { addMethod(); templatePickerOpen = false; }} class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
+							+ Método personalizado (en blanco)
+						</button>
 					</div>
-					<button type="button" onclick={() => { addMethod(); templatePickerOpen = false; }} class="w-full px-3 py-2.5 bg-bone border border-dashed border-hairline rounded-btn text-sm text-muted hover:border-ember/50 hover:text-ember transition-colors cursor-pointer">
-						+ Método personalizado (en blanco)
-					</button>
 				</div>
 			</div>
 		{/if}
