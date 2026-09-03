@@ -2171,7 +2171,6 @@ async function duplicateProduct(p: Product) {
 								{formCurrency}
 							</div>
 							<p class="text-xs text-muted-soft mt-1.5">Moneda principal de tu tienda. Se cambia en Ajustes &gt; Ventas &gt; Moneda.</p>
-<svelte:window onclick={(e) => { if (openStatusMenu !== null && !(e.target instanceof Element && e.target.closest('[data-order-status-menu]'))) openStatusMenu = null; }} />
 </div>
 					</div>
 					{#if hasStockColumn}
@@ -2553,3 +2552,5 @@ class="btn btn-secondary btn-sm"
 		{/if}
 	{/if}
 </section>
+
+<svelte:window onclick={(e) => { if (openStatusMenu !== null && !(e.target instanceof Element && e.target.closest('[data-order-status-menu]'))) openStatusMenu = null; }} />
