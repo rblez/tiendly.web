@@ -20,11 +20,11 @@
 			<header class="sticky top-0 z-40 border-b border-hairline acrylic">
 				<div class="border-b border-ember/15 bg-ember/10">
 					<div class="mx-auto flex min-h-11 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
-						<p class="text-xs font-medium leading-5 text-body sm:text-sm">
-							<span class="font-bold text-ember">Tiendly está en beta.</span>
-							<span class="hidden sm:inline"> Déjanos comentarios, reportes y sugerencias para seguir mejorando.</span>
-							<span class="sm:hidden"> Déjanos comentarios y sugerencias.</span>
-						</p>
+						<a href="https://t.me/+dFQ2WyJvCkg4YmFh" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-2 text-xs font-medium text-body hover:text-ember transition-colors sm:text-sm">
+							<i class="ri-telegram-fill text-[#2AABEE] text-base shrink-0"></i>
+							<span><span class="font-bold text-ember">Tiendly está en beta.</span><span class="hidden sm:inline"> ÚNete al canal de Telegram para dar feedback y ver novedades.</span><span class="sm:hidden"> ÚNete al canal de Telegram.</span></span>
+							<i class="ri-arrow-right-s-line ml-auto text-muted group-hover:text-ember shrink-0"></i>
+						</a>
 					</div>
 				</div>
 				<div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
