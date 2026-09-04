@@ -13,6 +13,7 @@ import { supabase } from '$lib/supabase/client';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
 	import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
 import OptionModal from '$lib/components/OptionModal.svelte';
+	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import { STORE_CATEGORIES } from '$lib/categories';
@@ -2443,12 +2444,7 @@ class="btn btn-secondary btn-sm"
 						</div>
 							<div>
 								<label for="p-delivery" class="block text-sm font-medium text-body mb-1.5">Entrega del producto</label>
-								<select id="p-delivery" bind:value={formDeliveryType} class="input">
-									<option value="both">Domicilio y recogida en local</option>
-									<option value="delivery">Solo entrega a domicilio</option>
-									<option value="pickup">Solo recogida en local</option>
-									<option value="none">No requiere entrega</option>
-								</select>
+								<SelectPicker id="p-delivery" label="Entrega del producto" bind:value={formDeliveryType} options={[{value:"both",label:"Domicilio y recogida en local"},{value:"delivery",label:"Solo entrega a domicilio"},{value:"pickup",label:"Solo recogida en local"},{value:"none",label:"No requiere entrega"}]} />
 								<p class="text-xs text-muted-soft mt-1.5">Define cómo puede recibirlo el cliente.</p>
 							</div>
 							<div class="flex gap-4">

@@ -4,6 +4,7 @@
 	import { filters } from '$lib/stores/filters.svelte';
 	import { productImage } from '$lib/utils';
 	import { currency, availableCurrencies, displayCurrency } from '$lib/stores/currency.svelte';
+	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import type { Store } from '$lib/types';
 
 	let { store, previewMode = false }: { store: Store; previewMode?: boolean } = $props();
@@ -11,6 +12,11 @@
 	let totalItems = $derived(cart.storeSlug === store.slug ? cart.totalItems() : 0);
 	let searchInput: HTMLInputElement | undefined = $state();
 	let currencies = $derived(availableCurrencies(store));
+	// Estado local sincronizado con el store global de moneda.
+	// svelte-ignore state_referenced_locally
+	let currentCurrency = $state(displayCurrency(store));
+	$effect(() => { currentCurrency = displayCurrency(store); });
+	$effect(() => { if (currentCurrency) currency.set(currentCurrency); });
 
 	const homePath = $derived(`/@${store.slug}`);
 	const cartPath = $derived(`/@${store.slug}/cart`);
@@ -63,16 +69,7 @@
 
 			<div class="flex items-center gap-4 sm:gap-5">
 				{#if currencies.length > 1}
-					<select
-						aria-label="Cambiar moneda"
-						value={displayCurrency(store)}
-						onchange={(e) => currency.set((e.target as HTMLSelectElement).value)}
-						class="select-pill select-pill-sm"
-					>
-						{#each currencies as c}
-							<option value={c}>{c}</option>
-						{/each}
-					</select>
+					<SelectPicker variant="pill" label="Cambiar moneda" bind:value={currentCurrency} options={currencies.map((c) => ({ value: c, label: c }))} />
 				{/if}
 				{#if $page.url.pathname !== cartPath}
 					<a

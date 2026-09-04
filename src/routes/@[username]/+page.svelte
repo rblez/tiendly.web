@@ -1,9 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import ProductCard from '$lib/components/ProductCard.svelte';
+	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters, type SortOrder } from '$lib/stores/filters.svelte';
 	import type { Product, Store } from '$lib/types';
+
+	const SORT_OPTIONS = [
+		{ value: 'relevancia', label: 'Más relevantes' },
+		{ value: 'nuevos', label: 'Más recientes' },
+		{ value: 'precio-asc', label: 'Precio: menor a mayor' },
+		{ value: 'precio-desc', label: 'Precio: mayor a menor' }
+	];
 
 	let { data }: { data: { store: Store; products: Product[] } } = $props();
 
@@ -11,6 +19,11 @@
 	let store = $state(data.store);
 	// svelte-ignore state_referenced_locally
 	let products = $state<Product[]>(data.products);
+
+	// Estado local del orden, sincronizado con el store de filtros.
+	let currentSort = $state<SortOrder>(filters.sortOrder);
+	$effect(() => { currentSort = filters.sortOrder; });
+	$effect(() => { filters.setSortOrder(currentSort); });
 
 	$effect(() => {
 		store = data.store;
@@ -174,17 +187,7 @@
 			<p class="text-sm text-muted">
 				{filtered.length} producto{filtered.length === 1 ? '' : 's'}
 			</p>
-			<select
-				class="select-pill cursor-pointer"
-				value={filters.sortOrder}
-				onchange={(e) => filters.setSortOrder((e.target as HTMLSelectElement).value as SortOrder)}
-				aria-label="Ordenar productos"
-			>
-				<option value="relevancia">Más relevantes</option>
-				<option value="nuevos">Más recientes</option>
-				<option value="precio-asc">Precio: menor a mayor</option>
-				<option value="precio-desc">Precio: mayor a menor</option>
-			</select>
+			<SelectPicker variant="pill" label="Ordenar productos" bind:value={currentSort} options={SORT_OPTIONS} />
 		</div>
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 			{#each filtered as product}

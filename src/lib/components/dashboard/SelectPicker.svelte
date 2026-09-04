@@ -5,17 +5,24 @@
 		options,
 		id = undefined,
 		label: fieldLabel = undefined,
-		class: cls = ''
+		class: cls = '',
+		variant = 'input'
 	}: {
-		value: string;
+		value?: string | null;
 		options: Option[];
 		id?: string;
 		label?: string;
 		class?: string;
+		variant?: 'input' | 'pill';
 	} = $props();
 
 	let open = $state(false);
-	const current = $derived(options.find((o) => o.value === value)?.label ?? value);
+	const current = $derived(options.find((o) => o.value === (value ?? ''))?.label ?? value ?? '');
+	const triggerClass = $derived(
+		variant === 'pill'
+			? `select-pill select-pill-sm flex items-center justify-between gap-2 cursor-pointer select-none ${cls}`
+			: `input flex items-center justify-between gap-2 cursor-pointer select-none ${cls}`
+	);
 
 	function bodyScrollLock(node: HTMLElement) {
 		const prev = document.body.style.overflow;
@@ -27,7 +34,7 @@
 <button
 	type="button"
 	{id}
-	class="input flex items-center justify-between gap-2 cursor-pointer select-none {cls}"
+	class={triggerClass}
 	onclick={() => (open = true)}
 	aria-haspopup="listbox"
 	aria-expanded={open}
@@ -59,16 +66,17 @@
 			</div>
 			<div class="p-2 space-y-0.5">
 				{#each options as opt (opt.value)}
+					{@const isSelected = (value ?? '') === opt.value}
 					<button
 						type="button"
 						role="option"
-						aria-selected={value === opt.value}
+						aria-selected={isSelected}
 						onclick={() => { value = opt.value; open = false; }}
 						class="w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-btn text-sm font-medium transition-colors cursor-pointer
-							{value === opt.value ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+							{isSelected ? 'bg-ember/10 text-ember' : 'text-body hover:bg-ember/10 hover:text-ember'}"
 					>
 						<span>{opt.label}</span>
-						{#if value === opt.value}<i class="ri-check-line shrink-0"></i>{/if}
+						{#if isSelected}<i class="ri-check-line shrink-0"></i>{/if}
 					</button>
 				{/each}
 			</div>
