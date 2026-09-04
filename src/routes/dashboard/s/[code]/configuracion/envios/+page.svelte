@@ -3,6 +3,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import type { DeliveryZone } from '$lib/types';
+	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import { onMount } from 'svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -77,11 +78,7 @@
 			{#if enabled}
 				<div>
 					<label for="delivery-mode" class="block text-sm font-medium text-body mb-1.5">Modalidad de la tienda</label>
-					<select id="delivery-mode" bind:value={mode} class="input">
-						<option value="both">Domicilio y recogida en local</option>
-						<option value="delivery">Solo entrega a domicilio</option>
-						<option value="pickup">Solo recogida en local</option>
-					</select>
+					<SelectPicker id="delivery-mode" bind:value={mode} label="Modalidad de la tienda" options={[{value:"both",label:"Domicilio y recogida en local"},{value:"delivery",label:"Solo entrega a domicilio"},{value:"pickup",label:"Solo recogida en local"}]} />
 				</div>
 				<label class="flex items-center gap-2 text-sm text-body cursor-pointer">
 					<input type="checkbox" bind:checked={requestOtherZone} class="w-4 h-4 accent-ember" />
