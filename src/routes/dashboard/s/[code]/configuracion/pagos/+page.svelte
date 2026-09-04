@@ -5,6 +5,7 @@
 	import { migratePayment } from '$lib/payments';
 	import { fileToDataUrl } from '$lib/utils';
 	import type { PaymentCurrency, PaymentMethod } from '$lib/types';
+	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import { onMount } from 'svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -93,15 +94,6 @@
 
 	async function save() {
 		saving = true; error = ''; msg = '';
-		// Foto obligatoria: cada método con título y al menos un dato debe tener imagen.
-		const missingImage = payments
-			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
-			.find((p) => !p.image);
-		if (missingImage) {
-			saving = false;
-			error = `La foto del método "${missingImage.title.trim() || 'sin nombre'}" es obligatoria.`;
-			return;
-		}
 		const clean = payments
 			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
 			.map((p) => ({
@@ -150,20 +142,12 @@
 						<div class="border border-hairline rounded-btn p-3">
 							<div class="flex items-start gap-3">
 								<div class="shrink-0">
-									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-error/60 flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
-									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline">
-										<span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span>
-										{#if !pm.image}<span class="ml-1 inline-flex items-center gap-0.5 text-error font-semibold"><i class="ri-asterisk"></i>Requerida</span>{/if}
-										<input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} />
-									</label>
+									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-hairline flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
+									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline"><span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span><input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} /></label>
 								</div>
 								<div class="flex-1 min-w-0 space-y-2">
 									<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm w-full" />
-									<select bind:value={pm.currency} class="input input-sm w-full" aria-label="Moneda del método de pago">
-										<option value="ambas">Disponible en CUP y USD</option>
-										<option value="CUP">Solo CUP</option>
-										<option value="USD">Solo USD</option>
-									</select>
+									<SelectPicker bind:value={pm.currency} label="Moneda" options={[{value:"ambas",label:"Disponible en CUP y USD"},{value:"CUP",label:"Solo CUP"},{value:"USD",label:"Solo USD"}]} class="input-sm" />
 								</div>
 								<button type="button" onclick={() => removeMethod(i)} class="w-8 h-8 flex items-center justify-center flex-shrink-0 text-muted hover:text-error hover:bg-error/10 rounded-btn transition-colors cursor-pointer" aria-label="Quitar método de pago">
 									<i class="ri-close-line"></i>
@@ -185,12 +169,7 @@
 									+ Añadir fila
 								</button>
 								<label class="block text-xs font-medium text-body">Comprobante que solicitarás
-									<select bind:value={pm.proof_type} class="input input-sm mt-1.5 w-full">
-										<option value="captura">Captura de pantalla</option>
-										<option value="captura_y_tx">Captura + número de transacción</option>
-										<option value="hash">Hash de transacción</option>
-										<option value="ninguno">Ninguno</option>
-									</select>
+									<SelectPicker bind:value={pm.proof_type} label="Comprobante" options={[{value:"captura",label:"Captura de pantalla"},{value:"captura_y_tx",label:"Captura + número de transacción"},{value:"hash",label:"Hash de transacción"},{value:"ninguno",label:"Ninguno"}]} class="input-sm mt-1.5" />
 								</label>
 								<textarea bind:value={pm.instructions} rows="2" placeholder="Instrucciones de pago (opcional)" class="input input-sm resize-none"></textarea>
 							</div>
