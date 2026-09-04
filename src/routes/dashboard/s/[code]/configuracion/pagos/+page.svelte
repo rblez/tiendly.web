@@ -93,6 +93,15 @@
 
 	async function save() {
 		saving = true; error = ''; msg = '';
+		// Foto obligatoria: cada método con título y al menos un dato debe tener imagen.
+		const missingImage = payments
+			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
+			.find((p) => !p.image);
+		if (missingImage) {
+			saving = false;
+			error = `La foto del método "${missingImage.title.trim() || 'sin nombre'}" es obligatoria.`;
+			return;
+		}
 		const clean = payments
 			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
 			.map((p) => ({
@@ -141,8 +150,12 @@
 						<div class="border border-hairline rounded-btn p-3">
 							<div class="flex items-start gap-3">
 								<div class="shrink-0">
-									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-hairline flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
-									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline"><span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span><input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} /></label>
+									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-error/60 flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
+									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline">
+										<span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span>
+										{#if !pm.image}<span class="ml-1 inline-flex items-center gap-0.5 text-error font-semibold"><i class="ri-asterisk"></i>Requerida</span>{/if}
+										<input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} />
+									</label>
 								</div>
 								<div class="flex-1 min-w-0 space-y-2">
 									<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm w-full" />

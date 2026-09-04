@@ -9,7 +9,25 @@ import type { Store } from '$lib/types';
 let { store = null, onTrackOrder = null }: { store?: Store | null; onTrackOrder?: ((code: string) => void) | null } = $props();
 
 const socials = $derived(storeSocials(store));
+// Solo se muestran en el footer los métodos con imagen (la foto es obligatoria al guardar).
+const footerPayments = $derived(
+	(store?.payments ?? [])
+		.filter((p) => p && p.title && p.image)
+		.map((p) => ({ id: p.id, title: p.title, image: p.image as string }))
+);
 const year = new Date().getFullYear();
+
+// Columnas del grid del footer según qué secciones hay: 1 base + redes + pagos (1-2 extras).
+const footerCols = $derived(
+	1 + (socials.length > 0 ? 1 : 0) + (footerPayments.length > 0 ? 1 : 0)
+);
+const footerGridClass = $derived(
+	footerCols >= 4
+		? 'md:grid-cols-4'
+		: footerCols === 3
+			? 'md:grid-cols-3'
+			: 'md:grid-cols-2'
+);
 
 function trackSocialClick(s: { key: string; url: string }) {
 	if (!store) return;
@@ -41,7 +59,7 @@ let trackError = $state('');
 
 <footer class="border-t border-hairline bg-canvas/80 backdrop-blur-md">
 	{#if store}
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:grid-cols-3 md:gap-10 {socials.length === 0 ? 'md:grid-cols-2' : ''}">
+		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 md:gap-10 {footerGridClass}">
 			<div>
 				<p class="font-black text-lg text-ink tracking-tight">{store.name}</p>
 				{#if store.description}
@@ -93,6 +111,25 @@ let trackError = $state('');
 							</a>
 						{/each}
 					</div>
+				</div>
+			{/if}
+
+			{#if footerPayments.length > 0}
+				<div>
+					<p class="text-sm font-semibold text-ink mb-3">Métodos de pagos</p>
+					<ul class="flex flex-wrap items-center gap-2.5">
+						{#each footerPayments as p (p.id)}
+							<li class="flex items-center gap-2">
+								<img
+									src={p.image}
+									alt={p.title}
+									title={p.title}
+									class="h-11 w-11 rounded-full object-cover border border-hairline bg-card"
+								/>
+								<span class="text-sm text-body">{p.title}</span>
+							</li>
+						{/each}
+					</ul>
 				</div>
 			{/if}
 		</div>
