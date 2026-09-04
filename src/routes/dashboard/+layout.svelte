@@ -53,7 +53,7 @@
 					<i class="ri-box-3-line" style="font-size: 24px" aria-hidden="true"></i><span class="hidden sm:inline">Productos</span>
 				</a>
 				<a href={`/dashboard/s/${storeCode}/pedidos`} class:active-nav={seg === 'pedidos'} class="flex flex-col items-center justify-center gap-0.5 min-h-14 rounded-xl text-[10px] font-semibold text-muted no-underline transition-colors">
-					<i class="ri-file-list-3-line" style="font-size: 24px" aria-hidden="true"></i><span class="hidden sm:inline">Pedidos</span>
+					<i class="ri-folders-line" style="font-size: 24px" aria-hidden="true"></i><span class="hidden sm:inline">Pedidos</span>
 				</a>
 				<a href={`/dashboard/s/${storeCode}/configuracion`} class:active-nav={page.url.pathname.includes('/configuracion')} class="flex flex-col items-center justify-center gap-0.5 min-h-14 rounded-xl text-[10px] font-semibold text-muted no-underline transition-colors">
 					<i class="ri-settings-3-line" style="font-size: 24px" aria-hidden="true"></i><span class="hidden sm:inline">Ajustes</span>
