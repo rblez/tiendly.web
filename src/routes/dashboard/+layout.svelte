@@ -22,7 +22,7 @@
 					<div class="mx-auto flex min-h-11 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
 						<a href="https://t.me/+dFQ2WyJvCkg4YmFh" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-2 text-xs font-medium text-body hover:text-ember transition-colors sm:text-sm">
 							<i class="ri-telegram-fill text-[#2AABEE] text-base shrink-0"></i>
-							<span><span class="font-bold text-ember">Tiendly está en beta.</span><span class="hidden sm:inline"> ÚNete al canal de Telegram para dar feedback y ver novedades.</span><span class="sm:hidden"> ÚNete al canal de Telegram.</span></span>
+							<span><span class="font-bold text-ember">BETA.</span><span class="hidden sm:inline"> Únete al canal de Telegram para ver novedades.</span><span class="sm:hidden"> Únete al canal de Telegram.</span></span>
 							<i class="ri-arrow-right-s-line ml-auto text-muted group-hover:text-ember shrink-0"></i>
 						</a>
 					</div>
