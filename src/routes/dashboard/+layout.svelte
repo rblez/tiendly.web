@@ -12,21 +12,20 @@
 			goto('/login');
 		}
 	});
+	let showModal = $state(false);
+	$effect(() => {
+		const key = 'tg_modal_seen';
+		if (!sessionStorage.getItem(key)) {
+			setTimeout(() => { showModal = true; }, 2000);
+			sessionStorage.setItem(key, '1');
+		}
+	});
 </script>
 
 {#if auth.ready && auth.session}
 	<div class="flex flex-col min-h-screen" data-panel>
 		{#if storeCode && !isSettingsSubpage}
 			<header class="sticky top-0 z-40 border-b border-hairline acrylic">
-				<div class="border-b border-ember/15 bg-ember/10">
-					<div class="mx-auto flex min-h-11 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
-						<a href="https://t.me/+dFQ2WyJvCkg4YmFh" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-2 text-xs font-medium text-body hover:text-ember transition-colors sm:text-sm">
-							<i class="ri-telegram-fill text-[#2AABEE] text-base shrink-0"></i>
-							<span><span class="font-bold text-ember">BETA.</span><span class="hidden sm:inline"> Únete al canal de Telegram para ver novedades.</span><span class="sm:hidden"> Únete al canal de Telegram.</span></span>
-							<i class="ri-arrow-right-s-line ml-auto text-muted group-hover:text-ember shrink-0"></i>
-						</a>
-					</div>
-				</div>
 				<div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
 					<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-bone text-body transition-colors hover:text-ember" aria-label="Abrir cuenta">
 						{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Cuenta" class="h-full w-full rounded-full object-cover" />{:else}<i class="ri-user-line" style="font-size: 18px" aria-hidden="true"></i>{/if}
@@ -73,3 +72,15 @@
 		color: var(--accent);
 	}
 </style>
+{#if showModal}
+	<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]" onclick={(e) => { if (e.target === e.currentTarget) showModal = false; }} role="presentation">
+		<div class="relative w-full sm:max-w-sm bg-card border border-hairline rounded-t-card sm:rounded-card shadow-2xl p-6 text-center">
+			<button type="button" onclick={() => (showModal = false)} class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-muted hover:text-error hover:bg-error/10 rounded-btn cursor-pointer" aria-label="Cerrar"><i class="ri-close-line"></i></button>
+			<i class="ri-telegram-fill text-5xl text-[#2AABEE] mb-3 block"></i>
+			<h3 class="text-lg font-bold text-ink mb-2">Tiendly está en beta</h3>
+			<p class="text-sm text-body mb-5 leading-relaxed">Tu feedback nos ayuda a construir la mejor plataforma de ecommerce para Cuba. Únete para reportar bugs, pedir features y ver novedades antes que nadie.</p>
+			<a href="https://t.me/+dFQ2WyJvCkg4YmFh" target="_blank" rel="noopener noreferrer" onclick={() => (showModal = false)} class="btn btn-3d btn-md w-full flex items-center justify-center gap-2 no-underline"><i class="ri-telegram-fill"></i> Unirme al canal</a>
+			<button type="button" onclick={() => (showModal = false)} class="mt-3 text-xs text-muted hover:text-body cursor-pointer">Ahora no</button>
+		</div>
+	</div>
+{/if}
