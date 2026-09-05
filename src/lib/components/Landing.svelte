@@ -65,7 +65,6 @@
 	const socials = [
 		{ icon: 'ri-telegram-fill', href: 'https://t.me/+dFQ2WyJvCkg4YmFh', label: 'Telegram' },
 		{ icon: 'ri-instagram-line', href: 'https://instagram.com/tiendly.lat', label: 'Instagram' },
-		{ icon: 'ri-twitter-x-line', href: 'https://x.com/tiendly_', label: 'X' },
 	];
 
 	let showModal = $state(false);
