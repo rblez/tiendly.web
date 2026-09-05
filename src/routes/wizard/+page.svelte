@@ -43,7 +43,8 @@
 
 	$effect(() => {
 		auth.init();
-		if (!auth.ready || !auth.session) {
+		if (!auth.session) { goto('/signup?next=/wizard'); return; }
+		if (!auth.ready) {
 			limitLoading = false;
 			return;
 		}
@@ -200,32 +201,6 @@
 				}
 
 				goto(`/dashboard/s/${store.code}?created=1`);
-			} else {
-				const token = crypto.randomUUID();
-				const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-				// SECURITY DEFINER: crea tienda preview + productos de forma atómica (RLS no permite que anon inserte productos)
-				const { data, error: rpcError } = await supabase.rpc('create_preview_store', {
-					p_name: name.trim(),
-					p_slug: uniqueSlug,
-					p_code: generateStoreCode(),
-					p_category: category,
-					p_description: description.trim() || null,
-					p_whatsapp: whatsapp.trim() || null,
-						p_theme_color: '#22c55e',
-						p_currency: 'CUP',
-						p_exchange_rate: 980,
-						p_exchange_rates: { USD: 980 },
-						p_preview_token: token,
-					p_preview_expires_at: expiresAt,
-					p_products: buildProducts('') as unknown as import('$lib/database.types').Json,
-				});
-				const r = (data ?? {}) as { ok?: boolean; error?: string };
-				if (rpcError || !r.ok) {
-					throw new Error(r.error ?? rpcError?.message ?? 'No se pudo crear la vista previa.');
-				}
-
-				goto(`/@${uniqueSlug}?preview=${token}`);
-			}
 		} catch (e) {
 			console.error('wizard createStore:', e);
 			error = friendlyStoreError(e);
