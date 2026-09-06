@@ -4,7 +4,6 @@
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 
-	let previewToken = $derived(new URLSearchParams($page.url.search).get('preview') ?? '');
 
 	let email = $state('');
 	let password = $state('');
@@ -20,31 +19,7 @@
 		const { data } = await supabase.auth.getSession();
 		const accessToken = data.session?.access_token;
 		if (!accessToken) return null;
-		const res = await fetch('/api/claim-preview', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-			body: JSON.stringify({ token: previewToken }),
-		});
-		if (!res.ok) return null;
-		const body = await res.json().catch(() => null);
-		return typeof body?.code === 'string' ? body.code : null;
-	}
 
-	function navigate(url: string) {
-		goto(url).catch(() => {
-			window.location.href = url;
-		});
-	}
-
-	async function afterAuth() {
-		if (previewToken && !claimed) {
-			claimed = true;
-			const storeCode = await claimPreview();
-			if (storeCode) {
-				navigate(`/dashboard/s/${storeCode}?created=1`);
-				return;
-			}
-		}
 		navigate('/dashboard');
 	}
 
@@ -180,7 +155,7 @@
 			</button>
 		</form>
 		<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
-			¿No tienes cuenta? <a href={previewToken ? `/signup?preview=${previewToken}` : '/signup'} class="text-ember font-medium hover:text-ember-active no-underline">Crear cuenta gratis</a>
+			¿No tienes cuenta? <a href='/signup' class="text-ember font-medium hover:text-ember-active no-underline">Crear cuenta gratis</a>
 		</p>
 	</div>
 </div>
