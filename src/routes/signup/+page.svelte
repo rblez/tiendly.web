@@ -4,7 +4,6 @@
 	import { page } from '$app/stores';
 
 	let params = $derived(new URLSearchParams($page.url.search));
-	let previewToken = $derived(params.get('preview') ?? '');
 	let storeName = $derived(params.get('name') ?? '');
 	let subtitle = $derived(
 		previewToken
@@ -26,27 +25,7 @@
 		const { data } = await supabase.auth.getSession();
 		const accessToken = data.session?.access_token;
 		if (!accessToken) return null;
-		const res = await fetch('/api/claim-preview', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-			body: JSON.stringify({ token: previewToken }),
-		});
-		if (!res.ok) return null;
-		const body = await res.json().catch(() => null);
-		return typeof body?.code === 'string' ? body.code : null;
-	}
 
-	async function afterAuth() {
-		if (previewToken && !claimed) {
-			claimed = true;
-			claiming = true;
-			const storeCode = await claimPreview();
-			claiming = false;
-			if (storeCode) {
-				goto(`/dashboard/s/${storeCode}?created=1`);
-				return;
-			}
-		}
 		goto('/dashboard');
 	}
 
@@ -194,7 +173,7 @@
 				<p class="text-xs text-muted-soft text-center">Al crear tu cuenta aceptas los términos de Tiendly.</p>
 			</form>
 			<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
-				¿Ya tienes cuenta? <a href={previewToken ? `/login?preview=${previewToken}` : '/login'} class="text-ember font-medium hover:text-ember-active no-underline">Iniciar sesión</a>
+				¿Ya tienes cuenta? <a href='/login' class="text-ember font-medium hover:text-ember-active no-underline">Iniciar sesión</a>
 			</p>
 		</div>
 	</div>
