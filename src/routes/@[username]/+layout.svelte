@@ -14,18 +14,14 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 
 	let { children, data }: {
 		children: import('svelte').Snippet;
-		data: { store: Store; ownerPlan: string | null; preview: { token: string; expiresAt: string | null } | null };
+		data: { store: Store; ownerPlan: string | null };
 	} = $props();
 
 	// svelte-ignore state_referenced_locally
 	let store = $state(data.store);
 	// svelte-ignore state_referenced_locally
-	let previewToken = $state(data.preview?.token ?? null);
-	let secondsLeft = $state(0);
-	let previewExpired = $state(false);
 	const PREVIEW_TOTAL = 600;
 
-	const previewPercent = $derived(Math.min(100, Math.max(0, (secondsLeft / PREVIEW_TOTAL) * 100)));
 
 	$effect(() => {
 		store = data.store;
@@ -69,7 +65,6 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 		return () => clearInterval(t);
 	});
 
-	const previewTime = $derived(`${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`);
 
 	$effect(() => {
 		try {
@@ -213,51 +208,7 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 </svelte:head>
 
 <div style={themeStyle(store)}>
-	{#if previewToken}
-		<div class="sticky top-0 z-50">
-			<div
-				class="px-4 py-2.5 text-white text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
-				style={`background:linear-gradient(135deg, ${store.theme_color}, color-mix(in srgb, ${store.theme_color} 72%, #000 28%))`}
-			>
-				{#if previewExpired}
-					<span class="flex items-center gap-1.5">
-						<i class="ri-time-line"></i>
-						Tu vista previa expiró y la tienda se eliminó.
-					</span>
-					<a
-						href="/wizard"
-						class="inline-flex items-center gap-1.5 bg-white text-[#111827] px-4 py-2 rounded-full text-xs font-bold border border-black/5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] hover:bg-white/90 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.3)] active:translate-y-0 transition-all no-underline"
-					>
-						<i class="ri-store-2-line"></i>
-						Crear tienda de nuevo
-					</a>
-				{:else}
-					<span class="flex items-center gap-1.5">
-						<i class="ri-eye-line"></i>
-						Vista previa
-					</span>
-					<span class="inline-flex items-center gap-1 bg-white/20 border border-white/25 rounded-full px-2.5 py-0.5 font-bold tabular-nums">
-						<i class="ri-time-line"></i>
-						{previewTime}
-					</span>
-					<span class="hidden sm:inline text-white/85">Actívalla gratis creando tu cuenta:</span>
-					<a
-						href={`/signup?preview=${previewToken}&name=${encodeURIComponent(store.name)}`}
-						class="inline-flex items-center gap-1.5 bg-white text-[#111827] px-4 py-2 rounded-full text-xs font-bold border border-black/5 shadow-[0_2px_10px_rgba(0,0,0,0.25)] hover:bg-white/90 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(0,0,0,0.3)] active:translate-y-0 transition-all no-underline"
-					>
-						<i class="ri-rocket-line"></i>
-						Activar gratis
-					</a>
-				{/if}
-			</div>
-			{#if !previewExpired}
-				<div class="h-1 bg-black/15">
-					<div class="h-full bg-white/80 transition-all duration-1000 ease-linear" style={`width:${previewPercent}%`}></div>
-				</div>
-			{/if}
-		</div>
-	{/if}
-	<StoreNavbar store={store} previewMode={!!previewToken} />
+	<StoreNavbar store={store} />
 	<main class="min-h-[calc(100vh-4rem)]">
 		{@render children()}
 	</main>
