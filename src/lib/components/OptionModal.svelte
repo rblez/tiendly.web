@@ -12,8 +12,8 @@
 </script>
 
 {#if open}
-	<div class="fixed inset-0 z-[90] flex items-center justify-center p-4" role="presentation">
-		<button type="button" class="fixed inset-0 bg-black/60 cursor-default" onclick={onClose} aria-label="Cerrar"></button>
+	<div class="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 backdrop-blur-md p-4" style="display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);" role="presentation">
+		<button type="button" class="fixed inset-0 bg-black/35 cursor-default" onclick={onClose} aria-label="Cerrar"></button>
 		<div class="relative w-full max-w-sm bg-card border border-hairline shadow-2xl rounded-card overflow-hidden">
 			<div class="flex items-center justify-between px-5 py-4 border-b border-hairline">
 				<h3 class="font-bold text-ink">{title}</h3>
