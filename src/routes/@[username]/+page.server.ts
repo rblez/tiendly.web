@@ -2,6 +2,7 @@ import { supabase } from '$lib/supabase/server';
 
 export const load = async ({ parent }) => {
 	const { store } = await parent();
+	if (!store) return { products: [] };
 
 	const { data: products } = await supabase
 		.from('products')

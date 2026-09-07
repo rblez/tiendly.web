@@ -198,11 +198,14 @@
 
 		{#if templatePickerOpen}
 			<!-- Backdrop: bloquea scroll del body y cierra al tocar fuera -->
-			<div
-				class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
-				use:bodyScrollLock
-				onclick={(e) => { if (e.target === e.currentTarget) templatePickerOpen = false; }}
-			>
+				<div
+					class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
+					use:bodyScrollLock
+					role="presentation"
+					tabindex="-1"
+					onclick={(e) => { if (e.target === e.currentTarget) templatePickerOpen = false; }}
+					onkeydown={(e) => { if (e.key === 'Escape') templatePickerOpen = false; }}
+				>
 				<!-- Sheet: altura máxima con scroll interno contenido -->
 				<div
 					class="relative w-full sm:max-w-md flex flex-col bg-card border border-hairline rounded-t-card sm:rounded-card shadow-2xl"

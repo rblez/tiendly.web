@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 
 export const load = async ({ params, parent }) => {
 	const { store } = await parent();
+	if (!store) throw error(404, 'Tienda no encontrada');
 
 	const { data: product } = await supabase
 		.from('products')

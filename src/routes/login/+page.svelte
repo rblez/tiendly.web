@@ -15,12 +15,10 @@
 
 	let claimed = $state(false);
 
-	async function claimPreview(): Promise<string | null> {
-		const { data } = await supabase.auth.getSession();
-		const accessToken = data.session?.access_token;
-		if (!accessToken) return null;
-
-		navigate('/dashboard');
+	async function afterAuth() {
+		await auth.init();
+		const next = $page.url.searchParams.get('next');
+		await goto(next?.startsWith('/') ? next : '/dashboard');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -33,7 +31,7 @@
 				if (err.message.toLowerCase().includes('email not confirmed')) {
 					const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: email.trim() });
 					if (!resendError) {
-						navigate(`/auth/confirm?type=signup&email=${encodeURIComponent(email.trim())}`);
+							goto(`/auth/confirm?type=signup&email=${encodeURIComponent(email.trim())}`);
 						return;
 					}
 				}

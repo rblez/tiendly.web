@@ -41,7 +41,7 @@
 		aria-live="polite"
 	>
 		<div
-			class="pointer-events-auto bg-neutral-900/95 backdrop-blur text-white text-xs sm:text-sm font-medium px-4 py-2 flex items-center justify-center gap-2 shadow-lg animate-[offline-in_.25s_ease]"
+				class="pointer-events-auto bg-neutral-900/95 backdrop-blur text-white text-xs sm:text-sm font-medium px-4 py-2 flex items-center justify-center gap-2 shadow-lg"
 		>
 			<i class="ri-wifi-off-line text-sm text-ember flex-shrink-0"></i>
 			<span class="truncate">Sin conexión — puedes seguir navegando, pero no podrás enviar el pedido hasta reconectar.</span>
@@ -56,9 +56,3 @@
 	</div>
 {/if}
 
-<style>
-	@keyframes offline-in {
-		from { transform: translateY(-100%); }
-		to { transform: translateY(0); }
-	}
-</style>
