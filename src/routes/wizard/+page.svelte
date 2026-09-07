@@ -200,8 +200,9 @@
 					if (productsError) throw productsError;
 				}
 
-				goto(`/dashboard/s/${store.code}?created=1`);
-		} catch (e) {
+					goto(`/dashboard/s/${store.code}?created=1`);
+				}
+			} catch (e) {
 			console.error('wizard createStore:', e);
 			error = friendlyStoreError(e);
 		} finally {

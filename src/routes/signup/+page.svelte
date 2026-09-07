@@ -5,11 +5,7 @@
 
 	let params = $derived(new URLSearchParams($page.url.search));
 	let storeName = $derived(params.get('name') ?? '');
-	let subtitle = $derived(
-		previewToken
-			? `Tu tienda «${storeName || 'sin nombre'}» te espera. Crea tu cuenta para activarla.`
-			: 'Totalmente gratis. Tu tienda lista en 5 minutos.'
-	);
+	let subtitle = $derived(`Totalmente gratis. Tu tienda ${storeName ? `«${storeName}»` : 'lista'} en 5 minutos.`);
 	// svelte-ignore state_referenced_locally
 	let name = $state(storeName);
 	let email = $state('');
@@ -21,12 +17,8 @@
 	let claiming = $state(false);
 	let claimed = $state(false);
 
-	async function claimPreview(): Promise<string | null> {
-		const { data } = await supabase.auth.getSession();
-		const accessToken = data.session?.access_token;
-		if (!accessToken) return null;
-
-		goto('/dashboard');
+	async function afterAuth() {
+		await goto('/dashboard');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {

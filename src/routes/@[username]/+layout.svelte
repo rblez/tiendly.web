@@ -25,9 +25,6 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 
 	$effect(() => {
 		store = data.store;
-		previewToken = data.preview?.token ?? null;
-		secondsLeft = 0;
-		previewExpired = false;
 	});
 
 	$effect(() => {
@@ -52,18 +49,6 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 		};
 	});
 
-	$effect(() => {
-		const expiresAt = data.preview?.expiresAt;
-		if (!expiresAt) return;
-		const update = () => {
-			const left = new Date(expiresAt).getTime() - Date.now();
-			secondsLeft = Math.max(0, Math.round(left / 1000));
-			if (left <= 0) previewExpired = true;
-		};
-		update();
-		const t = setInterval(update, 1000);
-		return () => clearInterval(t);
-	});
 
 
 	$effect(() => {
@@ -213,7 +198,7 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 		{@render children()}
 	</main>
 	<Footer {store} onTrackOrder={openTrack} />
-	{#if !previewToken && (data.ownerPlan === 'free' || data.ownerPlan === 'creator')}
+	{#if data.ownerPlan === 'free' || data.ownerPlan === 'creator'}
 		<CreateStoreToast />
 	{/if}
 	{#if trackModalOpen}
