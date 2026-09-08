@@ -7,6 +7,8 @@ const config: CapacitorConfig = {
 	server: {
 		url: 'https://tiendly.lat/login?mobile=1',
 		androidScheme: 'https',
+		cleartext: false,
+		allowNavigation: ['tiendly.lat', '*.tiendly.lat'],
 	},
 	plugins: {
 		SplashScreen: {
