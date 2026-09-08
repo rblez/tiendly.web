@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-apk:
     name: Compilar APK debug
@@ -37,8 +41,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Validar proyecto
+      - name: Validar tipos Svelte
         run: npm run check
+
+      - name: Validar formato
+        run: npm run format:check
 
       - name: Sincronizar Capacitor
         run: npm run cap:sync
