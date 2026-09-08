@@ -2,13 +2,54 @@
 	let { backHref, title = 'Configuración' }: { backHref: string; title?: string } = $props();
 </script>
 
-<header class="relative flex h-20 items-center justify-center px-4 sm:h-24 sm:px-6">
-	<a
-		href={backHref}
-		aria-label="Volver"
-		class="absolute left-4 flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-card text-2xl text-ink shadow-sm transition-transform hover:scale-105 active:scale-95 sm:left-6"
-	>
+<header class="settings-header">
+	<a href={backHref} aria-label="Volver" class="back-link">
 		<span aria-hidden="true">←</span>
 	</a>
-	<h1 class="text-xl font-bold text-ink sm:text-2xl">{title}</h1>
+	<h1>{title}</h1>
 </header>
+
+<style>
+	.settings-header {
+		display: grid;
+		grid-template-columns: 2.75rem 1fr 2.75rem;
+		align-items: center;
+		min-height: 4.5rem;
+		padding: 0 1rem;
+		border-bottom: 1px solid hsl(var(--border));
+	}
+
+	.settings-header h1 {
+		grid-column: 2;
+		margin: 0;
+		color: hsl(var(--foreground));
+		font-size: 1.25rem;
+		font-weight: 700;
+		line-height: 1.4;
+		text-align: center;
+	}
+
+	.back-link {
+		display: inline-flex;
+		grid-column: 1;
+		align-items: center;
+		justify-content: flex-start;
+		width: 2.75rem;
+		height: 2.75rem;
+		color: hsl(var(--foreground));
+		font-size: 1.75rem;
+		line-height: 1;
+		text-decoration: none;
+		transition: opacity 150ms ease;
+	}
+
+	.back-link:hover {
+		opacity: 0.7;
+	}
+
+	.back-link:focus-visible {
+		border-radius: 0.25rem;
+		outline: 2px solid hsl(var(--ring));
+		outline-offset: 3px;
+	}
+</style>
