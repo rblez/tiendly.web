@@ -37,14 +37,25 @@
 		width: 2.75rem;
 		height: 2.75rem;
 		color: hsl(var(--foreground));
-		font-size: 1.75rem;
+		font-size: 1.9rem;
+		font-weight: 300;
 		line-height: 1;
 		text-decoration: none;
-		transition: opacity 150ms ease;
+		transition: opacity 150ms ease, transform 150ms ease;
+	}
+
+	.back-link span {
+		display: block;
+		transform: translateY(-0.05rem) scaleX(1.08);
 	}
 
 	.back-link:hover {
-		opacity: 0.7;
+		opacity: 0.72;
+	}
+
+	.back-link:active {
+		opacity: 0.5;
+		transform: translateX(-0.15rem);
 	}
 
 	.back-link:focus-visible {
