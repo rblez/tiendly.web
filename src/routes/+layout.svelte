@@ -2,7 +2,7 @@
 	import '../app.css';
 	import '$lib/remixicon.css';
 	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Analytics from '$lib/components/seo/Analytics.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
@@ -11,10 +11,21 @@
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
+
 	injectAnalytics();
 	injectSpeedInsights();
 
 	let { children } = $props();
+	let isNativeApp = $state(false);
+
+	$effect(() => {
+		const capacitor = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+		isNativeApp = Boolean(capacitor?.isNativePlatform?.());
+		const mobileMode = $page.url.searchParams.get('mobile') === '1';
+		if ((isNativeApp || mobileMode) && !$page.url.pathname.startsWith('/login') && !$page.url.pathname.startsWith('/dashboard')) {
+			goto('/login?mobile=1');
+		}
+	});
 
 	const origin = $derived(new URL($page.url).origin);
 	const canonical = $derived(new URL($page.url.pathname, SITE_URL).href);
