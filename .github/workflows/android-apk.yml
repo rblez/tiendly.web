@@ -47,6 +47,9 @@ jobs:
       - name: Validar formato
         run: npm run format:check
 
+      - name: Generar iconos Android
+        run: npx capacitor-assets generate --android
+
       - name: Sincronizar Capacitor
         run: npm run cap:sync
 
