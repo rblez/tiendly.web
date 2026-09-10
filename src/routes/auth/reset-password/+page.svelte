@@ -5,6 +5,8 @@
 
 	let password = $state('');
 	let confirmation = $state('');
+	let showPassword = $state(false);
+	let showConfirmation = $state(false);
 	let error = $state('');
 	let loading = $state(false);
 	let ready = $state(false);
@@ -12,9 +14,22 @@
 
 	onMount(() => {
 		let active = true;
-		void supabase.auth.getSession().then(({ data: sessionData }) => {
+		const hash = new URLSearchParams(window.location.hash.slice(1));
+		const accessToken = hash.get('access_token');
+		const refreshToken = hash.get('refresh_token');
+
+		const establishRecoverySession = async () => {
+			if (accessToken && refreshToken) {
+				const { error: sessionError } = await supabase.auth.setSession({
+					access_token: accessToken,
+					refresh_token: refreshToken,
+				});
+				if (!sessionError) window.history.replaceState({}, '', window.location.pathname);
+			}
+			const { data: sessionData } = await supabase.auth.getSession();
 			if (active && sessionData.session) ready = true;
-		});
+		};
+		void establishRecoverySession();
 
 		const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
 			if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) ready = true;
@@ -28,7 +43,7 @@
 	async function updatePassword(e: SubmitEvent) {
 		e.preventDefault();
 		error = '';
-		if (password.length < 6) { error = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+		if (password.length < 8) { error = 'La contraseña debe tener al menos 8 caracteres.'; return; }
 		if (password !== confirmation) { error = 'Las contraseñas no coinciden.'; return; }
 		loading = true;
 		const { error: err } = await supabase.auth.updateUser({ password });
@@ -49,9 +64,16 @@
 		{#if success}<p class="text-sm text-ember">Contraseña actualizada. Volviendo al inicio de sesión…</p>
 		{:else if ready}<form onsubmit={updatePassword} class="space-y-4 text-left mt-8">
 			<label for="new-password" class="block text-sm font-medium text-body">Nueva contraseña</label>
-			<input id="new-password" type="password" minlength="6" autocomplete="new-password" bind:value={password} class="input" required />
+			<div class="relative">
+				<input id="new-password" type={showPassword ? 'text' : 'password'} minlength="8" autocomplete="new-password" bind:value={password} class="input pr-12" required />
+				<button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted" onclick={() => (showPassword = !showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}><i class={showPassword ? 'ri-eye-off-line' : 'ri-eye-line'}></i></button>
+			</div>
+			<p class="text-xs text-muted-soft">Usa al menos 8 caracteres.</p>
 			<label for="confirm-password" class="block text-sm font-medium text-body">Repite la contraseña</label>
-			<input id="confirm-password" type="password" minlength="6" autocomplete="new-password" bind:value={confirmation} class="input" required />
+			<div class="relative">
+				<input id="confirm-password" type={showConfirmation ? 'text' : 'password'} minlength="8" autocomplete="new-password" bind:value={confirmation} class="input pr-12" required />
+				<button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted" onclick={() => (showConfirmation = !showConfirmation)} aria-label={showConfirmation ? 'Ocultar confirmación' : 'Mostrar confirmación'}><i class={showConfirmation ? 'ri-eye-off-line' : 'ri-eye-line'}></i></button>
+			</div>
 			{#if error}<p class="text-xs text-error bg-error/10 rounded-btn px-3 py-2">{error}</p>{/if}
 			<button type="submit" disabled={loading} class="btn btn-3d btn-lg w-full">{loading ? 'Guardando…' : 'Guardar contraseña'}</button>
 		</form>{:else}<p class="text-sm text-muted">El enlace no es válido o ya expiró.</p>{/if}
