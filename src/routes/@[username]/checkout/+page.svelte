@@ -7,6 +7,7 @@
 	import { couponStore } from '$lib/stores/coupon.svelte';
 	import { couponDiscount, couponLabelText } from '$lib/coupons';
 	import { track } from '$lib/analytics';
+	import { migratePayment } from '$lib/payments';
 	import type { DeliveryZone, Product, Store, Variant } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -21,7 +22,14 @@
 	let deliveryZone = $state<DeliveryZone | null>(null);
 	let customZone = $state('');
 
-	const mode = $derived(data.store.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar');
+	const configuredPaymentMethods = $derived(
+		(Array.isArray(data.store.payments) ? data.store.payments : [])
+			.map((payment) => migratePayment(payment))
+			.filter((payment) => payment !== null),
+	);
+	const mode = $derived(
+		data.store.action === 'whatsapp' || configuredPaymentMethods.length === 0 ? 'whatsapp' : 'sin_contactar',
+	);
 	const deliveryZones = $derived(
 		data.store.delivery?.enabled && data.store.delivery?.mode !== 'pickup'
 			? (data.store.delivery?.zones ?? [])
@@ -401,11 +409,11 @@
 				Ver productos
 			</a>
 		</div>
-	{:else if mode === 'whatsapp' && !data.store.whatsapp}
-		<div class="text-center py-16 bg-card border border-hairline rounded-card">
-			<i class="ri-store-2-line text-3xl text-muted-soft mb-4 block"></i>
-			<p class="text-lg text-muted mb-2">Esta tienda aún no configura cómo recibir pedidos</p>
-			<p class="text-sm text-muted-soft mb-6">Vuelve más tarde o contacta a la tienda por otro medio.</p>
+		{:else if mode === 'whatsapp' && !data.store.whatsapp}
+			<div class="text-center py-16 bg-card border border-hairline rounded-card">
+				<i class="ri-whatsapp-line text-3xl text-muted-soft mb-4 block"></i>
+				<p class="text-lg text-ink mb-2">Esta tienda aún no configuró WhatsApp</p>
+				<p class="text-sm text-muted-soft mb-6">Elige otra tienda o vuelve más tarde para completar tu pedido.</p>
 			<a
 				href={`/@${data.store.slug}`}
 				class="btn btn-3d btn-md no-underline"
