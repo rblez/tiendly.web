@@ -29,7 +29,10 @@
 		const { data, error: err } = await supabase.auth.signUp({
 			email,
 			password,
-			options: { data: { name } },
+			options: {
+			data: { name: name.trim() },
+			emailRedirectTo: `${location.origin}/auth/callback?next=/dashboard`,
+		},
 		});
 		loading = false;
 		if (err) {
@@ -121,7 +124,7 @@
 						id="password"
 						type={showPassword ? 'text' : 'password'}
 						required
-						minlength="6"
+						minlength="8"
 						bind:value={password}
 						placeholder="Mínimo 6 caracteres"
 						autocomplete="new-password"
