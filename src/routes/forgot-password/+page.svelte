@@ -15,7 +15,7 @@
 		}
 		loading = true;
 		const { error: err } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-			redirectTo: `${location.origin}/auth/reset-password`,
+			redirectTo: `${location.origin}/auth/callback?next=/auth/reset-password`,
 		});
 		loading = false;
 		if (err) {

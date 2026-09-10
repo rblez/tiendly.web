@@ -2,6 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import OtpInput from '$lib/components/auth/OtpInput.svelte';
 
 	let email = $derived($page.url.searchParams.get('email') ?? '');
 	let type = $derived(($page.url.searchParams.get('type') ?? 'signup') as 'signup' | 'email');
@@ -45,7 +46,7 @@
 		<p class="text-sm text-muted mb-8">Escribe el código que enviamos a <strong>{email}</strong>.</p>
 		<form onsubmit={verify} class="space-y-4">
 			<label for="otp" class="sr-only">Código de confirmación</label>
-			<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" bind:value={token} oninput={(e) => (token = e.currentTarget.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" class="input text-center text-2xl tracking-[0.4em]" required />
+			<OtpInput bind:value={token} disabled={loading} />
 			{#if error}<p class="text-xs text-error bg-error/10 rounded-btn px-3 py-2">{error}</p>{/if}
 			{#if info}<p class="text-xs text-ember bg-ember/10 rounded-btn px-3 py-2">{info}</p>{/if}
 			<button type="submit" disabled={loading} class="btn btn-3d btn-lg w-full">{loading ? 'Confirmando…' : 'Confirmar código'}</button>
