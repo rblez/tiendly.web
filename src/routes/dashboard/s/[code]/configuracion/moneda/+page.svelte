@@ -6,10 +6,13 @@
 	import { onMount } from 'svelte';
 
 	type CurrencyRow = { code: string; rate: string };
+	type CheckoutRates = { CASH: string; TRANSFER: string };
 	let storeCode = $derived($page.params.code ?? '');
 	let storeId = $state('');
 	let primary = $state('');
 	let currencies = $state<CurrencyRow[]>([]);
+	let cashRate = $state('650');
+	let transferRate = $state('980');
 	let loading = $state(true);
 	let saving = $state(false);
 	let msg = $state('');
