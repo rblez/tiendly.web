@@ -6,7 +6,8 @@
  const sections = [
   { title: 'Tienda', items: [['ri-store-2-line','Información general','Nombre, usuario y descripción','informacion'],['ri-image-edit-line','Apariencia','Logo y color de tu tienda','apariencia'],['ri-price-tag-3-line','Categorías','Organiza tus productos','categorias'],['ri-eye-line','Visibilidad','Visible u oculta en Tiendly','visibilidad'],['ri-share-forward-line','Compartir tienda','URL pública, copiar y compartir','compartir']] },
   { title: 'Comunicación', items: [['ri-whatsapp-line','Contacto','WhatsApp y recepción de pedidos','contacto'],['ri-share-line','Redes sociales','Conecta tus perfiles','redes'],['ri-map-pin-line','Información adicional','Ubicación, horario y enlaces','adicional']] },
-  { title: 'Ventas', items: [['ri-exchange-dollar-line','Moneda','CUP y USD · tasa editable','moneda'],['ri-bank-card-line','Pagos','Métodos de cobro','pagos'],['ri-truck-line','Envíos','Zonas y costos de entrega','envios']] },
+  { title: 'Ventas', items: [['ri-exchange-dollar-line','Moneda','CUP y USD · dos tasas editables','moneda'],['ri-bank-card-line','Pagos','Métodos de cobro','pagos'],['ri-truck-line','Envíos','Zonas y costos de entrega','envios']] },
+  { title: 'Cuenta', items: [['ri-vip-crown-line','Planes','Compara Gratis y Pro','planes']] },
  ];
 </script>
 <svelte:head><title>Ajustes | Tiendly</title></svelte:head>
