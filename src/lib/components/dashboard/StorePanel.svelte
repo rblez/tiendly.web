@@ -158,8 +158,9 @@ import OptionModal from '$lib/components/OptionModal.svelte';
 	let formDescription = $state('');
 	let formPrice = $state('');
 	let formStock = $state('');
-	let formCurrency = $state('CUP');
-	let formCategory = $state('General');
+let formCurrency = $state('CUP');
+		let formProductType = $state<'physical' | 'digital'>('physical');
+		let formCategory = $state('General');
 	let formAgotado = $state(false);
 	let formBajoPedido = $state(false);
 	let formDeliveryType = $state<'none' | 'pickup' | 'delivery' | 'both'>('both');
@@ -591,6 +592,7 @@ $effect(() => {
 		formPrice = '';
 		formStock = '';
 		formCurrency = vendorCurrency(store);
+		formProductType = 'physical';
 		formCategory = 'General';
 		formCreatingCategory = false;
 		formAgotado = false;
@@ -614,6 +616,7 @@ $effect(() => {
 		formPrice = String(p.price);
 		formStock = p.stock == null ? '' : String(p.stock);
 		formCurrency = vendorCurrency(store);
+		formProductType = p.product_type === 'digital' ? 'digital' : 'physical';
 		formCategory = p.category;
 		formCreatingCategory = false;
 		formAgotado = p.agotado;
@@ -730,8 +733,9 @@ $effect(() => {
 			name: formName.trim(),
 			description: formDescription.trim() || null,
 			price: parsePrice(formPrice),
-			currency: formCurrency,
-			category: formCategory.trim() || 'General',
+currency: formCurrency,
+				product_type: formProductType,
+				category: formCategory.trim() || 'General',
 			agotado: formAgotado,
 		bajo_pedido: formBajoPedido,
 		delivery_type: formDeliveryType,
@@ -2448,8 +2452,13 @@ class="btn btn-secondary btn-sm"
 							</label>
 							<p class="text-xs text-muted-soft mt-2">La primera foto es la portada. Puedes subir varias a la vez.</p>
 						</div>
-							<div>
-								<label for="p-delivery" class="block text-sm font-medium text-body mb-1.5">Entrega del producto</label>
+				<div>
+					<label for="p-type" class="block text-sm font-medium text-body mb-1.5">Tipo de producto o servicio</label>
+					<SelectPicker id="p-type" label="Tipo de producto o servicio" bind:value={formProductType} options={[{value:"physical",label:"Físico o servicio presencial"},{value:"digital",label:"Digital o servicio remoto"}]} />
+					<p class="text-xs text-muted-soft mt-1.5">Esto cambia cómo se presenta en tu tienda y si necesita entrega.</p>
+				</div>
+				<div>
+					<label for="p-delivery" class="block text-sm font-medium text-body mb-1.5">Entrega del producto</label>
 								<SelectPicker id="p-delivery" label="Entrega del producto" bind:value={formDeliveryType} options={[{value:"both",label:"Domicilio y recogida en local"},{value:"delivery",label:"Solo entrega a domicilio"},{value:"pickup",label:"Solo recogida en local"},{value:"none",label:"No requiere entrega"}]} />
 								<p class="text-xs text-muted-soft mt-1.5">Define cómo puede recibirlo el cliente.</p>
 							</div>

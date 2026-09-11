@@ -26,6 +26,7 @@ export interface Product {
 	images: string[];
 	price: number;
 	currency: string;
+	product_type?: 'physical' | 'digital';
 	category: string;
 	variants: Variant[];
 	ask: string[];
