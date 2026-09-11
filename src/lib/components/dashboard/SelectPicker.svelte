@@ -45,8 +45,8 @@
 
 {#if open}
 	<div
-		class="fixed inset-0 z-[70] flex items-center justify-center bg-ink/55 backdrop-blur-md p-4 sm:p-6"
-		style="display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"
+		class="fixed inset-0 z-[70] flex items-center justify-center bg-ink/70 backdrop-blur-md p-4 sm:p-6"
+		style="display:flex;align-items:center;justify-content:center;background-color:color-mix(in srgb, var(--color-ink) 70%, transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);"
 		use:bodyScrollLock
 		onclick={(e) => { if (e.target === e.currentTarget) open = false; }}
 		onkeydown={(e) => { if (e.key === 'Escape') open = false; }}
@@ -54,8 +54,8 @@
 		tabindex="-1"
 	>
 		<div
-			class="relative w-full max-w-sm max-h-[min(32rem,calc(100vh-2rem))] overflow-y-auto bg-card/70 backdrop-blur-xl border border-hairline/70 rounded-card shadow-2xl"
-			style="margin:auto;background-color:color-mix(in srgb, var(--color-card) 70%, transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);"
+			class="relative w-full max-w-sm max-h-[min(32rem,calc(100vh-2rem))] overflow-y-auto bg-card/95 backdrop-blur-xl border border-hairline rounded-card shadow-2xl"
+			style="margin:auto;background-color:color-mix(in srgb, var(--color-card) 95%, transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);"
 			role="dialog"
 			aria-modal="true"
 			aria-label={fieldLabel ?? 'Seleccionar una opción'}
