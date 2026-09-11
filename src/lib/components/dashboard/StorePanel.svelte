@@ -1363,13 +1363,13 @@ async function duplicateProduct(p: Product) {
 			<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 			<aside class="hidden lg:flex flex-col gap-4 lg:sticky lg:top-20">
 				<nav class="acrylic bg-card border border-hairline rounded-card p-2 space-y-1">
-					<a
-						href={`/dashboard/s/${page.params.code}`}
-						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
-							{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
-					>
-						Estadísticas
-					</a>
+						<a
+							href={`/dashboard/s/${page.params.code}`}
+							class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
+								{tab === 'resumen' ? 'bg-ember text-white' : 'text-body hover:bg-ember/10 hover:text-ember'}"
+						>
+							Inicio
+						</a>
 					<a
 						href={`/dashboard/s/${page.params.code}/productos`}
 						class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors
@@ -1392,9 +1392,15 @@ async function duplicateProduct(p: Product) {
 								{unreadOrders}
 							</span>
 						{/if}
-					</a>
-				</nav>
-				<div class="bg-card border border-hairline rounded-card divide-y divide-hairline-soft text-sm">
+						</a>
+						<a
+							href={`/dashboard/s/${page.params.code}/configuracion`}
+							class="w-full flex items-center gap-2.5 px-3.5 py-3 rounded-btn text-sm font-medium no-underline transition-colors text-body hover:bg-ember/10 hover:text-ember"
+						>
+							Tienda
+						</a>
+					</nav>
+					<div class="bg-card border border-hairline rounded-card divide-y divide-hairline-soft text-sm">
 					<div class="px-5 py-3.5 flex items-center justify-between gap-2">
 						<span class="text-muted">Visitas 7d</span>
 						<span class="font-bold text-ink tabular-nums">{visitTotal}</span>
