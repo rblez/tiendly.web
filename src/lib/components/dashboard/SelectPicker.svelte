@@ -54,8 +54,8 @@
 		tabindex="-1"
 	>
 		<div
-			class="relative w-full max-w-sm max-h-[min(32rem,calc(100vh-2rem))] overflow-y-auto bg-card border border-hairline rounded-card shadow-2xl"
-			style="margin:auto;"
+			class="relative w-full max-w-sm max-h-[min(32rem,calc(100vh-2rem))] overflow-y-auto bg-card/70 backdrop-blur-xl border border-hairline/70 rounded-card shadow-2xl"
+			style="margin:auto;background-color:color-mix(in srgb, var(--color-card) 70%, transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);"
 			role="dialog"
 			aria-modal="true"
 			aria-label={fieldLabel ?? 'Seleccionar una opción'}

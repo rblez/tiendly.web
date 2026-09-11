@@ -185,34 +185,50 @@ input[type='color']::-webkit-color-swatch {
 }
 
 .select-pill {
-	appearance: none;
-	cursor: pointer;
-	padding: 0.5rem 2rem 0.5rem 0.95rem;
-	border-radius: 9999px;
-	font-size: 0.8125rem;
-	font-weight: 600;
-	border: 1px solid var(--color-hairline);
-	background-color: var(--color-card);
-	color: var(--color-ink);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-	transition:
-		border-color 0.2s ease,
-		background-color 0.2s ease,
-		box-shadow 0.2s ease;
-}
+		appearance: none;
+		cursor: pointer;
+		padding: 0.5rem 2rem 0.5rem 0.95rem;
+		border-radius: 9999px;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+		color: var(--color-ink);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 8%, transparent);
+		transition:
+			border-color 0.2s ease,
+			background-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
 
-.select-pill:hover {
-	border-color: color-mix(in srgb, var(--accent) 35%, var(--color-hairline));
-	background-color: var(--color-bone);
-}
+	.select-pill:hover {
+		border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+		background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+	}
 
-.select-pill:focus {
-	outline: none;
-	border-color: var(--accent);
-	box-shadow:
-		0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent),
-		0 1px 2px rgba(0, 0, 0, 0.04);
-}
+	.select-pill:focus {
+		outline: none;
+		border-color: var(--accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+	}
+
+	select {
+		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+	}
+
+	select:focus {
+		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+	}
+
+	select option {
+		background-color: var(--color-card);
+		color: var(--color-ink);
+	}
+
 
 .select-pill-sm {
 	padding: 0.35rem 1.75rem 0.35rem 0.75rem;
