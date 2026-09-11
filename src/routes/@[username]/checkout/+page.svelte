@@ -105,7 +105,13 @@
 				if (error) throw error;
 				if (cancelled) return;
 				for (const row of rows ?? []) {
-					cartProductsCache[row.id] = { ...row, variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[], images: (Array.isArray(row.images) ? row.images : []) as unknown as string[], ask: (Array.isArray(row.ask) ? row.ask : []) as string[] };
+					cartProductsCache[row.id] = {
+						...row,
+						product_type: row.product_type === 'digital' ? 'digital' : 'physical',
+						variants: (Array.isArray(row.variants) ? row.variants : []) as unknown as Variant[],
+						images: (Array.isArray(row.images) ? row.images : []) as unknown as string[],
+						ask: (Array.isArray(row.ask) ? row.ask : []) as string[],
+					};
 				}
 			} catch (e) {
 				console.error('checkout load:', e);
