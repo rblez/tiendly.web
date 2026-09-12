@@ -235,10 +235,22 @@
 </svelte:head>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-7 sm:pb-10">
-	<div class="mb-8 pt-1">
-		<h1 class="text-2xl sm:text-3xl font-bold text-ink">Perfil</h1>
-		<p class="text-sm text-muted mt-1">Tu cuenta y preferencias en Tiendly</p>
-	</div>
+		<div class="mb-8 pt-1">
+			<div class="flex items-center gap-3">
+				<button
+					type="button"
+					onclick={() => (history.length > 1 ? history.back() : goto(`/dashboard/s/${$page.params.code ?? ''}/configuracion`))}
+					class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-card text-muted transition-colors hover:bg-bone hover:text-ink"
+					aria-label="Volver"
+				>
+					<i class="ri-arrow-left-line text-xl" aria-hidden="true"></i>
+				</button>
+				<div>
+					<h1 class="text-2xl sm:text-3xl font-bold text-ink">Perfil</h1>
+					<p class="text-sm text-muted mt-1">Tu cuenta y preferencias en Tiendly</p>
+				</div>
+			</div>
+		</div>
 
 	<div class="mt-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5 lg:items-start">
 		<div class="min-w-0">
