@@ -252,8 +252,8 @@
 	<title>Inicio | Tiendly</title>
 </svelte:head>
 
-<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-12 pb-7 sm:pb-10">
-	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<section class="mx-auto max-w-6xl px-4 pb-7 pt-7 sm:px-6 sm:pb-10 sm:pt-10 lg:px-8">
+		<div class="mb-7 flex flex-col justify-between gap-4 sm:mb-8 sm:flex-row sm:items-center">
 		<div class="pt-1">
 <h1 class="text-2xl sm:text-3xl font-bold text-ink">Qué bueno verte, {auth.profile?.name ?? 'de nuevo'}</h1>
 				<p class="text-sm text-muted mt-1">Una vista clara de tus tiendas y las prioridades de hoy.</p>
@@ -285,9 +285,8 @@
 			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-shopping-bag-3-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{totalOrders}</p><p class="text-xs text-muted mt-1">Pedidos</p></div>
 			<div class="acrylic border border-hairline rounded-card p-4"><i class="ri-eye-line text-ember mb-3" style="font-size: 20px" aria-hidden="true"></i><p class="text-2xl font-bold text-ink">{totalVisits}</p><p class="text-xs text-muted mt-1">Visitas</p></div>
 		</div>
-		<div class="flex flex-wrap gap-2 mb-8">
-			<a href="/wizard" class="btn btn-3d btn-md no-underline"><i class="ri-add-line" style="font-size: 17px" aria-hidden="true"></i> Crear tienda</a>
-			{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><i class="ri-external-link-line" style="font-size: 17px" aria-hidden="true"></i> Ver tienda pública</a>{/if}
+			<div class="mb-8 flex flex-wrap gap-2">
+				{#if stores[0]}<a href={storeUrl(stores[0].slug)} target="_blank" rel="noreferrer" class="btn btn-secondary btn-md no-underline"><i class="ri-external-link-line" style="font-size: 17px" aria-hidden="true"></i> Ver tienda pública</a>{/if}
 			{#if hiddenStores > 0}<span class="inline-flex items-center rounded-full border border-ember/20 bg-ember/10 px-3 py-2 text-xs font-semibold text-ember">{hiddenStores} {hiddenStores === 1 ? 'tienda oculta' : 'tiendas ocultas'}</span>{/if}
 		</div>
 
