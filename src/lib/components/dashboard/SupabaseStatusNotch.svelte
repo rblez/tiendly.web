@@ -67,7 +67,7 @@
 </script>
 
 <div class="relative z-10 flex items-center justify-center">
-	<button type="button" class={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${config[overallState].color}`} onclick={() => (expanded = !expanded)} aria-expanded={expanded}><i class={config[overallState].icon} aria-hidden="true"></i><span class="hidden sm:inline">{config[overallState].label}</span>{#if services[0].latency !== null}<span class="font-mono text-[10px] opacity-75">{services[0].latency}ms</span>{/if}</button>
+	<button type="button" class={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${config[overallState].color}`} onclick={(event) => { event.stopPropagation(); expanded = !expanded; }} aria-expanded={expanded}><i class={config[overallState].icon} aria-hidden="true"></i><span class="hidden sm:inline">{config[overallState].label}</span>{#if services[0].latency !== null}<span class="font-mono text-[10px] opacity-75">{services[0].latency}ms</span>{/if}</button>
 	{#if expanded}
 		<div class="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-md sm:items-center sm:pt-4" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) expanded = false; }}>
 			<div class="relative z-[10000] my-auto w-full max-w-sm shrink-0 rounded-2xl border border-hairline bg-card p-4 text-left shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="diagnostic-title">

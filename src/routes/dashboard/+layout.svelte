@@ -26,7 +26,7 @@
 {#if auth.ready && auth.session}
 	<div class="flex flex-col min-h-screen" data-panel>
 		{#if storeCode && !isSettingsSubpage}
-			<header class="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-md">
+			<header class="sticky top-0 z-40 border-b border-hairline bg-canvas/95">
 				<div class="mx-auto grid h-16 max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
 					<div class="min-w-0">
 						<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex min-w-0 items-center gap-2.5 text-ink no-underline" data-tour="store-edit" aria-label="Abrir perfil y cuenta">
