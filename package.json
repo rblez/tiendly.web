@@ -53,6 +53,10 @@
 		"cookie": "^0.7.2"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["core-js", "esbuild", "sharp"]
+		"onlyBuiltDependencies": [
+			"core-js",
+			"esbuild",
+			"sharp"
+		]
 	}
 }
