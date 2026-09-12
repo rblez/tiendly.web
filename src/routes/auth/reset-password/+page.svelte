@@ -2,6 +2,7 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	let password = $state('');
 	let confirmation = $state('');
@@ -11,6 +12,7 @@
 	let loading = $state(false);
 	let ready = $state(false);
 	let success = $state(false);
+	let callbackError = $derived($page.url.searchParams.get('error') ?? '');
 
 	onMount(() => {
 		let active = true;
@@ -62,6 +64,7 @@
 		</a>
 		<h1 class="text-3xl font-black text-ink mb-2">Nueva contraseña</h1>
 		{#if success}<p class="text-sm text-ember">Contraseña actualizada. Volviendo al inicio de sesión…</p>
+		{:else if callbackError}<div class="mt-8 rounded-btn border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">{callbackError}</div><a href="/forgot-password" class="btn btn-3d btn-lg mt-5 inline-flex no-underline">Solicitar otro enlace</a>
 		{:else if ready}<form onsubmit={updatePassword} class="space-y-4 text-left mt-8">
 			<label for="new-password" class="block text-sm font-medium text-body">Nueva contraseña</label>
 			<div class="relative">

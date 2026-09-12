@@ -20,5 +20,5 @@ export const GET = async ({ url, locals }) => {
 		if (!error) throw redirect(303, type === 'recovery' ? '/auth/reset-password' : safeNext);
 	}
 
-	throw redirect(303, '/login?error=auth_callback');
+	throw redirect(303, `/auth/reset-password?error=${encodeURIComponent('El enlace expiró o no es válido. Solicita uno nuevo.')}`);
 };
