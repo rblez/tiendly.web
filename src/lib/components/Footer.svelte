@@ -174,9 +174,12 @@ let trackError = $state('');
 					<li>
 						<a href="/terms-of-use" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
 					</li>
-					<li>
-						<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
-					</li>
+						<li>
+							<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
+						</li>
+						<li>
+							<a href="https://t.me/+-rDvLllUjv8wOGRh" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ember transition-colors no-underline">Únete a nuestro grupo de Telegram</a>
+						</li>
 				</ul>
 			</div>
 		</div>

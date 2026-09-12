@@ -1,6 +1,6 @@
 # Tiendly
 
-**Plataforma multi-tienda de ecommerce para Cuba.** Cada tienda vive en `tiendly.lat/@tienda`; el comprador elige productos, elige su método de pago (métodos manuales configurados por el vendedor: BANDEC, BPA, BANMET, Zelle, PayPal, USDT, etc.), sube el comprobante y el pedido queda en el panel del vendedor sin pasar por pasarelas externas ni intermediarios.
+**Tiendly es una plataforma en beta para crear una tienda online (una por usuario) en Cuba.** Cada tienda incluye catálogo y pedidos. El vendedor puede usar pago contra entrega con métodos manuales configurables o enviar el pedido directamente a WhatsApp. La moneda base es USD, con conversión configurable a CUP para efectivo y transferencia.
 
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-ff3e00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
@@ -26,12 +26,12 @@
 ## Arquitectura
 
 ```
-tiendly.lat/                    → Landing + directorio de tiendas
+tiendly.lat/                    → Landing de Tiendly
 tiendly.lat/@[username]/        → Storefront público (catálogo, producto, carrito, checkout)
 tiendly.lat/dashboard/          → Panel del dueño (requiere auth)
 tiendly.lat/dashboard/s/[code]/ → Panel por tienda (código de 8 chars)
 tiendly.lat/login | /signup     → Auth (OTP por correo, Supabase Auth)
-tiendly.lat/wizard/             → Wizard de creación de tienda (4 pasos)
+tiendly.lat/wizard/             → Wizard de creación de tienda (5 pasos)
 ```
 
 No hay API propia — todo va directamente a Supabase vía `@supabase/ssr` (SSR con cookies) y el cliente browser. Los endpoints en `src/routes/api/` son solo para track de visitas, claim de preview y upload de imágenes.

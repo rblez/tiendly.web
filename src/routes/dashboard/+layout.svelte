@@ -13,14 +13,6 @@
 			goto('/login');
 		}
 	});
-	let showModal = $state(false);
-	$effect(() => {
-		const key = 'tg_modal_seen';
-		if (!sessionStorage.getItem(key)) {
-			setTimeout(() => { showModal = true; }, 2000);
-			sessionStorage.setItem(key, '1');
-		}
-	});
 </script>
 
 {#if auth.ready && auth.session}
@@ -77,22 +69,3 @@
 		color: var(--accent);
 	}
 </style>
-	{#if showModal}
-		<div class="fixed inset-0 z-50 flex items-end justify-center bg-black/65 p-0 backdrop-blur-[10px] sm:items-center sm:p-4" onclick={(e) => { if (e.target === e.currentTarget) showModal = false; }} role="presentation">
-			<div class="relative w-full max-w-sm rounded-t-[24px] border border-b-0 border-hairline bg-card p-6 text-center shadow-2xl sm:rounded-card sm:border-b">
-				<div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted-soft/50 sm:hidden" aria-hidden="true"></div>
-				<button type="button" onclick={() => (showModal = false)} class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-bone hover:text-ink" aria-label="Cerrar"><i class="ri-close-line" aria-hidden="true"></i></button>
-				<div class="mb-4 flex justify-center gap-3" aria-hidden="true">
-					<i class="ri-telegram-fill text-4xl text-[#2AABEE]"></i>
-					<i class="ri-whatsapp-fill text-4xl text-[#25D366]"></i>
-				</div>
-				<h3 class="mb-2 text-lg font-bold text-ink">Tiendly está en beta</h3>
-				<p class="mb-5 text-sm leading-relaxed text-body">Tu feedback nos ayuda a construir la mejor plataforma de ecommerce para Cuba. Únete a nuestros grupos para reportar bugs, pedir features y ver novedades antes que nadie.</p>
-				<div class="flex flex-col gap-2.5">
-					<a href="https://chat.whatsapp.com/CUEMqyo4fAmBSl0HI1hMFA" target="_blank" rel="noopener noreferrer" onclick={() => (showModal = false)} class="flex min-h-12 w-full items-center justify-center gap-2 rounded-btn bg-[#25D366] px-4 py-3 font-semibold text-white no-underline shadow-[0_2px_0_#1da851] transition-transform active:translate-y-px active:shadow-none"><i class="ri-whatsapp-fill" aria-hidden="true"></i> Unirme al grupo de WhatsApp</a>
-					<a href="https://t.me/+-rDvLllUjv8wOGRh" target="_blank" rel="noopener noreferrer" onclick={() => (showModal = false)} class="btn btn-3d btn-md flex min-h-12 w-full items-center justify-center gap-2 no-underline"><i class="ri-telegram-fill" aria-hidden="true"></i> Unirme al grupo de Telegram</a>
-				</div>
-				<button type="button" onclick={() => (showModal = false)} class="mt-4 text-xs text-muted transition-colors hover:text-body">Ahora no</button>
-			</div>
-		</div>
-	{/if}

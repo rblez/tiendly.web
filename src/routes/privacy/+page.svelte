@@ -12,7 +12,8 @@
 
 <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
 	<h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ink mb-3">Política de privacidad</h1>
-	<p class="text-muted mb-10">Última actualización: 16 de agosto de 2026</p>
+	<p class="text-muted mb-4">Última actualización: 12 de septiembre de 2026</p>
+	<div class="mb-10 rounded-btn border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-body"><strong class="text-ink">Aviso importante:</strong> este documento es un borrador informativo y requiere revisión humana y legal antes de publicarse como texto vinculante.</div>
 
 	<div class="space-y-8 text-body leading-relaxed">
 		<section>
@@ -26,10 +27,11 @@
 		<section>
 			<h2 class="text-lg font-bold text-ink mb-2">1. Qué datos recogemos</h2>
 			<ul class="list-disc pl-5 mt-2 space-y-1.5">
-				<li><strong>De la cuenta:</strong> correo electrónico y datos de autenticación (gestionados por Supabase Auth).</li>
+				<li><strong>De la cuenta:</strong> correo electrónico, nombre y datos de autenticación (gestionados por Supabase Auth).</li>
+				<li><strong>De contacto:</strong> número de WhatsApp cuando el vendedor decide configurarlo para recibir pedidos.</li>
+				<li><strong>De pagos configurados:</strong> los datos que el vendedor agrega sobre sus métodos manuales, como Zelle, transferencias CUP u otros.</li>
 				<li><strong>De la tienda:</strong> nombre, descripción, logo, productos, precios, catálogo y configuración que tú agregas.</li>
-				<li><strong>De los pedidos:</strong> los datos que los clientes dejan al pedir (nombre, teléfono, datos pedidos por la tienda,
-				comprobantes de pago en subida) y el historial de cada pedido.</li>
+<li><strong>De los pedidos:</strong> los datos que los clientes dejan al pedir (nombre, teléfono, correo si se solicita, datos pedidos por la tienda), comprobantes de pago subidos —incluidas capturas, números de transacción o hashes— y el historial de cada pedido.</li>
 				<li><strong>De uso:</strong> número de visitas agregado por tienda y por día (sin identificar al visitante) y estadísticas
 				agregadas de páginas.</li>
 			</ul>
@@ -85,7 +87,7 @@
 		<section>
 			<h2 class="text-lg font-bold text-ink mb-2">7. Contacto</h2>
 			<p>
-				Consultas de privacidad: <a href="mailto:hola@tiendly.lat" class="text-ember hover:text-ember-active no-underline">hola@tiendly.lat</a>.
+				Consultas de privacidad: <a href="mailto:hola@tiendly.lat" class="text-ember hover:text-ember-active no-underline">hola@tiendly.lat</a> o <a href="https://t.me/tiendly_soporte" target="_blank" rel="noopener noreferrer" class="text-ember hover:text-ember-active no-underline">Telegram</a>.
 			</p>
 		</section>
 	</div>

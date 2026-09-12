@@ -12,15 +12,14 @@
 
 <main class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
 	<h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ink mb-3">Términos de uso</h1>
-	<p class="text-muted mb-10">Última actualización: 16 de agosto de 2026</p>
+	<p class="text-muted mb-4">Última actualización: 12 de septiembre de 2026</p>
+	<div class="mb-10 rounded-btn border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-body"><strong class="text-ink">Aviso importante:</strong> este documento es un borrador informativo y requiere revisión humana y legal antes de publicarse como texto vinculante.</div>
 
 	<div class="space-y-8 text-body leading-relaxed">
 		<section>
 			<h2 class="text-lg font-bold text-ink mb-2">1. El servicio</h2>
 			<p>
-				Tiendly es una plataforma que permite a cualquier persona crear un catálogo público ("tienda") y recibir pedidos de sus clientes,
-				típicamente por WhatsApp u otros canales que el propio dueño configure. El pago de los pedidos se acuerda directamente entre el
-				vendedor y el comprador; Tiendly no procesa pagos ni actúa como intermediario financiero.
+				Tiendly es una plataforma para crear una tienda online (una por usuario), publicar un catálogo y gestionar pedidos. Puede enviar pedidos a WhatsApp si el vendedor lo configura o usar métodos manuales de pago contra entrega. Tiendly no es un procesador de pagos: no interviene, garantiza ni responde por las transacciones entre vendedor y comprador, que se realizan fuera de Tiendly mediante los métodos configurados por el vendedor.
 			</p>
 		</section>
 
@@ -54,7 +53,14 @@
 		</section>
 
 		<section>
-			<h2 class="text-lg font-bold text-ink mb-2">5. Disponibilidad del servicio</h2>
+			<h2 class="text-lg font-bold text-ink mb-2">5. Fase beta y disponibilidad</h2>
+			<p>
+				Tiendly está en fase beta. Las funciones, límites, interfaces y condiciones pueden cambiar, y el servicio puede sufrir interrupciones, errores o pérdida de disponibilidad mientras se desarrolla.
+			</p>
+		</section>
+
+		<section>
+			<h2 class="text-lg font-bold text-ink mb-2">6. Disponibilidad del servicio</h2>
 			<p>
 				El servicio se ofrece "tal cual", con el mejor esfuerzo posible. Podemos suspender, modificar o interrumpir funciones por
 				mantenimiento, seguridad o cambios de producto, con o sin aviso previo. En caso de abuso, podemos suspender o eliminar cuentas y
@@ -63,7 +69,7 @@
 		</section>
 
 		<section>
-			<h2 class="text-lg font-bold text-ink mb-2">6. Limitación de responsabilidad</h2>
+			<h2 class="text-lg font-bold text-ink mb-2">7. Limitación de responsabilidad</h2>
 			<p>
 				Hasta el máximo permitido por la ley, Tiendly no será responsable por daños derivados del uso de la plataforma, incluidos
 				pedidos fallidos, pérdidas de datos o ventas de otros usuarios. La relación comercial entre vendedores y compradores es ajena a
@@ -72,7 +78,14 @@
 		</section>
 
 		<section>
-			<h2 class="text-lg font-bold text-ink mb-2">7. Cambios a estos términos</h2>
+			<h2 class="text-lg font-bold text-ink mb-2">8. Cuenta y cierre</h2>
+			<p>
+				Puedes solicitar el cierre de tu cuenta y la eliminación de tus datos. Tiendly puede suspender o eliminar cuentas y tiendas por fraude, abuso, contenido ilegal, incumplimiento de estos términos o riesgo para otros usuarios y la plataforma.
+			</p>
+		</section>
+
+		<section>
+			<h2 class="text-lg font-bold text-ink mb-2">9. Cambios a estos términos</h2>
 			<p>
 				Podemos actualizar estos términos; los cambios se publicarán en esta página con su fecha. El uso continuado del servicio tras los
 				cambios implica su aceptación.
@@ -80,7 +93,7 @@
 		</section>
 
 		<section>
-			<h2 class="text-lg font-bold text-ink mb-2">8. Contacto</h2>
+			<h2 class="text-lg font-bold text-ink mb-2">10. Contacto</h2>
 			<p>
 				Dudas sobre estos términos: <a href="mailto:hola@tiendly.lat" class="text-ember hover:text-ember-active no-underline">hola@tiendly.lat</a>.
 			</p>
