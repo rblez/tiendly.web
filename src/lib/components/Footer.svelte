@@ -158,9 +158,6 @@ let trackError = $state('');
 						<a href="/tiendas" class="text-sm text-body hover:text-ember transition-colors no-underline">Explorar tiendas</a>
 					</li>
 					<li>
-						<a href="/changelog" class="text-sm text-body hover:text-ember transition-colors no-underline">Historial de cambios</a>
-					</li>
-					<li>
 						<a href="/wizard" class="text-sm text-body hover:text-ember transition-colors no-underline">Crea tu tienda</a>
 					</li>
 					<li>

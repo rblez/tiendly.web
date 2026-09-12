@@ -29,7 +29,6 @@ export const GET = async () => {
 		['/about', 'monthly', '0.4'],
 		['/terms-of-use', 'monthly', '0.3'],
 		['/privacy', 'monthly', '0.3'],
-		['/changelog', 'monthly', '0.3'],
 		['/login', 'monthly', '0.3'],
 		['/signup', 'monthly', '0.3'],
 	];

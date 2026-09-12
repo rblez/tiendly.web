@@ -4,7 +4,6 @@
 
 	const links: Array<{ href: string; label: string }> = [
 		{ href: '/tiendas', label: 'Explorar tiendas' },
-		{ href: '/changelog', label: 'Historial de cambios' },
 	];
 
 	let open = $state(false);

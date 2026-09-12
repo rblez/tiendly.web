@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { auth } from '$lib/stores/auth.svelte';
+	import SupabaseStatusNotch from '$lib/components/dashboard/SupabaseStatusNotch.svelte';
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
 	let isSettingsSubpage = $derived(page.url.pathname.includes('/configuracion/'));
@@ -26,7 +27,8 @@
 	<div class="flex flex-col min-h-screen" data-panel>
 		{#if storeCode && !isSettingsSubpage}
 			<header class="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-md">
-				<div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+				<div class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+					<SupabaseStatusNotch />
 					<div class="flex min-w-0 items-center gap-2.5">
 						<a href={`/dashboard/s/${storeCode}`} class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-hairline bg-card text-body no-underline transition-colors hover:border-ember hover:text-ember" aria-label="Volver al inicio del dashboard" title="Inicio">
 							<i class="ri-home-5-line" style="font-size: 19px" aria-hidden="true"></i>
