@@ -212,35 +212,5 @@
 		</div>
 	</section>
 
-	<!-- Footer -->
-	<footer class="border-t border-hairline bg-card/30">
-		<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-			<div class="flex flex-col sm:flex-row items-center justify-between gap-6">
-				<div class="text-center sm:text-left">
-					<p class="font-black text-ink text-lg tracking-tight">Tiendly</p>
-					<p class="text-xs text-muted mt-0.5">Tu catálogo online para vender sin comisiones.</p>
-				</div>
-				<div class="flex items-center gap-3">
-					{#each socials as s}
-						<a
-							href={s.href}
-							target="_blank"
-							rel="noopener noreferrer"
-							aria-label={s.label}
-							class="w-9 h-9 flex items-center justify-center rounded-btn border border-hairline text-muted hover:text-ember hover:border-ember/40 transition-colors"
-						>
-							<i class="{s.icon} text-lg"></i>
-						</a>
-					{/each}
-				</div>
-			</div>
-			<div class="border-t border-hairline mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
-				<p>© {new Date().getFullYear()} Tiendly. Todos los derechos reservados.</p>
-				<div class="flex items-center gap-4">
-					<a href="/privacy" class="hover:text-ember transition-colors">Privacidad</a>
-					<a href="/terms" class="hover:text-ember transition-colors">Términos</a>
-				</div>
-			</div>
-		</div>
-	</footer>
+
 </main>
