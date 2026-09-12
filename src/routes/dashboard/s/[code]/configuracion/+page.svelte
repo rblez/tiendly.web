@@ -8,6 +8,7 @@
   { title: 'Comunicación', items: [['ri-whatsapp-line','Contacto','WhatsApp y recepción de pedidos','contacto'],['ri-share-line','Redes sociales','Conecta tus perfiles','redes'],['ri-map-pin-line','Información adicional','Ubicación, horario y enlaces','adicional']] },
   { title: 'Ventas', items: [['ri-exchange-dollar-line','Moneda','CUP y USD · dos tasas editables','moneda'],['ri-bank-card-line','Pagos','Métodos de cobro','pagos']] },
   { title: 'Cuenta', items: [['ri-vip-crown-line','Planes','Compara Gratis y Pro','planes'],['ri-user-line','Perfil','Nombre, teléfono y avatar','cuenta'],['ri-shield-keyhole-line','Seguridad','Contraseña y acceso','cuenta/seguridad'],['ri-notification-3-line','Notificaciones','Pedidos y avisos','notificaciones']] },
+  { title: 'Rendimiento', items: [['ri-speed-up-line','Rendimiento','Caché, almacenamiento y transferencia','rendimiento']] },
  ];
 </script>
 <svelte:head><title>Ajustes | Tiendly</title></svelte:head>
