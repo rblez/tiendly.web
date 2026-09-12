@@ -61,7 +61,7 @@
 	});
 </script>
 
-<div class="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+<div class="relative z-10 flex items-center justify-center">
 	<button type="button" class={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${statusConfig[status].className}`} onclick={() => (expanded = !expanded)} aria-expanded={expanded} aria-label={`Estado de Supabase: ${statusConfig[status].label}`}>
 		<i class={`${statusConfig[status].icon} text-sm`} aria-hidden="true"></i>
 		<span class="hidden sm:inline">{statusConfig[status].label}</span>

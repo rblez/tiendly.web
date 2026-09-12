@@ -28,22 +28,20 @@
 	<div class="flex flex-col min-h-screen" data-panel>
 		{#if storeCode && !isSettingsSubpage}
 			<header class="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-md">
-				<div class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-					<div data-tour="status"><SupabaseStatusNotch /></div>
-					<div class="flex min-w-0 items-center gap-2.5">
+				<div class="mx-auto grid h-16 max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
+					<div class="min-w-0">
 						<a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="flex min-w-0 items-center gap-2.5 text-ink no-underline" data-tour="store-edit" aria-label="Abrir perfil y cuenta">
-						<span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-card text-body transition-colors hover:border-ember hover:text-ember">
-							{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Avatar de tu cuenta" class="h-full w-full object-cover" />{:else}<i class="ri-user-line" style="font-size: 18px" aria-hidden="true"></i>{/if}
-						</span>
-						<span class="hidden min-w-0 sm:block"><span class="block truncate text-sm font-semibold">{auth.profile?.name ?? 'Mi cuenta'}</span><span class="block text-xs text-muted">Panel de vendedor</span></span>
-					</a>
-					<div class="flex shrink-0 items-center gap-2">
-						<a href={`/dashboard/s/${storeCode}/notificaciones`} data-tour="notifications" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-card text-body no-underline transition-colors hover:border-ember hover:text-ember" aria-label="Abrir notificaciones" title="Notificaciones">
-							<i class="ri-notification-3-line" style="font-size: 19px" aria-hidden="true"></i>
+							<span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-hairline bg-card text-body transition-colors hover:border-ember hover:text-ember">
+								{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Avatar de tu cuenta" class="h-full w-full object-cover" />{:else}<i class="ri-user-line" style="font-size: 18px" aria-hidden="true"></i>{/if}
+							</span>
+							<span class="hidden min-w-0 sm:block"><span class="block truncate text-sm font-semibold">{auth.profile?.name ?? 'Mi cuenta'}</span><span class="block text-xs text-muted">Panel de vendedor</span></span>
 						</a>
-						<span class="rounded-full border border-ember/20 bg-ember/10 px-3 py-1.5 text-xs font-semibold text-ember">{auth.plan === 'free' ? 'Gratis' : auth.plan}</span>
 					</div>
-					</div>
+					<div class="flex min-w-0 justify-center" data-tour="status"><SupabaseStatusNotch /></div>
+					<a href={`/dashboard/s/${storeCode}/notificaciones`} data-tour="notifications" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-card text-body no-underline transition-colors hover:border-ember hover:text-ember" aria-label="Abrir notificaciones" title="Notificaciones">
+						<i class="ri-notification-3-line" style="font-size: 19px" aria-hidden="true"></i>
+					</a>
+					<span class="whitespace-nowrap rounded-full border border-ember/20 bg-ember/10 px-3 py-1.5 text-xs font-semibold text-ember">{auth.plan === 'free' ? 'Gratis' : auth.plan}</span>
 				</div>
 			</header>
 		{/if}
