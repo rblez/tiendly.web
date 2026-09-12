@@ -18,7 +18,7 @@
 	let claimed = $state(false);
 
 	async function afterAuth() {
-		await goto('/dashboard');
+		await goto('/wizard');
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -31,7 +31,7 @@
 			password,
 			options: {
 			data: { name: name.trim() },
-			emailRedirectTo: `${location.origin}/auth/callback?next=/dashboard`,
+			emailRedirectTo: `${location.origin}/auth/callback?next=/wizard`,
 		},
 		});
 		loading = false;
