@@ -27,7 +27,7 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-[10px]" role="dialog" aria-modal="true" aria-label="Recortar imagen">
+<div class="fixed inset-0 z-[90] isolate flex items-center justify-center bg-ink/90 p-4 backdrop-blur-[12px]" role="dialog" aria-modal="true" aria-label="Recortar imagen">
 	<div class="w-full max-w-md rounded-card border border-hairline bg-card p-5 shadow-xl">
 		<h2 class="text-lg font-bold text-ink">Ajustar imagen</h2>
 		<p class="mt-1 text-sm text-muted">Recorta y ajusta el encuadre antes de subirla.</p>
@@ -45,5 +45,5 @@
 	</div>
 </div>
 
-{#if processing}<div class="fixed inset-0 z-[60] flex items-center justify-center bg-ink/30 backdrop-blur-md" aria-live="polite"><div class="rounded-btn bg-card px-5 py-4 text-sm font-medium text-ink"><i class="ri-loader-4-line mr-2 animate-spin"></i>Subiendo imagen...</div></div>{/if}
+{#if processing}<div class="fixed inset-0 z-[100] flex items-center justify-center bg-ink/90 backdrop-blur-md" aria-live="polite"><div class="rounded-btn bg-card px-5 py-4 text-sm font-medium text-ink"><i class="ri-loader-4-line mr-2 animate-spin"></i>Subiendo imagen...</div></div>{/if}
 <style>img { transition: transform 180ms ease; }</style>
