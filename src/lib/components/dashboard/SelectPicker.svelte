@@ -20,8 +20,8 @@
 	const current = $derived(options.find((o) => o.value === (value ?? ''))?.label ?? value ?? '');
 	const triggerClass = $derived(
 		variant === 'pill'
-			? `select-pill select-pill-sm flex items-center justify-between gap-2 cursor-pointer select-none ${cls}`
-			: `input flex items-center justify-between gap-2 cursor-pointer select-none ${cls}`
+			? `select-pill select-pill-sm flex items-center justify-between gap-1.5 cursor-pointer select-none ${cls}`
+			: `input flex items-center justify-between gap-1.5 cursor-pointer select-none ${cls}`
 	);
 
 	function bodyScrollLock(node: HTMLElement) {
@@ -40,7 +40,7 @@
 	aria-expanded={open}
 >
 	<span class="truncate">{current}</span>
-	<i class="ri-arrow-down-s-line text-muted shrink-0" aria-hidden="true"></i>
+	<i class="ri-arrow-down-s-line text-sm leading-none text-muted shrink-0" aria-hidden="true"></i>
 </button>
 
 {#if open}

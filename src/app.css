@@ -231,9 +231,9 @@ input[type='color']::-webkit-color-swatch {
 
 
 .select-pill-sm {
-	padding: 0.35rem 1.75rem 0.35rem 0.75rem;
-	font-size: 0.75rem;
-}
+  padding: 0.35rem 0.9rem 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  }
 
 select option {
 	background-color: var(--color-card);
