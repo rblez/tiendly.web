@@ -8,6 +8,8 @@ declare global {
 		}
 		interface Locals {
 			supabase: SupabaseClient<Database>;
+			/** Bypass de solo-desarrollo local para navegar el panel sin backend. */
+			localPanelBypass: boolean;
 		}
 	}
 }

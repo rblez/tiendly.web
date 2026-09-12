@@ -29,6 +29,34 @@ import type { Profile } from '$lib/types';
 		if (!error && data) profile = data as Profile;
 	}
 
+/**
+ * Hidrata una sesión falsa para poder navegar el panel en desarrollo local
+ * sin backend. Nunca hace peticiones de red y nunca se llama en producción:
+ * solo se invoca desde el layout del dashboard cuando el bypass explícito
+ * de desarrollo está activo.
+ */
+function hydrateLocalDemoSession(userId: string) {
+	if (initialized) return;
+	initialized = true;
+	session = {
+		access_token: 'demo-local',
+		refresh_token: 'demo-local',
+		expires_in: 3600,
+		token_type: 'bearer',
+		user: { id: userId, email: 'demo-local@tiendly.lat' },
+	} as unknown as Session;
+	plan = 'estandar';
+	profile = {
+		id: userId,
+		name: 'Cuenta de prueba',
+		phone: '+53 5555 5555',
+		avatar_url: null,
+		plan: 'estandar',
+		created_at: new Date().toISOString(),
+	};
+	ready = true;
+}
+
 function init() {
 	if (initialized) return;
 	initialized = true;
@@ -73,4 +101,5 @@ export const auth = {
 	refresh,
 	signOut,
 	updateProfile,
+	hydrateLocalDemoSession,
 };
