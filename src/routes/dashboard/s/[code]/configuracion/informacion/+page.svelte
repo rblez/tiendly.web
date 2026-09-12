@@ -64,10 +64,10 @@
 {:else}
 	<div class="max-w-2xl mx-auto px-4 py-6 space-y-4">
 		<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
-			<h2 class="text-base font-semibold text-ink">Nombre y usuario</h2>
+			<h2 class="text-base font-semibold text-ink">Nombre de la tienda y usuario</h2>
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 				<div>
-					<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre</label>
+					<label for="s-name" class="block text-sm font-medium text-body mb-1.5">Nombre de la tienda</label>
 					<input id="s-name" type="text" bind:value={name} class="input w-full" />
 				</div>
 				<div>
@@ -89,7 +89,7 @@
 			<textarea id="s-desc" bind:value={description} rows="6" class="input min-h-36 w-full resize-y" aria-label="Descripción de la tienda"></textarea>
 		</div>
 
-		<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
+		<div id="categorias" class="bg-card border border-hairline rounded-card p-5 space-y-4">
 			<div>
 				<h2 class="text-base font-semibold text-ink">Nicho</h2>
 				<p class="mt-1 text-xs text-muted-soft">Selecciona la categoría principal de tu tienda.</p>
