@@ -1449,7 +1449,7 @@ async function duplicateProduct(p: Product) {
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-5 mb-5">
 				<div class="flex items-center justify-between mb-4">
 					<div class="flex items-center gap-3">
-						<h2 class="text-sm font-semibold text-ink">Visitas por día · 7 días</h2>
+						<h2 class="text-sm font-semibold text-ink">Visitas por d��a · 7 días</h2>
 						<button onclick={openQrModal} class="text-xs font-medium text-ember hover:text-ember-active cursor-pointer">
 							Código QR
 						</button>
@@ -1582,8 +1582,8 @@ async function duplicateProduct(p: Product) {
 					/>
 				</div>
 				<button
-					onclick={openNewProduct}
-					class="btn btn-3d btn-md shrink-0"
+onclick={openNewProduct}
+				data-tour="add-product" class="btn btn-3d btn-md shrink-0"
 				>
 					Nuevo producto
 				</button>
@@ -2069,7 +2069,7 @@ async function duplicateProduct(p: Product) {
 							<i class="ri-coupon-3-line"></i>
 						</span>
 						<p class="font-semibold text-ink mb-1">Aún no tienes cupones</p>
-						<p class="text-sm text-muted-soft max-w-sm mx-auto">Crea tu primer cupón para regalar descuentos y atraer más pedidos.</p>
+						<p class="text-sm text-muted-soft max-w-sm mx-auto">Crea tu primer cup��n para regalar descuentos y atraer más pedidos.</p>
 					</div>
 				{:else}
 					<ul class="space-y-2.5">
