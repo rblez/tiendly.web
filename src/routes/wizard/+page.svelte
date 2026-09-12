@@ -2,528 +2,93 @@
 	import { supabase } from '$lib/supabase/client';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ensureUniqueSlug, fileToDataUrl, generateStoreCode, parsePrice, slugify, uniqueProductId, uploadImage } from '$lib/utils';
+	import { ensureUniqueSlug, generateStoreCode, parsePrice, slugify, uniqueProductId, uploadImage } from '$lib/utils';
 	import { PLAN_MAP } from '$lib/plans';
 	import { STORE_CATEGORIES } from '$lib/categories';
 	import ImageCropper from '$lib/components/ImageCropper.svelte';
 
-	type WizardProduct = {
-		name: string;
-		price: string;
-		images: string[];
-	};
+	type WizardProduct = { name: string; price: string; images: string[] };
+	type PaymentMethod = { id: string; title: string; currency: 'CUP' | 'USD' | 'ambas'; fields: { id: string; label: string; value: string }[]; instructions: string | null; proof_type: 'captura' | 'captura_y_tx' | 'hash' | 'ninguno' };
+	type PaymentTemplate = { id: string; title: string; currency: 'CUP' | 'USD'; labels: string[]; proof_type: PaymentMethod['proof_type'] };
+
+	const PAYMENT_TEMPLATES: PaymentTemplate[] = [
+		{ id: 'zelle', title: 'Zelle', currency: 'USD', labels: ['Titular', 'Correo o teléfono'], proof_type: 'captura' },
+		{ id: 'transferencia_cup', title: 'Transferencia CUP', currency: 'CUP', labels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
+		{ id: 'paypal', title: 'PayPal', currency: 'USD', labels: ['Titular', 'Correo de PayPal'], proof_type: 'captura' },
+		{ id: 'qvapay', title: 'Qvapay', currency: 'USD', labels: ['Usuario o correo de QvaPay'], proof_type: 'captura_y_tx' },
+		{ id: 'saldo_movil', title: 'Saldo Móvil', currency: 'CUP', labels: ['Número de teléfono'], proof_type: 'captura' },
+		{ id: 'usdt', title: 'USDT', currency: 'USD', labels: ['Red', 'Dirección de wallet'], proof_type: 'hash' },
+		{ id: 'efectivo', title: 'Efectivo', currency: 'CUP', labels: ['Instrucciones'], proof_type: 'ninguno' }
+	];
+	const DELIVERY_OPTIONS = [{ value: 'both', label: 'Domicilio y recogida en local' }, { value: 'delivery', label: 'Solo domicilio' }, { value: 'pickup', label: 'Solo recogida' }];
+	const STEP_META = [
+		{ title: '¿Cómo se llama tu tienda?', desc: 'Define el nombre y el link público.', short: 'Nombre y link' },
+		{ title: '¿A qué se dedica tu tienda?', desc: 'Elige la categoría que mejor la describa.', short: 'Categoría' },
+		{ title: '¿Cómo recibirás pedidos?', desc: 'Elige el flujo de compra y tus datos de contacto.', short: 'Pedidos' },
+		{ title: 'Moneda y entrega', desc: 'Estos valores quedan visibles y editables para ti.', short: 'Moneda' },
+		{ title: 'Agrega productos', desc: 'Puedes añadirlos ahora o hacerlo después desde tu panel.', short: 'Productos' }
+	];
 
 	let step = $state(1);
-
-	let name = $state('');
-	let slug = $state('');
-	let description = $state('');
-	let category = $state('');
-	let whatsapp = $state('');
-	let products = $state<WizardProduct[]>([{ name: '', price: '', images: [] }]);
-	let uploadingImages = $state(0);
-	let cropFile = $state<File | null>(null);
-	let cropProductIndex = $state<number | null>(null);
-	let cropQueue = $state<File[]>([]);
-
-	let error = $state('');
-	let creating = $state(false);
-	let atLimit = $state(false);
-	let limitLoading = $state(true);
-
-	let slugStatus = $state<'idle' | 'checking' | 'available' | 'taken'>('idle');
-	let slugTimer: ReturnType<typeof setTimeout> | undefined;
-
-	const STEP_META = [
-		{ title: '¿Cómo se llama tu tienda?', desc: 'Solo el nombre y tu link. Lo demás se configura después.', short: 'Nombre y link' },
-		{ title: '¿A qué se dedica tu tienda?', desc: 'Elige la categoría que mejor la describa para que te encuentren.', short: 'Categoría' },
-		{ title: '¿Dónde te escriben?', desc: 'Los pedidos llegarán directo a tu WhatsApp.', short: 'WhatsApp' },
-		{ title: 'Agrega tus primeros productos', desc: 'Nombre y precio. Foto opcional, detalles después.', short: 'Productos' },
-	];
+	let name = $state(''); let slug = $state(''); let description = $state(''); let category = $state('');
+	let action = $state<'manual' | 'whatsapp'>('manual'); let whatsapp = $state('');
+	let exchangeCash = $state('650'); let exchangeTransfer = $state('980'); let deliveryMode = $state<'pickup' | 'delivery' | 'both'>('both');
+	let payments = $state<PaymentMethod[]>([]); let products = $state<WizardProduct[]>([{ name: '', price: '', images: [] }]);
+	let slugStatus = $state<'idle' | 'checking' | 'available' | 'taken'>('idle'); let slugTimer: ReturnType<typeof setTimeout> | undefined;
+	let error = $state(''); let creating = $state(false); let atLimit = $state(false); let limitLoading = $state(true);
+	let cropFile = $state<File | null>(null); let cropProductIndex = $state<number | null>(null); let uploadingImages = $state(0);
 
 	$effect(() => {
 		auth.init();
+		if (!auth.ready) return;
 		if (!auth.session) { goto('/signup?next=/wizard'); return; }
-		if (!auth.ready) {
-			limitLoading = false;
-			return;
-		}
-		(async () => {
-			const { count } = await supabase.from('stores').select('id', { count: 'exact', head: true }).eq('owner_id', auth.session!.user.id);
-			atLimit = auth.plan === 'free' && (count ?? 0) >= 1;
-			limitLoading = false;
-		})();
+		(async () => { const { count } = await supabase.from('stores').select('id', { count: 'exact', head: true }).eq('owner_id', auth.session!.user.id); atLimit = auth.plan === 'free' && (count ?? 0) >= 1; limitLoading = false; })();
 	});
-
 	let canContinue = $derived.by(() => {
-		if (step === 1) return name.trim().length > 0 && slug.trim().length >= 3;
-		if (step === 2) return category.length > 0;
+		if (step === 1) return name.trim().length > 0 && slug.trim().length >= 3 && slugStatus !== 'taken';
+		if (step === 2) return !!category;
+		if (step === 3) return action === 'manual' ? payments.length > 0 : whatsapp.trim().length >= 7;
+		if (step === 4) return Number(exchangeCash) > 0 && Number(exchangeTransfer) > 0;
 		return true;
 	});
-
-	const slugHint = $derived(slug.trim().length > 0 && slug.trim().length < 3 ? 'El link necesita al menos 3 caracteres.' : '');
-
-	async function checkSlugAvailability() {
-		const s = slug.trim();
-		if (s.length < 3) {
-			slugStatus = 'idle';
-			return;
-		}
-		const { data } = await supabase.from('stores').select('id').eq('slug', s).maybeSingle();
-		slugStatus = data ? 'taken' : 'available';
-	}
-
-	function onSlugInput() {
-		slug = slugify(slug);
-		clearTimeout(slugTimer);
-		if (slug.trim().length < 3) {
-			slugStatus = 'idle';
-			return;
-		}
-		slugStatus = 'checking';
-		slugTimer = setTimeout(checkSlugAvailability, 500);
-	}
-
-	function addProduct() {
-		const limit = auth.session ? (PLAN_MAP[auth.plan]?.limitProducts ?? 10) : 10;
-		if (products.length < limit) {
-			products = [...products, { name: '', price: '', images: [] }];
-		}
-	}
-
-	function removeProduct(index: number) {
-		products = products.filter((_, i) => i !== index);
-	}
-
-	function handleProductImages(e: Event, index: number) {
-		const input = e.target as HTMLInputElement;
-		const files = Array.from(input.files ?? []);
-		if (files.length === 0) return;
-		error = '';
-		cropProductIndex = index;
-		cropQueue = files.slice(1);
-		cropFile = files[0];
-		input.value = '';
-	}
-
-	async function confirmProductCrop(file: File) {
-		const index = cropProductIndex;
-		cropFile = null;
-		if (index === null) return;
-		uploadingImages += 1;
-		try {
-			const image = auth.session ? await uploadImage(file, "product") : await fileToDataUrl(file);
-			products[index].images = [...products[index].images, image];
-			if (cropQueue.length > 0) {
-				cropFile = cropQueue[0];
-				cropQueue = cropQueue.slice(1);
-			}
-		} catch {
-			error = 'No se pudieron subir las imágenes.';
-			cropQueue = [];
-		} finally {
-			uploadingImages -= 1;
-		}
-	}
-
-	function cancelProductCrop() {
-		cropFile = null;
-		cropQueue = [];
-		cropProductIndex = null;
-	}
-
-	function removeProductImage(index: number, imgIndex: number) {
-		products[index].images = products[index].images.filter((_, i) => i !== imgIndex);
-	}
-
-	function updateProduct(index: number, key: keyof WizardProduct, value: unknown) {
-		products[index] = { ...products[index], [key]: value };
-	}
-
+	function onSlugInput() { slug = slugify(slug); clearTimeout(slugTimer); if (slug.length < 3) { slugStatus = 'idle'; return; } slugStatus = 'checking'; slugTimer = setTimeout(async () => { const { data } = await supabase.from('stores').select('id').eq('slug', slug).maybeSingle(); slugStatus = data ? 'taken' : 'available'; }, 400); }
+	function addPayment(template: PaymentTemplate) { if (payments.some((p) => p.title === template.title)) return; payments = [...payments, { id: crypto.randomUUID(), title: template.title, currency: template.currency, fields: template.labels.map((label) => ({ id: crypto.randomUUID(), label, value: '' })), instructions: null, proof_type: template.proof_type }]; }
+	function removePayment(index: number) { payments = payments.filter((_, i) => i !== index); }
+	function addProduct() { const limit = PLAN_MAP[auth.plan]?.limitProducts ?? 10; if (products.length < limit) products = [...products, { name: '', price: '', images: [] }]; }
+	function removeProduct(index: number) { products = products.filter((_, i) => i !== index); }
+	function updateProduct(index: number, key: keyof WizardProduct, value: unknown) { products[index] = { ...products[index], [key]: value }; }
+	async function handleProductImages(e: Event, index: number) { const file = (e.target as HTMLInputElement).files?.[0]; if (!file) return; cropProductIndex = index; cropFile = file; (e.target as HTMLInputElement).value = ''; }
+	async function confirmProductCrop(file: File) { if (cropProductIndex === null) return; uploadingImages++; try { const image = await uploadImage(file, 'product'); products[cropProductIndex].images = [...products[cropProductIndex].images, image]; products = [...products]; } finally { uploadingImages--; cropFile = null; cropProductIndex = null; } }
+	function cancelProductCrop() { cropFile = null; cropProductIndex = null; }
 	async function createStore() {
-		error = '';
-		creating = true;
+		error = ''; creating = true;
 		try {
 			const uniqueSlug = await ensureUniqueSlug(slug);
-			slug = uniqueSlug;
-
-			const buildProducts = (storeId: string) => {
-				const ids = new Set<string>();
-				return products
-					.filter((p) => p.name.trim() && p.price.trim())
-					.map((p, i) => {
-						const id = uniqueProductId(p.name.trim(), ids);
-						ids.add(id);
-						return {
-							id,
-							store_id: storeId,
-							name: p.name.trim(),
-							description: null,
-							price: parsePrice(p.price),
-							currency: 'CUP',
-							category: 'General',
-							agotado: false,
-							bajo_pedido: false,
-							active: true,
-							variants: [],
-							images: p.images.filter((img) => !img.startsWith('data:')),
-							image: (p.images.find((img) => !img.startsWith('data:')) ?? null),
-							position: i,
-						};
-					});
-			};
-
-			if (auth.session) {
-				const { data: store, error: storeError } = await supabase
-					.from('stores')
-					.insert({
-						owner_id: auth.session.user.id,
-						name: name.trim(),
-						slug: uniqueSlug,
-						code: generateStoreCode(),
-						category,
-						description: description.trim() || null,
-						whatsapp: whatsapp.trim() || null,
-							theme_color: '#22c55e',
-							currency: 'CUP',
-							exchange_rate: 980,
-							exchange_rates: { USD: 980 },
-						})
-					.select('id, code')
-					.single();
-
-				if (storeError) throw storeError;
-
-				const validProducts = buildProducts(store.id);
-				if (validProducts.length > 0) {
-					const { error: productsError } = await supabase.from('products').insert(validProducts);
-					if (productsError) throw productsError;
-				}
-
-					goto(`/dashboard/s/${store.code}?created=1`);
-				}
-			} catch (e) {
-			console.error('wizard createStore:', e);
-			error = friendlyStoreError(e);
-		} finally {
-			creating = false;
-		}
+			const { data: store, error: storeError } = await supabase.from('stores').insert({ owner_id: auth.session!.user.id, name: name.trim(), slug: uniqueSlug, code: generateStoreCode(), category, description: description.trim() || null, whatsapp: whatsapp.trim() || null, theme_color: '#22c55e', currency: 'USD', exchange_rate: Number(exchangeTransfer), exchange_rates: { CUP: Number(exchangeTransfer), CUP_EFECTIVO: Number(exchangeCash), CUP_TRANSFERENCIA: Number(exchangeTransfer) }, action, payments: action === 'manual' ? payments : [], delivery: { enabled: true, mode: deliveryMode, zones: [], request_other_zone: true, note: null } }).select('id, code').single();
+			if (storeError) throw storeError;
+			const ids = new Set<string>();
+			const validProducts = products.filter((p) => p.name.trim() && p.price.trim()).map((p, i) => ({ id: uniqueProductId(p.name.trim(), ids), store_id: store.id, name: p.name.trim(), description: null, price: parsePrice(p.price), currency: 'USD', category: 'General', agotado: false, bajo_pedido: false, active: true, variants: [], images: p.images, image: p.images[0] ?? null, position: i }));
+			if (validProducts.length) { const { error: productsError } = await supabase.from('products').insert(validProducts); if (productsError) throw productsError; }
+			goto(`/dashboard/s/${store.code}?created=1`);
+		} catch (e) { error = e instanceof Error ? `No se pudo crear tu tienda: ${e.message}` : 'No se pudo crear tu tienda. Inténtalo de nuevo.'; } finally { creating = false; }
 	}
-
-	function isNetworkError(e: unknown): boolean {
-		if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
-		const msg = (e instanceof Error ? e.message : String(e ?? '')).toLowerCase();
-		// Errores reales de red: fetch abortado, DNS caído, sin conexión, etc.
-		return /failed to fetch|network ?error|network request failed|load failed|err_internet|err_network|err_connection|timeout|timed out/i.test(msg);
-	}
-
-	function friendlyStoreError(e: unknown): string {
-		const rawMsg = e instanceof Error ? e.message : typeof e === 'string' ? e : '';
-		const msg = rawMsg.trim();
-
-		// 1) Link duplicado
-		if (/link ya est[áa] en uso/i.test(msg) || /already exists/i.test(msg) || /duplicate|unique constraint|unique violation/i.test(msg)) {
-			return 'Ese link ya está en uso. Elige otro en el paso 1.';
-		}
-		// 2) Permisos / RLS
-		if (/RLS|row-level security|permission denied|not authorized|violates .* policy/i.test(msg)) {
-			return 'No se pudo guardar la tienda por un problema de permisos. Intenta de nuevo en unos segundos.';
-		}
-		// 3) Conexión real (solo cuando de verdad es un error de red)
-		if (isNetworkError(e)) {
-			return 'Parece que se perdió la conexión. Revisa tu internet e inténtalo de nuevo.';
-		}
-		// 4) Error real desconocido: mostrarlo en vez de fingir que es "sin internet"
-		return msg
-			? `No se pudo crear tu tienda: ${msg}`
-			: 'No se pudo crear tu tienda. Inténtalo de nuevo.';
-	}
-
-	function next() {
-		error = '';
-		if (step < 4) step += 1;
-	}
+	function next() { error = ''; if (step < 5) step += 1; }
 </script>
 
-<svelte:head>
-	<title>Nueva tienda | Tiendly</title>
-</svelte:head>
-
+<svelte:head><title>Nueva tienda | Tiendly</title></svelte:head>
 <section class="max-w-lg mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col min-h-dvh">
-	<div class="flex justify-center mb-10">
-		<a href="/" aria-label="Tiendly">
-			<img src="/tiendly-logo.webp" alt="Tiendly" class="h-9 object-contain" />
-		</a>
-	</div>
-
-	{#if atLimit}
-		<div class="text-center py-16 bg-card border border-hairline rounded-card">
-			<div class="w-16 h-16 bg-ember/10 rounded-full flex items-center justify-center mx-auto mb-4">
-				<span class="text-2xl font-black text-ember">1</span>
-			</div>
-			<h1 class="text-2xl font-black text-ink mb-2">Llegaste al límite del plan Gratis</h1>
-			<p class="text-body mb-2">El plan Gratis incluye 1 tienda. Ya tienes una en Tiendly.</p>
-			<p class="text-xs text-muted-soft mb-8">Puedes eliminar o duplicar tus tiendas desde el menú ⋮ en tu panel.</p>
-			<a
-				href="/dashboard"
-				class="btn btn-3d btn-md no-underline"
-			>
-				Volver a mis tiendas
-			</a>
-		</div>
-	{:else if limitLoading}
-		<div class="flex items-center justify-center py-32">
-			<span class="h-8 w-8 border-[3px] border-ember/25 border-t-ember rounded-full animate-spin"></span>
-		</div>
-	{:else}
-		<div class="mb-8">
-			<p class="text-xs font-semibold text-ember uppercase tracking-wide mb-2">Paso {step} de 4</p>
-			<h1 class="text-2xl sm:text-3xl font-black text-ink leading-tight">{STEP_META[step - 1].title}</h1>
-			<p class="text-sm text-muted mt-2">{STEP_META[step - 1].desc}</p>
-		</div>
-
-		{#if !auth.session}
-			<div class="flex items-center gap-2.5 bg-ember/10 border border-ember/20 rounded-card px-4 py-3 mb-6 text-sm text-body">
-				<i class="ri-eye-line text-ember flex-shrink-0"></i>
-				<span>Verás tu tienda en vista previa por 10 minutos. Crea tu cuenta gratis para activarla.</span>
-			</div>
-		{/if}
-
-		<!-- Progress -->
-		<div class="flex items-center gap-2 mb-8">
-			{#each STEP_META as meta, i}
-				<div class="flex items-center gap-2 flex-1">
-					<div class="flex items-center gap-2">
-						<span
-							class={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-								i < step ? 'bg-ember text-white' : 'bg-bone text-muted-soft'
-							}`}
-						>
-							{#if i < step - 1}
-								✓
-							{:else}
-								{i + 1}
-							{/if}
-						</span>
-						<span class={`hidden sm:block text-xs font-semibold ${i <= step - 1 ? 'text-ink' : 'text-muted-soft'}`}>
-							{meta.short}
-						</span>
-					</div>
-					{#if i < STEP_META.length - 1}
-						<div class={`flex-1 h-px transition-colors ${i < step - 1 ? 'bg-ember' : 'bg-hairline'}`}></div>
-					{/if}
-				</div>
-			{/each}
-		</div>
-
-		{#key step}
-			<div class="step-enter flex-1">
-				{#if step === 1}
-				<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-					<div class="space-y-5">
-						<div>
-							<label for="store-name" class="block text-sm font-medium text-body mb-1.5">Nombre de la tienda</label>
-							<!-- svelte-ignore a11y_autofocus -->
-							<input
-								id="store-name"
-								type="text"
-								bind:value={name}
-								placeholder="Ej: Dulces de Ana"
-								autofocus
-								class="input"
-							/>
-						</div>
-						<div>
-							<label for="store-slug" class="block text-sm font-medium text-body mb-1.5">Tu link</label>
-							<div class="relative">
-								<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft select-none">@</span>
-								<input
-									id="store-slug"
-									type="text"
-									bind:value={slug}
-									oninput={onSlugInput}
-									placeholder="username"
-									class="w-full pl-7 pr-3.5 py-2.5 bg-canvas border border-hairline rounded-btn text-sm text-ink placeholder:text-muted-soft focus:outline-none focus:border-ember focus:ring-2 focus:ring-ember/20 transition-all"
-								/>
-							</div>
-							<div class="flex items-center gap-1.5 mt-1.5">
-								<p class="text-xs text-muted-soft">tiendly.lat/@<span class="font-medium text-body">{slug || 'tu-tienda'}</span></p>
-								{#if slugStatus === 'checking'}
-									<span class="text-xs text-muted-soft">Revisando…</span>
-								{:else if slugStatus === 'available'}
-									<span class="inline-flex items-center gap-0.5 text-xs font-medium text-success"><i class="ri-check-line"></i> Disponible</span>
-								{:else if slugStatus === 'taken'}
-									<span class="inline-flex items-center gap-0.5 text-xs font-medium text-error"><i class="ri-close-line"></i> Ya está en uso</span>
-								{/if}
-							</div>
-							{#if slugHint}
-								<p class="text-xs text-warning mt-1">{slugHint}</p>
-							{/if}
-						</div>
-						<div>
-							<label for="store-desc" class="block text-sm font-medium text-body mb-1.5">
-								Descripción corta <span class="text-muted-soft">(opcional)</span>
-							</label>
-							<textarea
-								id="store-desc"
-								bind:value={description}
-								rows="2"
-								placeholder="Ej: Dulces artesanales y repostería por encargo"
-								class="input resize-none"
-							></textarea>
-							<p class="text-xs text-muted-soft mt-1.5">Aparece en tu tienda y en el directorio público.</p>
-						</div>
-					</div>
-				</div>
-			{:else if step === 2}
-				<div class="relative -mr-1 pr-1">
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[42dvh] sm:max-h-none overflow-y-auto sm:overflow-visible scroll-thin overscroll-contain">
-						{#each STORE_CATEGORIES as c}
-							<button
-								type="button"
-								onclick={() => (category = c.name)}
-								aria-pressed={category === c.name}
-								class={`relative text-left px-4 py-3 rounded-btn border transition-colors cursor-pointer ${
-									category === c.name ? 'border-ember bg-ember/10' : 'border-hairline bg-bone hover:border-ember/40'
-								}`}
-							>
-								<span class="block text-sm font-semibold text-ink pr-5">{c.name}</span>
-								<span class="block text-xs text-muted mt-0.5 leading-snug">{c.desc}</span>
-								{#if category === c.name}
-									<span class="absolute top-3 right-3 h-4.5 w-4.5 min-h-[18px] min-w-[18px] flex items-center justify-center rounded-full bg-ember text-white">
-										<i class="ri-check-line text-[10px]"></i>
-									</span>
-								{/if}
-							</button>
-						{/each}
-					</div>
-				</div>
-				<p class="text-xs text-muted-soft mt-3 sm:hidden">Desliza para ver más categorías.</p>
-				<p class="text-xs text-muted-soft mt-3">Puedes cambiarla después desde el panel de tu tienda.</p>
-			{:else if step === 3}
-				<div class="bg-card border border-hairline rounded-card p-6 sm:p-8">
-					<label for="store-wa" class="block text-sm font-medium text-body mb-1.5">Número de WhatsApp</label>
-					<!-- svelte-ignore a11y_autofocus -->
-					<input
-						id="store-wa"
-						type="tel"
-						bind:value={whatsapp}
-						placeholder="Ej: +53 5 1234567"
-						autofocus
-						class="input"
-					/>
-					<p class="text-xs text-muted-soft mt-1.5">Cada pedido llega directo a este número. Puedes cambiarlo después.</p>
-				</div>
-			{:else}
-				<div class="space-y-4">
-					{#each products as product, i}
-						<div class="bg-card border border-hairline rounded-card p-5 space-y-4">
-							<div class="flex items-center justify-between">
-								<span class="inline-flex items-center gap-2 text-xs font-semibold text-muted">
-									<span class="h-6 w-6 flex items-center justify-center rounded-full bg-ember/10 text-ember">{i + 1}</span>
-									Producto
-								</span>
-								{#if products.length > 1}
-									<button onclick={() => removeProduct(i)} class="text-xs font-semibold text-muted-soft hover:text-error transition-colors cursor-pointer" aria-label="Quitar producto">
-										Quitar
-									</button>
-								{/if}
-							</div>
-
-							<div class="flex items-start gap-4">
-								<div class="flex-shrink-0">
-									<div class="h-20 w-20 rounded-btn overflow-hidden bg-canvas border border-hairline flex items-center justify-center">
-										{#if product.images.length > 0}
-											<img src={product.images[0]} alt={`Foto de ${product.name || `producto ${i + 1}`}`} width="80" height="80" class="w-full h-full object-cover" loading="lazy" decoding="async" />
-										{:else}
-											<span class="text-[10px] font-semibold text-muted-soft uppercase">Sin foto</span>
-										{/if}
-									</div>
-									<label class="mt-2 block text-xs font-medium text-ember hover:text-ember-active transition-colors cursor-pointer">
-										{product.images.length > 0 ? 'Cambiar foto' : 'Subir foto'}
-										<input type="file" accept="image/*" multiple class="hidden" onchange={(e) => handleProductImages(e, i)} />
-									</label>
-								</div>
-
-								<div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
-									<div class="sm:col-span-2">
-										<input
-											type="text"
-											value={product.name}
-											oninput={(e) => updateProduct(i, 'name', (e.target as HTMLInputElement).value)}
-											placeholder="Nombre (Ej: Pastel de chocolate)"
-											class="input"
-										/>
-									</div>
-									<input
-										type="text"
-										value={product.price}
-										oninput={(e) => updateProduct(i, 'price', (e.target as HTMLInputElement).value)}
-										placeholder="Precio (Ej: 500)"
-										class="input"
-									/>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-
-				<button
-					onclick={addProduct}
-					class="mt-4 w-full px-4 py-3 border border-dashed border-hairline rounded-btn text-sm font-medium text-body hover:border-ember/50 hover:text-ember transition-colors cursor-pointer"
-				>
-					Agregar otro producto
-				</button>
-			{/if}
-			</div>
-		{/key}
-
-		{#if error}
-			<div class="mt-5 flex items-start gap-2 bg-error/10 border border-error/20 rounded-btn px-3.5 py-3 text-xs text-error">
-				<i class="ri-error-warning-line mt-0.5 flex-shrink-0"></i>
-				<span>{error}</span>
-			</div>
-		{/if}
-
-		<div class="sticky bottom-0 z-10 -mx-4 sm:mx-0 mt-6 bg-canvas/95 backdrop-blur-md px-4 sm:px-0 pt-4 pb-1 sm:pb-0">
-			<div class="flex items-center gap-3">
-				{#if step > 1}
-					<button
-						onclick={() => { step -= 1; error = ''; }}
-						class="inline-flex items-center gap-1.5 px-5 py-3 border border-hairline text-body rounded-btn text-sm font-medium transition-colors hover:bg-bone cursor-pointer"
-					>
-						<i class="ri-arrow-left-line text-base"></i>
-						Atrás
-					</button>
-				{/if}
-				{#if step < 4}
-					<button
-						onclick={next}
-						disabled={!canContinue}
-						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
-					>
-						Continuar
-						<i class="ri-arrow-right-line ml-1"></i>
-					</button>
-				{:else}
-					<button
-						onclick={createStore}
-						disabled={creating}
-						class="btn btn-3d btn-md flex-1 disabled:opacity-40 disabled:cursor-not-allowed"
-					>
-						{#if creating}
-							<span class="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
-							Creando tu tienda...
-						{:else}
-							<i class="ri-rocket-2-line"></i>
-							Crear mi tienda
-						{/if}
-					</button>
-				{/if}
-			</div>
-		</div>
+	<div class="flex justify-center mb-10"><a href="/" aria-label="Tiendly"><img src="/tiendly-logo.webp" alt="Tiendly" class="h-9 object-contain" /></a></div>
+	{#if atLimit}<div class="text-center py-16 bg-card border border-hairline rounded-card"><h1 class="text-2xl font-black text-ink mb-2">Ya tienes tu tienda creada</h1><p class="text-body mb-8">El plan Gratis incluye una tienda.</p><a href="/dashboard" class="btn btn-3d btn-md no-underline">Ir al panel</a></div>
+	{:else if limitLoading}<div class="flex items-center justify-center py-32"><span class="h-8 w-8 border-[3px] border-ember/25 border-t-ember rounded-full animate-spin"></span></div>
+	{:else}<div class="mb-8"><p class="text-xs font-semibold text-ember uppercase tracking-wide mb-2">Paso {step} de 5</p><h1 class="text-2xl sm:text-3xl font-black text-ink leading-tight">{STEP_META[step - 1].title}</h1><p class="text-sm text-muted mt-2">{STEP_META[step - 1].desc}</p></div>
+		<div class="flex items-center gap-2 mb-8">{#each STEP_META as meta, i}<div class="flex items-center gap-2 flex-1"><span class={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold ${i < step ? 'bg-ember text-white' : 'bg-bone text-muted-soft'}`}>{i < step - 1 ? '✓' : i + 1}</span><span class="hidden sm:block text-xs font-semibold text-muted">{meta.short}</span>{#if i < 4}<div class={`flex-1 h-px ${i < step - 1 ? 'bg-ember' : 'bg-hairline'}`}></div>{/if}</div>{/each}</div>
+		{#if step === 1}<div class="bg-card border border-hairline rounded-card p-6 space-y-5"><label class="block text-sm font-medium text-body">Nombre de la tienda<input bind:value={name} class="input mt-1.5" placeholder="Ej: Dulces de Ana" /></label><label class="block text-sm font-medium text-body">Tu link<div class="relative mt-1.5"><span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-soft">@</span><input bind:value={slug} oninput={onSlugInput} class="input pl-7" placeholder="username" /></div><span class="text-xs text-muted-soft">tiendly.lat/@{slug || 'tu-tienda'} {#if slugStatus === 'available'}<span class="text-success"> Disponible</span>{:else if slugStatus === 'taken'}<span class="text-error"> Ya está en uso</span>{/if}</span></label><label class="block text-sm font-medium text-body">Descripción corta <span class="text-muted-soft">(opcional)</span><textarea bind:value={description} class="input mt-1.5 resize-none" rows="2" placeholder="Qué vendes y por qué elegirte"></textarea></label></div>
+		{:else if step === 2}<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{#each STORE_CATEGORIES as c}<button type="button" onclick={() => category = c.name} class={`text-left px-4 py-3 rounded-btn border ${category === c.name ? 'border-ember bg-ember/10' : 'border-hairline bg-bone'}`}><span class="block text-sm font-semibold text-ink">{c.name}</span><span class="block text-xs text-muted mt-0.5">{c.desc}</span></button>{/each}</div>
+		{:else if step === 3}<div class="space-y-4"><div class="grid grid-cols-2 gap-2"><button type="button" onclick={() => action = 'manual'} class={`p-4 rounded-card border text-left ${action === 'manual' ? 'border-ember bg-ember/10' : 'border-hairline bg-card'}`}><i class="ri-bank-card-line text-ember"></i><strong class="block text-sm text-ink mt-2">Pago contra entrega</strong><span class="text-xs text-muted">Configura métodos manuales</span></button><button type="button" onclick={() => action = 'whatsapp'} class={`p-4 rounded-card border text-left ${action === 'whatsapp' ? 'border-ember bg-ember/10' : 'border-hairline bg-card'}`}><i class="ri-whatsapp-line text-[#25D366]"></i><strong class="block text-sm text-ink mt-2">Envío directo a WhatsApp</strong><span class="text-xs text-muted">El pedido abre una conversación</span></button></div><label class="block text-sm font-medium text-body">Número de WhatsApp {action === 'whatsapp' ? '' : '(opcional)'}<input bind:value={whatsapp} type="tel" class="input mt-1.5" placeholder="Ej: +53 5 1234567" /></label>{#if action === 'manual'}<div class="bg-card border border-hairline rounded-card p-4"><p class="text-sm font-semibold text-ink mb-3">Métodos de pago <span class="text-xs font-normal text-muted">(elige al menos uno)</span></p><div class="flex flex-wrap gap-2">{#each PAYMENT_TEMPLATES as template}<button type="button" onclick={() => addPayment(template)} class={`rounded-full border px-3 py-1.5 text-xs ${payments.some((p) => p.title === template.title) ? 'border-ember bg-ember/10 text-ember' : 'border-hairline text-body'}`}>{template.title}</button>{/each}</div>{#each payments as payment, i}<div class="mt-3 rounded-btn bg-bone p-3"><div class="flex justify-between text-sm font-semibold text-ink"><span>{payment.title}</span><button type="button" onclick={() => removePayment(i)} class="text-error">Quitar</button></div>{#each payment.fields as field, fi}<input bind:value={field.value} class="input input-sm mt-2" placeholder={field.label} />{/each}</div>{/each}</div>{/if}</div>
+		{:else if step === 4}<div class="bg-card border border-hairline rounded-card p-6 space-y-5"><div class="rounded-btn bg-ember/10 border border-ember/20 p-3 text-xs text-body">La moneda base de tu tienda será <strong class="text-ink">USD</strong>. Las tasas solo convierten precios a CUP.</div><div class="grid grid-cols-2 gap-3"><label class="text-sm font-medium text-body">CUP efectivo<input bind:value={exchangeCash} type="number" min="1" class="input mt-1.5" /></label><label class="text-sm font-medium text-body">CUP transferencia<input bind:value={exchangeTransfer} type="number" min="1" class="input mt-1.5" /></label></div><p class="text-xs text-muted">Sugerencias iniciales: 650 efectivo y 980 transferencia. Revísalas antes de crear tu tienda.</p><label class="text-sm font-medium text-body">Modalidad de entrega<select bind:value={deliveryMode} class="input mt-1.5"><option value="both">Domicilio y recogida en local</option><option value="delivery">Solo domicilio</option><option value="pickup">Solo recogida</option></select></label></div>
+		{:else}<div class="space-y-4">{#each products as product, i}<div class="bg-card border border-hairline rounded-card p-5"><div class="flex justify-between mb-3"><span class="text-xs font-semibold text-muted">Producto {i + 1}</span>{#if products.length > 1}<button type="button" onclick={() => removeProduct(i)} class="text-xs text-error">Quitar</button>{/if}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><input value={product.name} oninput={(e) => updateProduct(i, 'name', (e.target as HTMLInputElement).value)} class="input" placeholder="Nombre del producto" /><input value={product.price} oninput={(e) => updateProduct(i, 'price', (e.target as HTMLInputElement).value)} class="input" placeholder="Precio en USD" type="number" /><label class="text-xs text-ember cursor-pointer sm:col-span-2">{product.images.length ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" class="hidden" onchange={(e) => handleProductImages(e, i)} /></label></div></div>{/each}<button type="button" onclick={addProduct} class="w-full border border-dashed border-hairline rounded-btn py-3 text-sm text-body">Agregar otro producto</button><button type="button" onclick={createStore} class="w-full text-sm text-muted hover:text-ember">Agregar después y crear tienda</button></div>{/if}
+		{#if error}<div class="mt-5 bg-error/10 border border-error/20 rounded-btn px-3.5 py-3 text-xs text-error">{error}</div>{/if}
+		<div class="flex items-center gap-3 mt-6"><button type="button" disabled={step === 1} onclick={() => step -= 1} class="px-5 py-3 border border-hairline text-body rounded-btn text-sm disabled:opacity-0">Atrás</button>{#if step < 5}<button type="button" onclick={next} disabled={!canContinue} class="btn btn-3d btn-md flex-1 disabled:opacity-40">Continuar <i class="ri-arrow-right-line ml-1"></i></button>{:else}<button type="button" onclick={createStore} disabled={creating || !canContinue} class="btn btn-3d btn-md flex-1 disabled:opacity-40">{creating ? 'Creando tu tienda…' : 'Crear mi tienda'}</button>{/if}</div>
 	{/if}
-	{#if cropFile}
-		<ImageCropper file={cropFile} onconfirm={confirmProductCrop} oncancel={cancelProductCrop} />
-	{/if}
+	{#if cropFile}<ImageCropper file={cropFile} onconfirm={confirmProductCrop} oncancel={cancelProductCrop} />{/if}
 </section>
