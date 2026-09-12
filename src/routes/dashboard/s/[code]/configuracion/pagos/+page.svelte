@@ -199,7 +199,7 @@
 		{#if templatePickerOpen}
 			<!-- Backdrop: bloquea scroll del body y cierra al tocar fuera -->
 				<div
-					class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
+					class="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/65 backdrop-blur-[10px]"
 					use:bodyScrollLock
 					role="presentation"
 					tabindex="-1"

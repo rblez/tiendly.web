@@ -60,7 +60,7 @@
 />
 
 <div
-	class="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4"
+	class="fixed inset-0 z-[60] bg-black/65 backdrop-blur-[10px] flex items-center justify-center p-4"
 	role="dialog"
 	aria-modal="true"
 	aria-label="Rastrear pedido"

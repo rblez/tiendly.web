@@ -27,7 +27,7 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Recortar imagen">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-[10px]" role="dialog" aria-modal="true" aria-label="Recortar imagen">
 	<div class="w-full max-w-md rounded-card border border-hairline bg-card p-5 shadow-xl">
 		<h2 class="text-lg font-bold text-ink">Ajustar imagen</h2>
 		<p class="mt-1 text-sm text-muted">Recorta y ajusta el encuadre antes de subirla.</p>
