@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 	import { auth } from '$lib/stores/auth.svelte';
 	import SupabaseStatusNotch from '$lib/components/dashboard/SupabaseStatusNotch.svelte';
-	import ProductTour from '$lib/components/dashboard/ProductTour.svelte';
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
 	let isSettingsSubpage = $derived(page.url.pathname.includes('/configuracion/'));
@@ -66,7 +65,6 @@
 			</nav>
 		{/if}
 	</div>
-	<ProductTour />
 {:else}
 	<div class="flex items-center justify-center py-32">
 		<i class="ri-loader-4-line animate-spin text-ember" style="font-size: 24px" aria-label="Cargando"></i>

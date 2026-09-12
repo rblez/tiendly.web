@@ -17,57 +17,49 @@
 	]);
 	let sessionId = $state('');
 	let transferred = $state(0);
-	const build = 'v0.0.41';
-	const supabaseUrl = env.PUBLIC_SUPABASE_URL || '';
+	const build = env.PUBLIC_APP_VERSION || 'v0.0.41';
 	const config = {
 		success: { icon: 'ri-check-line', label: 'Operativo', color: 'text-emerald-300 bg-emerald-500/15 border-emerald-400/30' },
 		warning: { icon: 'ri-alert-line', label: 'Advertencia', color: 'text-amber-300 bg-amber-500/15 border-amber-400/30' },
 		error: { icon: 'ri-close-circle-line', label: 'Error', color: 'text-red-300 bg-red-500/15 border-red-400/30' }
 	} as const;
 
-	function browser() {
-		const ua = navigator.userAgent;
-		return ua.includes('Edg') ? 'Edge' : ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Navegador';
-	}
-	function os() {
-		const ua = navigator.userAgent;
-		return ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Android') ? 'Android' : ua.includes('Linux') ? 'Linux' : 'Sistema operativo';
-	}
+	function browser() { const ua = navigator.userAgent; return ua.includes('Edg') ? 'Edge' : ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Navegador'; }
+	function os() { const ua = navigator.userAgent; return ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Android') ? 'Android' : ua.includes('Linux') ? 'Linux' : 'Sistema operativo'; }
 	async function measureCache() {
 		try {
-			if (!('caches' in window)) return (cacheValue = 0);
+			if (!('caches' in window)) return (cacheValue = null);
 			let bytes = 0;
-			for (const key of await caches.keys()) for (const response of await (await caches.open(key)).matchAll()) bytes += Number(response.headers.get('content-length') ?? 0);
-			cacheValue = bytes / 1024 / 1024;
-		} catch {
-			cacheValue = null;
-		}
+			for (const key of await caches.keys()) {
+				const cache = await caches.open(key);
+				for (const request of await cache.keys()) { const response = await cache.match(request); if (response) bytes += Number(response.headers.get('content-length')) || (await response.clone().blob()).size; }
+			}
+			cacheValue = bytes / 1048576;
+		} catch { cacheValue = null; }
 	}
 	function report() {
-		const server = services.map((s) => `${s.name}: ${config[s.state].label} · ${s.latency ?? 'n/d'} ms${s.state === 'error' ? ` · ${s.message}` : ''}`).join('\n');
-		return `Tiendly — diagnóstico ${sessionId}\n\nServidor\n${server}\n\nCliente\nNavegador: ${browser()}\nSistema operativo: ${os()}\nBuild: ${build}\nCaché usada: ${cacheValue === null ? 'No disponible' : cacheValue.toFixed(2)} MB\nDatos transferidos: ${transferred.toFixed(1)} KB\nChequeo: ${checkedAt?.toLocaleString('es-CU') ?? 'n/d'}`;
+		const server = services.map((service) => `${service.name}: ${config[service.state].label} · ${service.latency ?? 'n/d'} ms${service.state === 'error' ? ` · ${service.message}` : ''}`).join('\n');
+		return `Tiendly — diagnóstico ${sessionId}\n\nServidor\n${server}\n\nCliente\nNavegador: ${browser()}\nSistema operativo: ${os()}\nBuild: ${build}\nCaché usada: ${cacheValue === null ? 'No disponible' : cacheValue.toFixed(2) + ' MB'}\nDatos transferidos: ${transferred.toFixed(1)} KB\nChequeo: ${checkedAt?.toLocaleString('es-CU') ?? 'n/d'}`;
+	}
+	async function checkDatabase(): Promise<Service> {
+		const start = performance.now(); const result = await supabase.from('stores').select('id', { head: true, count: 'exact' }).limit(1); const latency = Math.round(performance.now() - start);
+		return { name: 'Base de datos', state: result.error ? 'error' : latency > 1000 ? 'warning' : 'success', latency, message: result.error?.message ?? 'Respuesta correcta' };
+	}
+	async function checkAuth(): Promise<Service> {
+		const start = performance.now(); const result = await supabase.auth.getUser(); const latency = Math.round(performance.now() - start);
+		return { name: 'Autenticación', state: result.error && result.error.message !== 'Auth session missing!' ? 'error' : latency > 1000 ? 'warning' : 'success', latency, message: result.error?.message ?? 'Validación remota correcta' };
+	}
+	async function checkStorage(): Promise<Service> {
+		const start = performance.now(); const result = await supabase.storage.from('media').list('', { limit: 1 }); const latency = Math.round(performance.now() - start);
+		return { name: 'Almacenamiento', state: result.error ? 'error' : latency > 1000 ? 'warning' : 'success', latency, message: result.error?.message ?? 'Bucket media accesible' };
 	}
 	async function check() {
-		const dbStart = performance.now();
-		const dbResult = await supabase.from('stores').select('id', { head: true, count: 'exact' }).limit(1);
-		const dbLatency = Math.round(performance.now() - dbStart);
-		const authStart = performance.now();
-		const authResult = await supabase.auth.getSession();
-		const authLatency = Math.round(performance.now() - authStart);
-		const storageStart = performance.now();
-		let storageError = '';
-		try {
-			const response = await fetch(`${supabaseUrl}/storage/v1/object/public/media`, { method: 'HEAD', cache: 'no-store' });
-			if (!response.ok && response.status !== 404) storageError = `HTTP ${response.status}`;
-		} catch (error) { storageError = error instanceof Error ? error.message : 'Sin respuesta'; }
-		const storageLatency = Math.round(performance.now() - storageStart);
-		services = [
-			{ name: 'Base de datos', state: dbResult.error ? 'error' : dbLatency > 1000 ? 'warning' : 'success', latency: dbLatency, message: dbResult.error?.message ?? 'Respuesta correcta' },
-			{ name: 'Autenticación', state: authResult.error ? 'error' : authLatency > 1000 ? 'warning' : 'success', latency: authLatency, message: authResult.error?.message ?? 'Sesión disponible' },
-			{ name: 'Almacenamiento', state: storageError ? 'error' : storageLatency > 1000 ? 'warning' : 'success', latency: storageLatency, message: storageError || 'Respuesta correcta' }
-		];
-		overallState = services.some((s) => s.state === 'error') ? 'error' : services.some((s) => s.state === 'warning') ? 'warning' : 'success';
+		const results = await Promise.all([checkDatabase(), checkAuth(), checkStorage()]);
+		services = results;
+		overallState = results.some((service) => service.state === 'error') ? 'error' : results.some((service) => service.state === 'warning') ? 'warning' : 'success';
 		checkedAt = new Date();
+		const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+		transferred = resources.reduce((sum, entry) => sum + (entry.transferSize || entry.encodedBodySize || 0), 0) / 1024;
 		await measureCache();
 	}
 	async function copy() { await navigator.clipboard.writeText(report()); copied = true; setTimeout(() => (copied = false), 1600); }
@@ -77,8 +69,8 @@
 <div class="relative z-10 flex items-center justify-center">
 	<button type="button" class={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${config[overallState].color}`} onclick={() => (expanded = !expanded)} aria-expanded={expanded}><i class={config[overallState].icon} aria-hidden="true"></i><span class="hidden sm:inline">{config[overallState].label}</span>{#if services[0].latency !== null}<span class="font-mono text-[10px] opacity-75">{services[0].latency}ms</span>{/if}</button>
 	{#if expanded}
-		<div class="fixed inset-0 z-[100] flex items-start justify-center bg-black/65 p-4 pt-20 backdrop-blur-[10px] sm:items-center sm:pt-4" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) expanded = false; }}>
-			<div class="relative z-[101] max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto rounded-2xl border border-hairline bg-card p-4 text-left shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="diagnostic-title">
+		<div class="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-md sm:items-center sm:pt-4" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) expanded = false; }}>
+			<div class="relative z-[10000] my-auto w-full max-w-sm shrink-0 rounded-2xl border border-hairline bg-card p-4 text-left shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="diagnostic-title">
 				<div class="mb-3 flex items-center justify-between"><h2 id="diagnostic-title" class="text-sm font-semibold text-ink">Diagnóstico de servicio</h2><button type="button" class="text-muted" onclick={() => (expanded = false)} aria-label="Cerrar"><i class="ri-close-line"></i></button></div>
 				<h3 class="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">Servidor</h3>
 				{#each services as service (service.name)}<div class="flex items-center justify-between border-b border-hairline py-2 text-xs"><span class="text-body">{service.name}</span><span class={config[service.state].color + ' rounded-full border px-2 py-0.5'}>{config[service.state].label} · {service.latency ?? 'n/d'} ms</span></div>{/each}

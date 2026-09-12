@@ -13,7 +13,6 @@ export interface Profile {
 	avatar_url: string | null;
 	plan: string;
 	created_at: string;
-	tutorial_completed?: boolean;
 }
 
 export interface PaymentField {
