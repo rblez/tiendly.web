@@ -2,13 +2,38 @@
 	import { page } from '$app/stores';
 	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { STORE_ACTIONS } from '$lib/storeActions';
+	import { supabase } from '$lib/supabase/client';
 
 	let storeCode = $derived($page.params.code ?? '');
 	let whatsapp = $state('');
 	let action = $state<'whatsapp' | 'sin_contactar'>('whatsapp');
 	let saved = $state(false);
+	let loading = $state(true);
+	let saving = $state(false);
+	let error = $state('');
 
-	function save() {
+	$effect(() => {
+		if (!storeCode) return;
+		(async () => {
+			const { data, error: loadError } = await supabase.from('stores').select('action, whatsapp').eq('code', storeCode).maybeSingle();
+			if (loadError) error = 'No se pudo cargar la configuración.';
+			if (data) {
+				action = data.action === 'whatsapp' ? 'whatsapp' : 'sin_contactar';
+				whatsapp = data.whatsapp ?? '';
+			}
+			loading = false;
+		})();
+	});
+
+	async function save() {
+		saving = true;
+		error = '';
+		const { error: saveError } = await supabase.from('stores').update({ action, whatsapp: whatsapp.trim() || null }).eq('code', storeCode);
+		saving = false;
+		if (saveError) {
+			error = 'No se pudo guardar el modo de pedido.';
+			return;
+		}
 		saved = true;
 		setTimeout(() => (saved = false), 2200);
 	}
@@ -31,7 +56,7 @@
 		<div>
 			<p class="mb-2 block text-sm font-medium text-body">Flujo activo</p>
 			<div class="space-y-2">
-				{#each STORE_ACTIONS as option}
+				{#each STORE_ACTIONS as option (option.id)}
 					<label class={`flex cursor-pointer items-start gap-3 rounded-btn border p-3.5 ${action === option.id ? 'border-ember/60 bg-ember/5' : 'border-hairline'}`}>
 						<input type="radio" name="act" value={option.id} checked={action === option.id} onchange={() => (action = option.id)} class="mt-1 h-4 w-4 accent-ember" />
 						<span><strong class="block text-sm text-ink">{option.label}</strong><small class="mt-1 block text-xs leading-5 text-muted">{option.hint}</small></span>
@@ -40,6 +65,7 @@
 			</div>
 		</div>
 	</div>
-	{#if saved}<p class="rounded-btn border border-ember/20 bg-ember/10 px-3 py-3 text-xs text-ember">Modo guardado en esta sesión.</p>{/if}
-	<button type="button" onclick={save} class="btn btn-3d btn-md w-full">Guardar modo de pedido</button>
+	{#if error}<p class="rounded-btn border border-error/20 bg-error/10 px-3 py-3 text-xs text-error">{error}</p>{/if}
+	{#if saved}<p class="rounded-btn border border-ember/20 bg-ember/10 px-3 py-3 text-xs text-ember">Modo de pedido guardado.</p>{/if}
+	<button type="button" onclick={save} disabled={loading || saving} class="btn btn-3d btn-md w-full">{saving ? 'Guardando…' : 'Guardar modo de pedido'}</button>
 </div>
