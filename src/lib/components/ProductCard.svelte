@@ -57,21 +57,20 @@
 				onerror={() => imgError = true}
 			/>
 		{/if}
-			<div class="absolute left-3 top-3 flex flex-wrap gap-2">
-				<span class="inline-flex items-center gap-1.5 rounded-full bg-card/90 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-body shadow-sm">
-					<i class={product.product_type === 'digital' ? 'ri-download-cloud-2-line' : 'ri-box-3-line'} aria-hidden="true"></i>
-					{product.product_type === 'digital' ? 'Digital / remoto' : 'Físico / presencial'}
-				</span>
-				{#if product.bajo_pedido}
-					<span class="inline-flex items-center gap-1.5 rounded-full bg-warning px-2.5 py-1 text-xs font-semibold text-canvas shadow-sm">
-						<i class="ri-time-line" aria-hidden="true"></i>
-						Bajo pedido
-					</span>
-				{/if}
-			</div>
-
 	</div>
 	<div class="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3">
+		<div class="flex flex-wrap gap-1.5" aria-label="Características del producto">
+			<span class="inline-flex items-center gap-1 rounded-full bg-card border border-hairline px-2.5 py-1 text-[11px] font-semibold text-body">
+				<i class={product.product_type === 'digital' ? 'ri-download-cloud-2-line' : 'ri-box-3-line'} aria-hidden="true"></i>
+				{product.product_type === 'digital' ? 'Digital / remoto' : 'Físico / presencial'}
+			</span>
+			{#if product.bajo_pedido}
+				<span class="inline-flex items-center gap-1 rounded-full bg-warning/15 border border-warning/30 px-2.5 py-1 text-[11px] font-semibold text-warning">
+					<i class="ri-time-line" aria-hidden="true"></i>
+					Bajo pedido
+				</span>
+			{/if}
+		</div>
 		<h3 class="text-sm sm:text-lg font-semibold text-ink leading-tight">{product.name}</h3>
 		{#if product.description}
 			<p class="text-xs sm:text-sm text-body leading-relaxed line-clamp-2">{product.description}</p>

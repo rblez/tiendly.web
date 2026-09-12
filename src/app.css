@@ -295,10 +295,11 @@ select option {
 		);
 	border: 1px solid color-mix(in srgb, var(--accent-active) 65%, #000000 35%);
 	border-top-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
-	border-bottom-width: 4px;
-	border-radius: var(--radius-btn);
-	color: #ffffff;
-	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+		border-bottom-width: 4px;
+		border-radius: var(--radius-btn);
+		box-shadow: 0 3px 0 color-mix(in srgb, var(--accent-active) 82%, #000000 18%);
+		color: #ffffff;
+		text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 }
 
 .btn-3d:hover {
