@@ -284,22 +284,15 @@ select option {
 	font-size: 0.9375rem;
 }
 
-/* Primario 3D con gradiente: sin sombras, profundidad solo con bordes */
+/* Primario con profundidad sutil: limpio, con un pequeño borde inferior */
 .btn-3d {
-	background:
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--accent) 84%, #ffffff 16%) 0%,
-			var(--accent) 48%,
-			var(--accent-active) 100%
-		);
-	border: 1px solid color-mix(in srgb, var(--accent-active) 65%, #000000 35%);
-	border-top-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
-		border-bottom-width: 4px;
-		border-radius: var(--radius-btn);
-		box-shadow: 0 3px 0 color-mix(in srgb, var(--accent-active) 82%, #000000 18%);
-		color: #ffffff;
-		text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+	background: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent-active) 55%, #000000 45%);
+	border-bottom-width: 2px;
+	border-radius: var(--radius-btn);
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-active) 78%, #000000 22%);
+	color: #ffffff;
+	text-shadow: none;
 }
 
 .btn-3d:hover {
@@ -373,16 +366,9 @@ select option {
 	align-items: center;
 	justify-content: center;
 	gap: 0.5rem;
-	background:
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--accent) 84%, #ffffff 16%) 0%,
-			var(--accent) 48%,
-			var(--accent-active) 100%
-		);
-	border: 1px solid color-mix(in srgb, var(--accent-active) 65%, #000000 35%);
-	border-top-color: color-mix(in srgb, var(--accent) 70%, #ffffff 30%);
-	border-bottom-width: 4px;
+	background: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent-active) 55%, #000000 45%);
+	border-bottom-width: 2px;
 	border-radius: var(--radius-btn);
 	padding: 0.8rem 2rem;
 	font-size: 0.9375rem;
@@ -503,8 +489,9 @@ select option {
 [data-panel] .btn-3d {
 	background: var(--accent);
 	background-image: none;
-	border: none;
-	box-shadow: none;
+	border: 1px solid color-mix(in srgb, var(--accent-active) 55%, #000000 45%);
+	border-bottom-width: 2px;
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-active) 78%, #000000 22%);
 	border-radius: var(--radius-btn, 10px);
 	color: #ffffff;
 	font-weight: 600;
@@ -512,13 +499,14 @@ select option {
 [data-panel] .btn-3d:hover {
 	background: var(--accent-active);
 	background-image: none;
-	box-shadow: none;
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-active) 78%, #000000 22%);
 }
 [data-panel] .btn-3d:active {
 	background: var(--accent-active);
 	background-image: none;
+	border-bottom-width: 1px;
 	box-shadow: none;
-	transform: none;
+	transform: translateY(1px);
 }
 [data-panel] .btn-3d:disabled,
 [data-panel] .btn-3d.opacity-75 {
