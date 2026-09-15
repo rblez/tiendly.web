@@ -3,5 +3,6 @@ build/
 .svelte-kit/
 .env
 .vercel
+.wrangler/
 .DS_Store
 *.log
