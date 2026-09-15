@@ -67,6 +67,7 @@
 </script>
 
 <div class="relative z-10 flex items-center justify-center">
+	<span class="mr-2 hidden rounded-full border border-dashed border-hairline px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted sm:inline">Experimental</span>
 	<button type="button" class={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm transition-all ${config[overallState].color}`} onclick={(event) => { event.stopPropagation(); expanded = !expanded; }} aria-expanded={expanded}><i class={config[overallState].icon} aria-hidden="true"></i><span class="hidden sm:inline">{config[overallState].label}</span>{#if services[0].latency !== null}<span class="font-mono text-[10px] opacity-75">{services[0].latency}ms</span>{/if}</button>
 	{#if expanded}
 		<div class="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-md sm:items-center sm:pt-4" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) expanded = false; }}>
