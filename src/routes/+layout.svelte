@@ -8,13 +8,6 @@
 	import { theme } from '$lib/stores/theme.svelte';
 	import { trackPageView } from '$lib/analytics';
 	import { SITE_URL } from '$lib/utils';
-	import { injectAnalytics } from '@vercel/analytics/sveltekit';
-	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
-
-
-	injectAnalytics();
-	injectSpeedInsights();
-
 	let { children } = $props();
 	let isNativeApp = $state(false);
 

@@ -4,7 +4,7 @@
 
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-ff3e00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white)](https://vercel.com)
+[![Cloudflare](https://img.shields.io/badge/Deploy-Cloudflare-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com)
 [![Version](https://img.shields.io/badge/version-0.0.41-blue)](https://github.com/rblez/tiendly.web)
 
 ---
@@ -16,10 +16,10 @@
 | Framework | SvelteKit 2 + **Svelte 5 runes** (`$state`, `$derived`, `$props`) — sin legacy stores ni `$:` |
 | Estilos | Tailwind CSS 4 vía `@tailwindcss/vite` — sin config file, tokens en `src/app.css` |
 | Backend | Supabase: Postgres + RLS + Auth (OTP por correo) + Storage + Realtime |
-| Deploy | Vercel — `@sveltejs/adapter-vercel` |
+| Deploy | Cloudflare Workers/Pages — `@sveltejs/adapter-cloudflare` + Wrangler |
 | Iconos | Remix Icon (`remixicon`) — sin Lucide ni otras librerías de iconos |
 | PDF / QR | `jspdf` + `qrcode` |
-| Analytics | Vercel Analytics + Speed Insights, GA4 y Meta Pixel (opcionales vía env) |
+| Analytics | GA4 y Meta Pixel (opcionales vía env) |
 
 ---
 
@@ -68,7 +68,10 @@ npm run dev            # http://localhost:5173
 | `npm run dev` | Servidor de desarrollo (Vite HMR) |
 | `npm run build` | Build de producción |
 | `npm run preview` | Preview del build local |
+| `npm run cf:dev` | Ejecuta el worker generado con Wrangler |
+| `npm run cf:deploy` | Publica en Cloudflare Workers |
 | `npm run check` | Typecheck con `svelte-check` — **correr antes de cada commit** |
+
 
 ---
 
