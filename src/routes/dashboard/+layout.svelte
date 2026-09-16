@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { auth } from '$lib/stores/auth.svelte';
-	import SupabaseStatusNotch from '$lib/components/dashboard/SupabaseStatusNotch.svelte';
 
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
@@ -39,7 +38,6 @@
 					<div class="flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
 						<div class="flex min-w-0 items-center gap-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ember text-white"><i class="ri-store-2-line text-lg"></i></span><div class="min-w-0"><p class="truncate font-semibold tracking-tight">Tiendly</p><p class="hidden truncate text-[11px] text-muted sm:block">Panel de tu tienda</p></div></div>
 						<div class="ml-auto flex items-center gap-2">
-							<div class="hidden md:block"><SupabaseStatusNotch /></div>
 							<button class="flex h-9 items-center gap-2 rounded-xl border border-hairline bg-card px-2.5 text-left" onclick={() => (accountOpen = !accountOpen)} aria-expanded={accountOpen} aria-label="Abrir menú de cuenta"><span class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-lg bg-ember/10 text-ember">{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Avatar" class="h-full w-full object-cover" />{:else}<i class="ri-user-line text-sm"></i>{/if}</span><span class="hidden text-xs font-semibold sm:block">{auth.profile?.name ?? 'Mi cuenta'}</span><i class="ri-arrow-down-s-line text-muted"></i></button>
 							{#if accountOpen}<div class="absolute right-4 top-14 z-50 w-56 rounded-2xl border border-hairline bg-card p-2 shadow-xl"><a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Mi cuenta</a><a href={`/dashboard/s/${storeCode}/configuracion`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Ajustes de tienda</a><button class="w-full rounded-xl px-3 py-2 text-left text-sm text-error hover:bg-error/10" onclick={() => auth.signOut()}>Cerrar sesión</button></div>{/if}
 						</div>

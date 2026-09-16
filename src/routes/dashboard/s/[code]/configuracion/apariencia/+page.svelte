@@ -14,16 +14,14 @@
 	let msg = $state(''); let error = $state(''); let initial = $state('');
 
 	const PRESET_COLORS = [
-		{ value: '#22c55e', label: 'Esmeralda' },
-		{ value: '#38bdf8', label: 'Cielo' },
-		{ value: '#818cf8', label: 'Índigo' },
-		{ value: '#c084fc', label: 'Violeta' },
-		{ value: '#f472b6', label: 'Rosa' },
-		{ value: '#fbbf24', label: 'Ámbar' },
-		{ value: '#fb7185', label: 'Coral' },
-		{ value: '#2dd4bf', label: 'Turquesa' },
-		{ value: '#a3e635', label: 'Lima' },
-		{ value: '#d1d5db', label: 'Blanco gris' }
+		{ value: '#22c55e', label: 'Verde' },
+		{ value: '#ef4444', label: 'Rojo' },
+		{ value: '#3b82f6', label: 'Azul' },
+		{ value: '#eab308', label: 'Amarillo' },
+		{ value: '#7c3aed', label: 'Verde + rojo' },
+		{ value: '#16a34a', label: 'Verde + azul' },
+		{ value: '#f97316', label: 'Rojo + amarillo' },
+		{ value: '#0f766e', label: 'Azul + amarillo' }
 	];
 
 	onMount(async()=>{

@@ -80,7 +80,7 @@
 
 {#if showModal}
 	<div
-		class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/60 backdrop-blur-[2px]"
+		class="fixed inset-0 z-50 flex items-end justify-center bg-transparent sm:items-center"
 		onclick={(e) => { if (e.target === e.currentTarget) showModal = false; }}
 		role="presentation"
 	>
@@ -95,17 +95,17 @@
 			<h3 class="text-lg font-bold text-ink mb-2">Tiendly está en beta</h3>
 			<p class="text-sm text-body mb-5 leading-relaxed">
 				Tu feedback nos ayuda a construir la mejor plataforma de ecommerce para Cuba.
-				Únete al canal de Telegram para reportar bugs, pedir features y ver novedades antes que nadie.
+				Únete al grupo de Telegram para reportar bugs, pedir features y ver novedades antes que nadie.
 			</p>
 			<a
-				href="https://t.me/+dFQ2WyJvCkg4YmFh"
+				href="https://t.me/+-rDvLllUjv8wOGRh"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="cta-primary flex items-center justify-center gap-2 w-full no-underline"
 				onclick={() => (showModal = false)}
 			>
 				<i class="ri-telegram-fill"></i>
-				Unirme al canal
+				Unirme al grupo
 			</a>
 			<button
 				type="button"
