@@ -14,7 +14,7 @@ import { supabase } from '$lib/supabase/client';
 	const navItems = [
 		{ label: 'Inicio', href: '', icon: 'ri-home-5-line' },
 		{ label: 'Productos', href: '/productos', icon: 'ri-box-3-line' },
-		{ label: 'Pedidos', href: '/pedidos', icon: 'ri-shopping-bag-3-line' },
+		{ label: 'Pedidos', href: '/pedidos', icon: 'ri-folder-3-line' },
 		{ label: 'Ajustes', href: '/configuracion', icon: 'ri-settings-3-line' }
 	];
 	let activePath = $derived(page.url.pathname);

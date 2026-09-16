@@ -98,7 +98,7 @@
 	</SettingsSection>
 
 	<SettingsSection title="Resumen del plan">
-		<div class="space-y-4 p-5 sm:p-8"><div><p class="text-sm font-semibold text-ink">Plan {plan.name}</p><p class="mt-0.5 text-xs text-muted">Miembro desde {auth.profile?.created_at ? new Date(auth.profile.created_at).toLocaleDateString('es-CU', { year: 'numeric', month: 'long' }) : '—'}</p></div><p class="text-sm text-body">{storesCount} tienda{storesCount === 1 ? '' : 's'} y {productsCount} producto{productsCount === 1 ? '' : 's'} en uso.</p><a href={`/dashboard/s/${$page.params.code ?? ''}/configuracion/planes`} class="text-sm font-semibold text-ember no-underline hover:underline">Ver planes y límites</a></div>
+		<div class="space-y-4 p-5 sm:p-8"><div><p class="text-sm font-semibold text-ink">Plan {plan.name}</p><p class="mt-0.5 text-xs text-muted">Miembro desde {auth.profile?.created_at ? new Date(auth.profile.created_at).toLocaleDateString('es-CU', { year: 'numeric', month: 'long' }) : '—'}</p></div><p class="text-sm text-body">{storesCount} tienda{storesCount === 1 ? '' : 's'} y {productsCount} producto{productsCount === 1 ? '' : 's'} en uso.</p></div>
 	</SettingsSection>
 </section>
 {#if cropFile}<ImageCropper file={cropFile} onconfirm={confirmAvatar} oncancel={() => (cropFile = null)} />{/if}
