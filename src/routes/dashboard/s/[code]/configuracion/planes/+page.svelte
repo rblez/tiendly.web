@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 
 	let code = $derived($page.params.code ?? '');
 	let requested = $state(false);
 </script>
 
 <svelte:head><title>Planes | Tiendly</title></svelte:head>
-<SettingsHeader backHref={`/dashboard/s/${code}/configuracion`} />
 
 <div class="mx-auto max-w-3xl space-y-5 px-4 py-6">
 	<div class="space-y-2">
