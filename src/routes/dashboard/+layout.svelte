@@ -57,17 +57,16 @@ import { supabase } from '$lib/supabase/client';
 						</div>
 					</div>
 				</header>
-				<nav class="border-b border-hairline bg-canvas px-4 py-3 sm:px-6 lg:px-8" aria-label="Navegación principal">
-					<div class="scrollbar-none flex gap-2 overflow-x-auto rounded-full border border-hairline bg-card p-1.5 shadow-sm">
+				<div class="min-h-[calc(100vh-9rem)] pb-24">{@render children()}</div>
+				<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur-xl" aria-label="Navegación principal">
+					<div class="mx-auto grid max-w-md grid-cols-4 gap-1">
 						{#each navItems as item}
-							<a href={`/dashboard/s/${storeCode}${item.href}`} class:is-current={isActive(item.href)} class="flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted no-underline transition-colors hover:text-ink" onclick={closeMenus}>
-								<i class={item.icon}></i><span>{item.label}</span>
+							<a href={`/dashboard/s/${storeCode}${item.href}`} class:is-current={isActive(item.href)} class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-medium text-muted no-underline transition-colors hover:text-ink" onclick={closeMenus} aria-current={isActive(item.href) ? 'page' : undefined}>
+								<i class={`${item.icon} text-xl leading-none`}></i><span>{item.label}</span>
 							</a>
 						{/each}
-						<a href={`/@${storeCode}`} target="_blank" rel="noreferrer" class="ml-auto flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted no-underline hover:text-ink"><i class="ri-external-link-line"></i><span>Ver tienda</span></a>
 					</div>
 				</nav>
-				<div class="min-h-[calc(100vh-9rem)]">{@render children()}</div>
 			</div>
 		{:else}{@render children()}{/if}
 	</div>
