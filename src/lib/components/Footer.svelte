@@ -178,7 +178,7 @@ let trackError = $state('');
 							<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
 						</li>
 						<li>
-							<a href="https://t.me/+-rDvLllUjv8wOGRh" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ember transition-colors no-underline">Únete a nuestro grupo de Telegram</a>
+							<a href="https://t.me/+EgoH1iuFRIcwNjFh" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ember transition-colors no-underline">Únete a nuestro grupo de Telegram</a>
 						</li>
 				</ul>
 			</div>
