@@ -8,7 +8,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"cf:dev": "wrangler dev",
-		"cf:deploy": "wrangler deploy",
+		"cf:deploy": "pnpm run build && wrangler pages deploy .svelte-kit/cloudflare --project-name tiendly",
 		"format": "prettier --write package.json docs/**/*.md",
 		"format:check": "prettier --check package.json docs/**/*.md",
 		"cap:sync": "npm run build && npx cap sync android",
