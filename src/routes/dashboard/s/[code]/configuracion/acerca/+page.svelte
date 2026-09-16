@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import SettingsRow from '$lib/components/settings/SettingsRow.svelte';
 	import SettingsSection from '$lib/components/settings/SettingsSection.svelte';
 	import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
@@ -21,8 +20,6 @@
 <svelte:head>
 	<title>Acerca de | Tiendly</title>
 </svelte:head>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 
 <section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-9 sm:pt-2 pb-10">
 	<div class="mb-7 pt-1">

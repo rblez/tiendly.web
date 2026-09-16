@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { uploadImage, productImage } from '$lib/utils';
 	import { onMount } from 'svelte';
 
@@ -53,7 +52,6 @@
 	}
 </script>
 <svelte:head><title>Apariencia | Tiendly</title></svelte:head>
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 {#if loading}<div class="flex justify-center py-16"><i class="ri-loader-4-line animate-spin text-xl text-ember"></i></div>
 {:else}
 <div class="max-w-2xl mx-auto px-4 py-6 space-y-4">

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
+
 
 	let storage = $state(0);
 	let cache = $state(0);
@@ -73,7 +73,6 @@
 
 <svelte:head><title>Rendimiento | Ajustes | Tiendly</title></svelte:head>
 <div class="mx-auto min-h-full max-w-2xl px-4 pb-28 pt-7 sm:px-6">
-	<SettingsHeader title="Rendimiento" backHref={`/dashboard/s/${$page.params.code}/configuracion`} />
 	<p class="mb-6 mt-2 text-sm text-muted">Uso real de almacenamiento persistente y transferencia de esta sesión.</p>
 	{#if unavailable}<p class="mb-4 rounded-btn border border-amber-400/20 bg-amber-400/10 px-3 py-3 text-xs text-amber-300">Algunas métricas no están disponibles en este navegador.</p>{/if}
 	<div class="space-y-4">
