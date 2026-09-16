@@ -98,7 +98,7 @@
 				Únete al grupo de Telegram para reportar bugs, pedir features y ver novedades antes que nadie.
 			</p>
 			<a
-				href="https://t.me/+-rDvLllUjv8wOGRh"
+				href="https://t.me/+EgoH1iuFRIcwNjFh"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="cta-primary flex items-center justify-center gap-2 w-full no-underline"
