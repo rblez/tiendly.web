@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	const code = $derived($page.params.code ?? '');
 	const integrations = [
 		['ri-bank-line', 'elToque', 'Conecta pagos y cobros de elToque.'],
@@ -12,7 +11,6 @@
 </script>
 
 <svelte:head><title>Integraciones | Tiendly</title></svelte:head>
-<SettingsHeader backHref={`/dashboard/s/${code}/configuracion`} />
 <div class="mx-auto max-w-2xl space-y-5 px-4 py-6">
 	<section><p class="text-xs font-semibold uppercase tracking-widest text-ember">Experimental</p><h1 class="mt-2 text-2xl font-semibold text-ink">Integraciones</h1><p class="mt-2 text-sm leading-6 text-muted">Estas conexiones estarán disponibles próximamente. No afectan el funcionamiento actual de tu tienda.</p></section>
 	<div class="grid gap-3 sm:grid-cols-2">

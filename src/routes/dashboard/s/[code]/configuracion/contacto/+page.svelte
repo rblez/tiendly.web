@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { STORE_ACTIONS } from '$lib/storeActions';
 	import { supabase } from '$lib/supabase/client';
 
@@ -40,8 +39,6 @@
 </script>
 
 <svelte:head><title>Pedidos | Tiendly</title></svelte:head>
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
-
 <div class="mx-auto max-w-2xl space-y-4 px-4 py-6">
 	<div class="space-y-2 rounded-card border border-hairline bg-card p-5">
 		<p class="text-xs font-semibold uppercase tracking-widest text-ember">Tienda</p>

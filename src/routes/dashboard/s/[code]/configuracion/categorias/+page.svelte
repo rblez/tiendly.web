@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
 	let categories = $state([
@@ -26,8 +25,6 @@
 		subcategoryName = '';
 	}
 </script>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 
 <section class="mx-auto max-w-3xl px-4 pb-10 pt-9 sm:px-6 sm:pt-12">
 	<div class="mb-7"><h1 class="text-2xl font-bold text-ink sm:text-3xl">Categorías</h1><p class="mt-1 text-sm text-muted">Organiza tus productos con categorías y subcategorías.</p></div>

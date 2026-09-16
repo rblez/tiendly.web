@@ -76,9 +76,8 @@
 <svelte:head><title>Perfil | Tiendly</title></svelte:head>
 
 <section class="mx-auto max-w-2xl px-4 pb-12 pt-7 sm:px-6">
-	<div class="mb-8 flex items-center gap-3">
-		<a href={`/dashboard/s/${$page.params.code ?? ''}/configuracion`} class="flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-card text-muted no-underline hover:text-ink" aria-label="Volver a Ajustes"><i class="ri-arrow-left-line text-xl" aria-hidden="true"></i></a>
-		<div><h1 class="text-2xl font-bold text-ink">Perfil</h1><p class="mt-1 text-sm text-muted">Tus datos personales y resumen de cuenta.</p></div>
+	<div class="mb-8">
+		<h1 class="text-2xl font-bold text-ink">Perfil</h1><p class="mt-1 text-sm text-muted">Tus datos personales y resumen de cuenta.</p>
 	</div>
 
 	<SettingsSection title="Datos personales">

@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
 	import { slugify } from '$lib/utils';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { STORE_CATEGORIES } from '$lib/categories';
 	import { onMount } from 'svelte';
 
@@ -56,8 +55,6 @@
 </script>
 
 <svelte:head><title>Información general | Tiendly</title></svelte:head>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 
 {#if loading}
 	<div class="flex items-center justify-center py-16"><i class="ri-loader-4-line animate-spin text-xl text-ember"></i></div>
