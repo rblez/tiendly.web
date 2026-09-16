@@ -43,6 +43,8 @@
 	<title>Tiendly | Tu tienda online, sin intermediarios</title>
 	<meta name="description" content="Crea tu tienda online gratis, agrega productos y compártela por WhatsApp. Pedidos directos, sin comisiones ni intermediarios." />
 	<meta name="robots" content="index, follow" />
+	<link rel="icon" type="image/png" href="/favicon.png" />
+	<link rel="apple-touch-icon" href="/favicon.png" />
 	<link rel="canonical" href={canonical} />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="Tiendly" />
