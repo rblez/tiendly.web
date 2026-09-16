@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { migratePayment } from '$lib/payments';
 	import { fileToDataUrl } from '$lib/utils';
 	import type { PaymentCurrency, PaymentMethod } from '$lib/types';
@@ -127,8 +126,6 @@
 </script>
 
 <svelte:head><title>Pagos | Tiendly</title></svelte:head>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 
 {#if loading}
 	<div class="flex justify-center py-16"><i class="ri-loader-4-line animate-spin text-xl text-ember"></i></div>

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { supabase } from '$lib/supabase/client';
 
@@ -78,8 +77,6 @@
 </script>
 
 <svelte:head><title>Seguridad | Tiendly</title></svelte:head>
-
-<SettingsHeader backHref={`../cuenta`} />
 
 <div class="max-w-2xl mx-auto px-4 py-6 space-y-4">
 	<div class="bg-card border border-hairline rounded-card p-5 space-y-3">

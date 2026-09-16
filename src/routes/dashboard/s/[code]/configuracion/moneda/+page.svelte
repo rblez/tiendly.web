@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { supabase } from '$lib/supabase/client';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -45,8 +44,6 @@
 </script>
 
 <svelte:head><title>Moneda y conversión | Tiendly</title></svelte:head>
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
-
 <div class="mx-auto max-w-2xl space-y-4 px-4 py-6">
 	<section class="space-y-2 rounded-card border border-hairline bg-card p-5">
 		<p class="text-xs font-semibold uppercase tracking-widest text-ember">Moneda y conversión</p>

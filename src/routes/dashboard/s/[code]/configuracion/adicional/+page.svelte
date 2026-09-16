@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
 	import { onMount } from 'svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -49,8 +48,6 @@
 </script>
 
 <svelte:head><title>Información adicional | Tiendly</title></svelte:head>
-
-<SettingsHeader backHref={`/dashboard/s/${storeCode}/configuracion`} />
 
 {#if loading}
 	<div class="flex justify-center py-16"><i class="ri-loader-4-line animate-spin text-xl text-ember"></i></div>

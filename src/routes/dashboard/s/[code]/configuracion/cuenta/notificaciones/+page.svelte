@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import SettingsHeader from '$lib/components/settings/SettingsHeader.svelte';
+
 	import { onMount } from 'svelte';
 
 	type Prefs = { sound: boolean; browser: boolean; badge: boolean };
@@ -35,8 +35,6 @@
 </script>
 
 <svelte:head><title>Notificaciones | Tiendly</title></svelte:head>
-
-<SettingsHeader backHref={`../cuenta`} />
 
 <div class="max-w-2xl mx-auto px-4 py-6 space-y-4">
 	<p class="px-4 text-xs text-muted">Se aplican al panel de tu tienda cuando llega un pedido nuevo.</p>
