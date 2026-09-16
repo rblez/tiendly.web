@@ -8,6 +8,7 @@ import { supabase } from '$lib/supabase/client';
 	let { children } = $props();
 	let storeCode = $derived(page.params.code ?? '');
 	let accountOpen = $state(false);
+	let logoutConfirmOpen = $state(false);
 	let notificationsEnabled = $state(true);
 	let storeName = $state('Mi tienda');
 	let storeLogo = $state<string | null>(null);
@@ -27,6 +28,13 @@ import { supabase } from '$lib/supabase/client';
 
 	function closeMenus() {
 		accountOpen = false;
+	}
+
+	async function confirmSignOut() {
+		await auth.signOut();
+		logoutConfirmOpen = false;
+		accountOpen = false;
+		goto('/login');
 	}
 
 	onMount(async () => {
@@ -53,7 +61,8 @@ import { supabase } from '$lib/supabase/client';
 						<div class="ml-auto flex items-center gap-2">
 							<button type="button" class="flex h-9 w-9 items-center justify-center rounded-xl border border-hairline bg-card text-muted hover:text-ink" onclick={() => (notificationsEnabled = !notificationsEnabled)} aria-pressed={notificationsEnabled} aria-label={notificationsEnabled ? 'Silenciar notificaciones' : 'Activar notificaciones'}><i class={notificationsEnabled ? 'ri-notification-3-line' : 'ri-notification-off-line'}></i></button>
 							<button class="flex h-9 items-center gap-2 rounded-xl border border-hairline bg-card px-2.5 text-left" onclick={() => (accountOpen = !accountOpen)} aria-expanded={accountOpen} aria-label="Abrir menú de cuenta"><span class="flex h-6 w-6 items-center justify-center overflow-hidden rounded-lg bg-ember/10 text-ember">{#if auth.profile?.avatar_url}<img src={auth.profile.avatar_url} alt="Avatar" class="h-full w-full object-cover" />{:else}<i class="ri-user-line text-sm"></i>{/if}</span><span class="hidden text-xs font-semibold sm:block">{auth.profile?.name ?? 'Mi cuenta'}</span><i class="ri-arrow-down-s-line text-muted"></i></button>
-							{#if accountOpen}<div class="absolute right-4 top-14 z-50 w-56 rounded-2xl border border-hairline bg-card p-2 shadow-xl"><a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Perfil</a><a href={`/dashboard/s/${storeCode}/configuracion/cuenta/seguridad`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Seguridad</a></div>{/if}
+							{#if accountOpen}<div class="absolute right-4 top-14 z-50 w-56 rounded-2xl border border-hairline bg-card p-2 shadow-xl"><a href={`/dashboard/s/${storeCode}/configuracion/cuenta`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Perfil</a><a href={`/dashboard/s/${storeCode}/configuracion/cuenta/seguridad`} class="block rounded-xl px-3 py-2 text-sm text-body no-underline hover:bg-canvas" onclick={() => (accountOpen = false)}>Seguridad</a><button type="button" class="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm text-error hover:bg-error/10" onclick={() => { accountOpen = false; logoutConfirmOpen = true; }}>Cerrar sesión</button></div>{/if}
+							{#if logoutConfirmOpen}<div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4" role="presentation" onclick={(event) => event.target === event.currentTarget && (logoutConfirmOpen = false)}><div class="w-full max-w-sm rounded-2xl border border-hairline bg-card p-5 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="logout-title"><h2 id="logout-title" class="text-lg font-semibold text-ink">¿Cerrar sesión?</h2><p class="mt-2 text-sm text-muted">Tendrás que iniciar sesión nuevamente para entrar al panel.</p><div class="mt-5 flex justify-end gap-2"><button type="button" class="rounded-xl px-4 py-2 text-sm font-medium text-muted hover:bg-canvas" onclick={() => (logoutConfirmOpen = false)}>Cancelar</button><button type="button" class="rounded-xl bg-error px-4 py-2 text-sm font-semibold text-white hover:opacity-90" onclick={confirmSignOut}>Cerrar sesión</button></div></div></div>{/if}
 						</div>
 					</div>
 				</header>
