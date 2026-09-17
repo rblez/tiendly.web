@@ -1,65 +1,136 @@
 import { json } from '@sveltejs/kit';
-import sharp from 'sharp';
 import { supabase, createAdminClient } from '$lib/supabase/server';
 import { clientKey, rateLimit } from '$lib/server/rate-limit';
+
 const MAX_BYTES = 8 * 1024 * 1024;
+
+const ALLOWED_TYPES = new Set([
+	'image/jpeg',
+	'image/png',
+	'image/webp',
+	'image/gif',
+	'image/avif',
+]);
+
+const EXTENSIONS: Record<string, string> = {
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/webp': 'webp',
+	'image/gif': 'gif',
+	'image/avif': 'avif',
+};
 
 export const POST = async (event) => {
 	try {
-		const token = event.request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+		// Autenticación
+		const token =
+			event.request.headers
+				.get('authorization')
+				?.replace(/^Bearer\s+/i, '') ?? '';
+
 		const {
 			data: { user },
 		} = await supabase.auth.getUser(token);
-		if (!user) return json({ error: 'No autorizado' }, { status: 401 });
-		if (!rateLimit(clientKey(event.request, `upload:${user.id}`), 20, 60 * 60_000)) {
-			return json({ error: 'Límite de subidas alcanzado' }, { status: 429 });
+
+		if (!user) {
+			return json({ error: 'No autorizado' }, { status: 401 });
 		}
 
+		// Rate limit
+		if (
+			!rateLimit(
+				clientKey(event.request, `upload:${user.id}`),
+				20,
+				60 * 60_000
+			)
+		) {
+			return json(
+				{ error: 'Límite de subidas alcanzado' },
+				{ status: 429 }
+			);
+		}
+
+		// Formulario
 		const form = await event.request.formData();
 		const file = form.get('file');
 		const kind = form.get('kind') === 'logo' ? 'logo' : 'product';
+
 		if (!(file instanceof File) || file.size === 0) {
 			return json({ error: 'Archivo requerido' }, { status: 400 });
 		}
-		if (file.size > MAX_BYTES) return json({ error: 'La imagen supera los 8 MB' }, { status: 413 });
-		if (!file.type.startsWith('image/')) return json({ error: 'Solo se permiten imágenes' }, { status: 415 });
 
-		const input = Buffer.from(await file.arrayBuffer());
-		const metadata = await sharp(input).metadata();
-		if (!metadata.width || !metadata.height || metadata.width * metadata.height > 25_000_000) {
-			return json({ error: 'La imagen tiene dimensiones no permitidas' }, { status: 413 });
+		// Tamaño máximo
+		if (file.size > MAX_BYTES) {
+			return json(
+				{ error: 'La imagen supera los 8 MB' },
+				{ status: 413 }
+			);
 		}
 
-		let pipeline = sharp(input).rotate();
-		if (kind === 'logo') {
-			const logo = await pipeline.resize(512, 512, { fit: 'cover', withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
-			return json({ url: await uploadMedia(logo, `${user.id}/logo-${Date.now()}.webp`) });
+		// Tipo MIME permitido
+		if (!ALLOWED_TYPES.has(file.type)) {
+			return json(
+				{
+					error:
+						'Solo se permiten imágenes JPG, PNG, WebP, GIF o AVIF',
+				},
+				{ status: 415 }
+			);
 		}
-		const base = pipeline.resize(1600, 1600, { fit: 'inside', withoutEnlargement: true });
-		const [big, mid, small] = await Promise.all([
-			base.clone().webp({ quality: 80 }).toBuffer(),
-			base.clone().resize(800, 800, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 78 }).toBuffer(),
-			base.clone().resize(400, 400, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 72 }).toBuffer(),
-		]);
-		const ts = Date.now();
-		const [urlBig] = await Promise.all([
-			uploadMedia(big, `${user.id}/img-${ts}-1600.webp`),
-			uploadMedia(mid, `${user.id}/img-${ts}-800.webp`),
-			uploadMedia(small, `${user.id}/img-${ts}-400.webp`),
-		]);
-		return json({ url: urlBig });
+
+		const extension = EXTENSIONS[file.type];
+
+		// Nombre único para evitar colisiones
+		const prefix = kind === 'logo' ? 'logo' : 'img';
+
+		const path = `${user.id}/${prefix}-${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+		// Convertir el archivo directamente a ArrayBuffer.
+		// No usamos Sharp porque Cloudflare Workers no ejecuta
+		// correctamente su dependencia nativa libvips.
+		const buffer = await file.arrayBuffer();
+
+		// Subir directamente a Supabase Storage
+		const serviceClient = createAdminClient();
+
+		const { error } = await serviceClient.storage
+			.from('media')
+			.upload(path, buffer, {
+				contentType: file.type,
+				cacheControl: '31536000',
+				upsert: false,
+			});
+
+		if (error) {
+			console.error('Supabase Storage upload error:', error);
+
+			return json(
+				{ error: 'No se pudo subir la imagen' },
+				{ status: 500 }
+			);
+		}
+
+		// Obtener URL pública
+		const { data } = serviceClient.storage
+			.from('media')
+			.getPublicUrl(path);
+
+		if (!data?.publicUrl) {
+			return json(
+				{ error: 'No se pudo obtener la URL de la imagen' },
+				{ status: 500 }
+			);
+		}
+
+		return json({
+			url: data.publicUrl,
+		});
 	} catch (err) {
-		console.error('upload-image', err);
-		return json({ error: 'No se pudo procesar la imagen' }, { status: 500 });
+		console.error('upload-image:', err);
+
+		return json(
+			{ error: 'No se pudo procesar la imagen' },
+			{ status: 500 }
+		);
 	}
 };
-
-async function uploadMedia(buffer: Buffer, path: string): Promise<string> {
-	const serviceClient = createAdminClient();
-	const { error } = await serviceClient.storage.from('media').upload(path, buffer, {
-		contentType: 'image/webp',
-		upsert: false,
-	});
-	if (error) throw new Error(error.message);
-	return serviceClient.storage.from('media').getPublicUrl(path).data.publicUrl;
-}
