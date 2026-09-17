@@ -1,175 +1,448 @@
+
+
 # Tiendly
 
-**Tiendly es una plataforma en beta para crear una tienda online (una por usuario) en Cuba.** Cada tienda incluye catálogo y pedidos. El vendedor puede usar pago contra entrega con métodos manuales configurables o enviar el pedido directamente a WhatsApp. La moneda base es USD, con conversión configurable a CUP para efectivo y transferencia.
+**SaaS de tiendas online para Cuba.**
 
-[![SvelteKit](https://img.shields.io/badge/SvelteKit-2.x-ff3e00?logo=svelte&logoColor=white)](https://kit.svelte.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ecf8e?logo=supabase&logoColor=white)](https://supabase.com)
-[![Cloudflare](https://img.shields.io/badge/Deploy-Cloudflare-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com)
-[![Version](https://img.shields.io/badge/version-0.0.41-blue)](https://github.com/rblez/tiendly.web)
+Tiendly permite a emprendedores crear y administrar su propia tienda online, publicar productos y recibir pedidos con los métodos de pago que cada vendedor configure.
 
----
-
-## Stack
-
-| Capa | Tecnología |
-|---|---|
-| Framework | SvelteKit 2 + **Svelte 5 runes** (`$state`, `$derived`, `$props`) — sin legacy stores ni `$:` |
-| Estilos | Tailwind CSS 4 vía `@tailwindcss/vite` — sin config file, tokens en `src/app.css` |
-| Backend | Supabase: Postgres + RLS + Auth (OTP por correo) + Storage + Realtime |
-| Deploy | Cloudflare Workers/Pages — `@sveltejs/adapter-cloudflare` + Wrangler |
-| Iconos | Remix Icon (`remixicon`) — sin Lucide ni otras librerías de iconos |
-| PDF / QR | `jspdf` + `qrcode` |
-| Analytics | GA4 y Meta Pixel (opcionales vía env) |
+> 🚧 **Tiendly está actualmente en beta activa.**
 
 ---
 
-## Arquitectura
+## ✨ Características
 
-```
-tiendly.lat/                    → Landing de Tiendly
-tiendly.lat/@[username]/        → Storefront público (catálogo, producto, carrito, checkout)
-tiendly.lat/dashboard/          → Panel del dueño (requiere auth)
-tiendly.lat/dashboard/s/[code]/ → Panel por tienda (código de 8 chars)
-tiendly.lat/login | /signup     → Auth (OTP por correo, Supabase Auth)
-tiendly.lat/wizard/             → Wizard de creación de tienda (5 pasos)
-```
-
-No hay API propia — todo va directamente a Supabase vía `@supabase/ssr` (SSR con cookies) y el cliente browser. Los endpoints en `src/routes/api/` son solo para track de visitas, claim de preview y upload de imágenes.
+- 🛍️ Creación de tiendas online
+- 📦 Gestión de productos
+- 🖼️ Subida de imágenes
+- 💳 Métodos de pago configurables por cada vendedor
+- 💵 Soporte para **USD y CUP**
+- 📱 Diseño adaptado a dispositivos móviles
+- 🧾 Checkout para procesar pedidos
+- 💬 WhatsApp como canal opcional de contacto
+- 🔐 Autenticación de usuarios
+- ☁️ Infraestructura basada en Cloudflare y Supabase
+- 📲 Aplicación Android mediante Capacitor
 
 ---
 
-## Setup local
+## 💳 Métodos de pago
 
-**Requisitos:** Node.js 20+, npm, un proyecto Supabase.
+Tiendly permite que cada vendedor configure cómo quiere cobrar.
 
-```bash
-git clone https://github.com/rblez/tiendly.web.git
-cd tiendly.web
+Los métodos integrados actualmente incluyen:
+
+- Transferencia CUP
+  - BANDEC
+  - BPA
+  - BANMET
+  - MITRANSFER
+  - Transfermóvil
+  - EnZona
+- QvaPay QUSD
+- USDT
+- Saldo Móvil (ETECSA)
+- PayPal
+- Zelle
+
+También es posible crear métodos de pago personalizados para aquellos medios que no estén incluidos como opciones predeterminadas.
+
+Cada método de pago puede utilizar su logo oficial y permite personalizarlo cuando sea necesario.
+
+---
+
+## 💰 Monedas
+
+Tiendly está diseñado principalmente para trabajar con:
+
+- **USD**
+- **CUP**
+
+El vendedor puede seleccionar la moneda principal de su tienda.
+
+También puede establecer las condiciones de conversión utilizadas para mostrar precios equivalentes en la otra moneda.
+
+Ejemplo:
+
+```text
+USD → CUP
+
+60 USD × 650 CUP = 39,000 CUP
+
+o:
+
+CUP → USD
+
+6,000 CUP ÷ 650 = 9.23 USD
+
+Las tasas utilizadas pueden depender del método de pago configurado por el vendedor.
+
+
+---
+
+🧑‍💻 Stack tecnológico
+
+Frontend
+
+SvelteKit 2
+
+Svelte 5
+
+TypeScript
+
+Tailwind CSS
+
+Vite
+
+
+Backend / Servicios
+
+Supabase
+
+Supabase Auth
+
+Supabase Storage
+
+
+Infraestructura
+
+Cloudflare
+
+Cloudflare Workers / Pages
+
+Wrangler
+
+
+Aplicación móvil
+
+Capacitor
+
+Android
+
+
+
+---
+
+📁 Estructura del proyecto
+
+tiendly.web/
+├── .github/
+│   └── workflows/
+├── android/
+├── src/
+│   ├── lib/
+│   └── routes/
+├── static/
+├── package.json
+├── package-lock.json
+├── svelte.config.js
+├── vite.config.ts
+├── wrangler.toml
+└── README.md
+
+
+---
+
+🚀 Desarrollo local
+
+Requisitos
+
+Node.js 22+
+
+npm
+
+Git
+
+
+Instalar dependencias
+
 npm install
-cp .env.example .env   # rellenar variables (ver abajo)
-npm run dev            # http://localhost:5173
-```
 
-### Variables de entorno
+Iniciar servidor de desarrollo
 
-| Variable | Requerida | Descripción |
-|---|---|---|
-| `PUBLIC_SUPABASE_URL` | ✅ | URL del proyecto Supabase |
-| `PUBLIC_SUPABASE_ANON_KEY` | ✅ | Clave anon pública |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Service role (solo server) |
-| `PUBLIC_APP_URL` | ✅ | URL base (`https://tiendly.lat` en prod, `http://localhost:5173` en dev) |
-| `PUBLIC_GA4_MEASUREMENT_ID` | ❌ | ID de GA4 (opcional) |
-| `PUBLIC_META_PIXEL_ID` | ❌ | Meta Pixel ID (opcional) |
+npm run dev
 
-### Scripts
+La aplicación estará disponible normalmente en:
 
-| Comando | Descripción |
-|---|---|
-| `npm run dev` | Servidor de desarrollo (Vite HMR) |
-| `npm run build` | Build de producción |
-| `npm run preview` | Preview del build local |
-| `npm run cf:dev` | Ejecuta el worker generado con Wrangler |
-| `npm run cf:deploy` | Publica en Cloudflare Workers |
-| `npm run check` | Typecheck con `svelte-check` — **correr antes de cada commit** |
+http://localhost:5173
 
 
 ---
 
-## Estructura del proyecto
+🔎 Comprobaciones
 
-```
-src/
-├── routes/
-│   ├── +page.svelte                    # Landing
-│   ├── login/ signup/ wizard/          # Auth y onboarding
-│   ├── @[username]/                    # Storefront público
-│   │   ├── +page.svelte                # Catálogo
-│   │   ├── [slug]/+page.svelte         # Producto individual
-│   │   ├── cart/                       # Carrito
-│   │   └── checkout/                   # Checkout + pay + gracias
-│   ├── dashboard/
-│   │   ├── +page.svelte                # Home del dashboard (lista de tiendas)
-│   │   └── s/[code]/                   # Panel por tienda
-│   │       ├── +layout.svelte          # Header (avatar + badge plan) + Navbar (Estadísticas/Productos/Pedidos/Ajustes)
-│   │       ├── +page.svelte            # Estadísticas + lista de productos/pedidos
-│   │       └── configuracion/          # Ajustes: Tienda / Comunicación / Ventas / Sistema / Cuenta
-│   └── api/                            # track, claim-preview, upload
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts                   # Cliente browser
-│   │   └── server.ts                   # Cliente SSR (loaders)
-│   ├── database.types.ts               # Tipos generados por Supabase CLI
-│   ├── types.ts                        # Tipos de dominio (Store, Product, Order, PaymentMethod, etc.)
-│   ├── stores/                         # Svelte 5 rune-based stores
-│   │   ├── auth.svelte.ts              # Sesión + perfil + plan
-│   │   ├── cart.svelte.ts              # Carrito por tienda
-│   │   ├── currency.svelte.ts          # Moneda activa + conversión
-│   │   └── modal.svelte.ts             # Control de modales globales
-│   ├── components/
-│   │   ├── dashboard/StorePanel.svelte # Panel central del dashboard (productos + pedidos)
-│   │   └── ...                         # Navbars, footers, ProductCard, modales compartidos
-│   └── utils.ts                        # formatPrice, convertPrice, uploadImage, storeUrl, waLink, etc.
-└── app.css                             # Tokens de diseño (colores, radios, tipografías)
-```
+Antes de realizar cambios importantes o crear un Pull Request:
+
+npm run check
+
+Comprobar formato:
+
+npm run format:check
+
+Formatear el proyecto:
+
+npm run format
+
+Crear build de producción:
+
+npm run build
+
 
 ---
 
-## Base de datos
+☁️ Cloudflare
 
-### Tablas principales
+Tiendly utiliza Cloudflare como infraestructura de despliegue.
 
-| Tabla | Descripción clave |
-|---|---|
-| `stores` | Slug público, código de 8 chars (generado por trigger), `owner_id`, moneda (`currency`), tasa de cambio (`exchange_rate`), métodos de pago (`payment_methods` JSON), zonas de envío (`delivery_zones` JSON) |
-| `products` | Pertenece a `store_id`, `variants` JSON (2 niveles: variante + `options[]` con precio sumable), `ask` JSON (campos extra del checkout), `stock` (NULL = sin control) |
-| `orders` | Ítems, total, método de pago, comprobante (`proof_url`, `proof_tx`), estado (`nuevo/enviado/completado/cancelado`), `store_id` |
-| `store_visits` | Visitas diarias deduplicadas por sesión y UTM |
-| `profiles` | Perfil del usuario autenticado (`plan`, `avatar_url`) |
+La configuración principal se encuentra en:
 
-### Tipos de pago (`PaymentProofType`)
+wrangler.toml
 
-El campo `proof_type` en cada método de pago controla qué pide el checkout al comprador:
+El proyecto utiliza el adaptador de Cloudflare para SvelteKit.
 
-| Valor | El checkout pide |
-|---|---|
-| `captura` | Subir foto del comprobante |
-| `captura_y_tx` | Foto + número de transacción |
-| `hash` | Solo hash de transacción (sin foto) |
-| `ninguno` | Nada — confirma directo |
+El despliegue de producción se gestionará mediante GitHub Actions.
 
-### Plantillas de métodos de pago
-
-**CUP:** BANDEC, BPA, BANMET (titular + número de tarjeta), MiTransfer, Saldo Móvil (número de teléfono)
-
-**USD:** QUSD/QvaPay (usuario, `captura_y_tx`), Zelle (titular + teléfono/correo), PayPal (titular + correo), USDT (red + wallet, `hash`)
-
-### RLS
-
-Toda la DB tiene RLS activo. La función `is_store_owner(store_id uuid)` (SECURITY DEFINER) es el guard principal: verifica `stores.owner_id = auth.uid()`. Las políticas de `UPDATE` en `orders` usan esta función.
 
 ---
 
-## Convenciones de código
+🗄️ Supabase
 
-- **Indentación:** tabs (no espacios)
-- **Quotes:** dobles en TS/Svelte, simples en CSS
-- **Svelte 5:** solo runes — nunca `$:`, `onMount` mínimo, sin stores legacy
-- **Iconos:** solo `ri-*` (Remix Icon) — no importar de `@lucide/svelte`
-- **`variants` y `ask`:** siempre normalizar con `Array.isArray(x) ? x : []` — pueden ser `null` en datos viejos
-- **Moneda:** `formatPrice(price, currency)` y `convertPrice(price, store, currency)` en `utils.ts` — no calcular conversiones inline
-- **Propiedad del store:** usar `is_store_owner()` en RLS — no hacer checks manuales en el frontend
-- Correr `npm run check` antes de hacer push
+Supabase proporciona los servicios principales de backend:
+
+Autenticación
+
+Base de datos
+
+Storage
+
+Gestión de usuarios
+
+Archivos multimedia
+
+
+Las variables de entorno necesarias deben configurarse localmente y también en el entorno de despliegue.
+
+Nunca deben incluirse claves privadas o secrets directamente en el repositorio.
+
 
 ---
 
-## Deploy
+🖼️ Imágenes
 
-Conectado a Vercel via GitHub. Cada push a `main` dispara un deploy de producción automático. Las variables de entorno se configuran en el proyecto de Vercel (no en el repo).
+Las imágenes de usuarios y productos se almacenan en Supabase Storage.
 
-No hay rama de staging — `main` es producción.
+El endpoint de subida se encuentra en:
+
+src/routes/api/upload-image/+server.ts
+
+Las subidas están protegidas mediante autenticación y límites de frecuencia.
+
 
 ---
 
-## Licencia
+📱 Android
 
-[MIT](LICENSE)
+La aplicación Android utiliza Capacitor.
+
+Comandos relacionados:
+
+npm run cap:assets
+
+npm run cap:sync
+
+El proyecto Android se encuentra en:
+
+android/
+
+Las builds de Android pueden generarse mediante GitHub Actions.
+
+
+---
+
+🔄 Versionado
+
+Tiendly utiliza Semantic Versioning:
+
+MAJOR.MINOR.PATCH
+
+Ejemplos:
+
+0.0.41
+0.0.42
+0.1.0
+1.0.0
+
+Tipos de cambios
+
+PATCH
+
+Cambios pequeños, correcciones y bugs:
+
+0.0.41 → 0.0.42
+
+MINOR
+
+Nuevas funcionalidades compatibles:
+
+0.0.42 → 0.1.0
+
+MAJOR
+
+Cambios que introducen incompatibilidades importantes:
+
+0.1.0 → 1.0.0
+
+El proceso automatizado de versionado y releases se gestionará mediante GitHub Actions.
+
+
+---
+
+🔁 GitHub Actions
+
+La automatización del proyecto está organizada dentro de:
+
+.github/workflows/
+
+Los workflows previstos incluyen:
+
+ci.yml
+version.yml
+release.yml
+deploy.yml
+rollback.yml
+android-apk.yml
+
+CI
+
+Comprueba automáticamente:
+
+Instalación de dependencias
+
+TypeScript / Svelte
+
+Formato
+
+Build
+
+
+Versionado
+
+Permite incrementar:
+
+patch
+minor
+major
+
+y crear el correspondiente Git tag.
+
+Releases
+
+Genera releases de GitHub a partir de las versiones etiquetadas.
+
+Deploy
+
+Gestiona el despliegue de producción en Cloudflare.
+
+Rollback
+
+Permite volver a una versión anterior del despliegue cuando sea necesario.
+
+Android
+
+Genera la aplicación Android mediante Capacitor.
+
+> Estos workflows pueden incorporarse progresivamente al proyecto. El README describe la arquitectura prevista y no implica que todos estén activos actualmente.
+
+
+
+
+---
+
+🌿 Flujo de trabajo
+
+El flujo recomendado es:
+
+Nueva funcionalidad
+       │
+       ▼
+  Pull Request
+       │
+       ▼
+      CI
+       │
+       ▼
+    Review
+       │
+       ▼
+     main
+       │
+       ▼
+   Cloudflare
+
+Para publicar una nueva versión:
+
+main
+ │
+ ▼
+Version
+ │
+ ├── Actualiza package.json
+ ├── Actualiza package-lock.json
+ ├── Crea commit
+ └── Crea tag
+       │
+       ▼
+     Release
+       │
+       ▼
+      APK
+
+
+---
+
+🔐 Seguridad
+
+No subir nunca al repositorio:
+
+.env
+.env.local
+.env.production
+API keys
+Service Role Keys
+Cloudflare API Tokens
+Credenciales privadas
+
+Las credenciales utilizadas por GitHub Actions deben almacenarse como GitHub Secrets.
+
+
+---
+
+🧪 Estado del proyecto
+
+Tiendly se encuentra actualmente en:
+
+Beta activa
+
+El proyecto continúa en desarrollo y algunas funcionalidades pueden cambiar antes de la versión estable.
+
+
+---
+
+📄 Licencia
+
+Este proyecto es propiedad de Tiendly.
+
+La licencia y las condiciones de uso se definirán de acuerdo con la política del proyecto.
+
+
+---
+
+🌐 Tiendly
+
+Sitio web:
+
+https://www.tiendly.lat
+
+Repositorio:
+
+https://github.com/rblez/tiendly.web
