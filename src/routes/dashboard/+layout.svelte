@@ -13,10 +13,10 @@ import { supabase } from '$lib/supabase/client';
 	let storeName = $state('Mi tienda');
 	let storeLogo = $state<string | null>(null);
 	const navItems = [
-		{ label: 'Inicio', href: '', icon: 'ri-home-5-line' },
-		{ label: 'Productos', href: '/productos', icon: 'ri-box-3-line' },
-		{ label: 'Pedidos', href: '/pedidos', icon: 'ri-folder-3-line' },
-		{ label: 'Ajustes', href: '/configuracion', icon: 'ri-settings-3-line' }
+		{ label: 'Inicio', href: '', icon: 'ri-home-5-fill' },
+		{ label: 'Productos', href: '/productos', icon: 'ri-box-3-fill' },
+		{ label: 'Pedidos', href: '/pedidos', icon: 'ri-list-ordered' },
+		{ label: 'Ajustes', href: '/configuracion', icon: 'ri-settings-3-fill' }
 	];
 	let activePath = $derived(page.url.pathname);
 
