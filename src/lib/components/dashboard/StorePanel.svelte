@@ -370,10 +370,13 @@ $effect(() => {
 				loading = true;
 			}
 			try {
-			const { data: storeData } = await supabase
+				const userId = auth.session?.user.id;
+				if (!userId) return;
+				const { data: storeData } = await supabase
 				.from('stores')
 				.select('*')
 				.eq('code', storeCode)
+				.eq('owner_id', userId)
 				.maybeSingle();
 			if (!storeData) {
 				error = 'No se encontró la tienda.';
@@ -749,7 +752,7 @@ currency: formCurrency,
 
 		let result;
 		if (editingId) {
-			result = await supabase.from('products').update(payload).eq('id', editingId);
+			result = await supabase.from('products').update(payload).eq('id', editingId).select('id').maybeSingle();
 		} else {
 			result = await supabase.from('products').insert({
 				...payload,
@@ -759,8 +762,8 @@ currency: formCurrency,
 			});
 		}
 
-		if (result.error) {
-			productError = result.error.message;
+		if (result.error || (editingId && !result.data)) {
+			productError = result.error?.message ?? 'No tienes permisos para modificar este producto o la tienda no pertenece a tu cuenta.';
 			formSaving = false;
 			return;
 		}
@@ -1449,7 +1452,7 @@ async function duplicateProduct(p: Product) {
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-5 mb-5">
 				<div class="flex items-center justify-between mb-4">
 					<div class="flex items-center gap-3">
-						<h2 class="text-sm font-semibold text-ink">Visitas por d��a · 7 días</h2>
+						<h2 class="text-sm font-semibold text-ink">Visitas por d����a · 7 días</h2>
 						<button onclick={openQrModal} class="text-xs font-medium text-ember hover:text-ember-active cursor-pointer">
 							Código QR
 						</button>
