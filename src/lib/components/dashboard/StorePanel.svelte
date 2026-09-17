@@ -1452,7 +1452,7 @@ async function duplicateProduct(p: Product) {
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-5 mb-5">
 				<div class="flex items-center justify-between mb-4">
 					<div class="flex items-center gap-3">
-						<h2 class="text-sm font-semibold text-ink">Visitas por d����a · 7 días</h2>
+						<h2 class="text-sm font-semibold text-ink">Visitas por día · 7 días</h2>
 						<button onclick={openQrModal} class="text-xs font-medium text-ember hover:text-ember-active cursor-pointer">
 							Código QR
 						</button>
