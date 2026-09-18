@@ -48,10 +48,39 @@ export function currencyRate(store: RateStore | null | undefined, currency: stri
 	return null;
 }
 
-export function convertPrice(price: number, store: RateStore | null | undefined, currency?: string): number {
-	const rate = currencyRate(store, currency ?? vendorCurrency(store));
+export function convertPrice(
+	price: number,
+	store: RateStore | null | undefined,
+	currency?: string
+): number {
+	if (!Number.isFinite(price)) return 0;
+
+	const baseCurrency = vendorCurrency(store);
+	const targetCurrency = (currency ?? baseCurrency).trim().toUpperCase();
+
+	// Misma moneda: no hay conversión.
+	if (targetCurrency === baseCurrency) return price;
+
+	const rate = currencyRate(store, targetCurrency);
+
 	if (!rate || rate <= 0) return price;
-	return price * rate;
+
+	// La tasa representa:
+	// 1 USD = X CUP
+	//
+	// Si el producto está en CUP y queremos USD:
+	// CUP / X = USD
+	if (baseCurrency === 'CUP' && targetCurrency === 'USD') {
+		return price / rate;
+	}
+
+	// Si el producto está en USD y queremos CUP:
+	// USD × X = CUP
+	if (baseCurrency === 'USD' && targetCurrency === 'CUP') {
+		return price * rate;
+	}
+
+	return price;
 }
 
 export function slugify(input: string): string {
