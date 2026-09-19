@@ -1,5 +1,3 @@
-
-
 # Tiendly
 
 **SaaS de tiendas online para Cuba.**
@@ -66,65 +64,48 @@ Ejemplo:
 
 ```text
 USD → CUP
-
 60 USD × 650 CUP = 39,000 CUP
 
-o:
-
 CUP → USD
-
 6,000 CUP ÷ 650 = 9.23 USD
+```
 
 Las tasas utilizadas pueden depender del método de pago configurado por el vendedor.
 
+---
+
+## 🧑‍💻 Stack tecnológico
+
+**Frontend**
+
+- SvelteKit 2
+- Svelte 5
+- TypeScript
+- Tailwind CSS
+- Vite
+
+**Backend / Servicios**
+
+- Supabase
+- Supabase Auth
+- Supabase Storage
+
+**Infraestructura**
+
+- Cloudflare
+- Cloudflare Workers / Pages
+- Wrangler
+
+**Aplicación móvil**
+
+- Capacitor
+- Android
 
 ---
 
-🧑‍💻 Stack tecnológico
+## 📁 Estructura del proyecto
 
-Frontend
-
-SvelteKit 2
-
-Svelte 5
-
-TypeScript
-
-Tailwind CSS
-
-Vite
-
-
-Backend / Servicios
-
-Supabase
-
-Supabase Auth
-
-Supabase Storage
-
-
-Infraestructura
-
-Cloudflare
-
-Cloudflare Workers / Pages
-
-Wrangler
-
-
-Aplicación móvil
-
-Capacitor
-
-Android
-
-
-
----
-
-📁 Estructura del proyecto
-
+```text
 tiendly.web/
 ├── .github/
 │   └── workflows/
@@ -139,229 +120,183 @@ tiendly.web/
 ├── vite.config.ts
 ├── wrangler.toml
 └── README.md
-
+```
 
 ---
 
-🚀 Desarrollo local
+## 🚀 Desarrollo local
 
-Requisitos
+**Requisitos**
 
-Node.js 22+
+- Node.js 22+
+- npm
+- Git
 
-npm
+**Instalar dependencias**
 
-Git
-
-
-Instalar dependencias
-
+```bash
 npm install
+```
 
-Iniciar servidor de desarrollo
+**Iniciar servidor de desarrollo**
 
+```bash
 npm run dev
+```
 
 La aplicación estará disponible normalmente en:
 
+```
 http://localhost:5173
-
+```
 
 ---
 
-🔎 Comprobaciones
+## 🔎 Comprobaciones
 
 Antes de realizar cambios importantes o crear un Pull Request:
 
+```bash
 npm run check
+```
 
 Comprobar formato:
 
+```bash
 npm run format:check
+```
 
 Formatear el proyecto:
 
+```bash
 npm run format
+```
 
 Crear build de producción:
 
+```bash
 npm run build
-
+```
 
 ---
 
-☁️ Cloudflare
+## ☁️ Cloudflare
 
 Tiendly utiliza Cloudflare como infraestructura de despliegue.
 
-La configuración principal se encuentra en:
-
-wrangler.toml
+La configuración principal se encuentra en `wrangler.toml`.
 
 El proyecto utiliza el adaptador de Cloudflare para SvelteKit.
 
 El despliegue de producción se gestionará mediante GitHub Actions.
 
-
 ---
 
-🗄️ Supabase
+## 🗄️ Supabase
 
 Supabase proporciona los servicios principales de backend:
 
-Autenticación
-
-Base de datos
-
-Storage
-
-Gestión de usuarios
-
-Archivos multimedia
-
+- Autenticación
+- Base de datos
+- Storage
+- Gestión de usuarios
+- Archivos multimedia
 
 Las variables de entorno necesarias deben configurarse localmente y también en el entorno de despliegue.
 
 Nunca deben incluirse claves privadas o secrets directamente en el repositorio.
 
-
 ---
 
-🖼️ Imágenes
+## 🖼️ Imágenes
 
 Las imágenes de usuarios y productos se almacenan en Supabase Storage.
 
-El endpoint de subida se encuentra en:
-
-src/routes/api/upload-image/+server.ts
+El endpoint de subida se encuentra en `src/routes/api/upload-image/+server.ts`.
 
 Las subidas están protegidas mediante autenticación y límites de frecuencia.
 
-
 ---
 
-📱 Android
+## 📱 Android
 
 La aplicación Android utiliza Capacitor.
 
 Comandos relacionados:
 
+```bash
 npm run cap:assets
-
 npm run cap:sync
+```
 
-El proyecto Android se encuentra en:
-
-android/
+El proyecto Android se encuentra en `android/`.
 
 Las builds de Android pueden generarse mediante GitHub Actions.
 
-
 ---
 
-🔄 Versionado
+## 🔄 Versionado
 
-Tiendly utiliza Semantic Versioning:
-
-MAJOR.MINOR.PATCH
+Tiendly utiliza Semantic Versioning: `MAJOR.MINOR.PATCH`
 
 Ejemplos:
 
+```
 0.0.41
 0.0.42
 0.1.0
 1.0.0
+```
 
-Tipos de cambios
+**Tipos de cambios**
 
-PATCH
-
-Cambios pequeños, correcciones y bugs:
-
-0.0.41 → 0.0.42
-
-MINOR
-
-Nuevas funcionalidades compatibles:
-
-0.0.42 → 0.1.0
-
-MAJOR
-
-Cambios que introducen incompatibilidades importantes:
-
-0.1.0 → 1.0.0
+- **PATCH** — Cambios pequeños, correcciones y bugs: `0.0.41 → 0.0.42`
+- **MINOR** — Nuevas funcionalidades compatibles: `0.0.42 → 0.1.0`
+- **MAJOR** — Cambios que introducen incompatibilidades importantes: `0.1.0 → 1.0.0`
 
 El proceso automatizado de versionado y releases se gestionará mediante GitHub Actions.
 
-
 ---
 
-🔁 GitHub Actions
+## 🔁 GitHub Actions
 
-La automatización del proyecto está organizada dentro de:
-
-.github/workflows/
+La automatización del proyecto está organizada dentro de `.github/workflows/`.
 
 Los workflows previstos incluyen:
 
-ci.yml
-version.yml
-release.yml
-deploy.yml
-rollback.yml
-android-apk.yml
+- `ci.yml`
+- `version.yml`
+- `release.yml`
+- `deploy.yml`
+- `rollback.yml`
+- `android-apk.yml`
 
-CI
+**CI** — Comprueba automáticamente:
 
-Comprueba automáticamente:
+- Instalación de dependencias
+- TypeScript / Svelte
+- Formato
+- Build
 
-Instalación de dependencias
+**Versionado** — Permite incrementar `patch`, `minor` o `major`, y crear el correspondiente Git tag.
 
-TypeScript / Svelte
+**Releases** — Genera releases de GitHub a partir de las versiones etiquetadas.
 
-Formato
+**Deploy** — Gestiona el despliegue de producción en Cloudflare.
 
-Build
+**Rollback** — Permite volver a una versión anterior del despliegue cuando sea necesario.
 
-
-Versionado
-
-Permite incrementar:
-
-patch
-minor
-major
-
-y crear el correspondiente Git tag.
-
-Releases
-
-Genera releases de GitHub a partir de las versiones etiquetadas.
-
-Deploy
-
-Gestiona el despliegue de producción en Cloudflare.
-
-Rollback
-
-Permite volver a una versión anterior del despliegue cuando sea necesario.
-
-Android
-
-Genera la aplicación Android mediante Capacitor.
+**Android** — Genera la aplicación Android mediante Capacitor.
 
 > Estos workflows pueden incorporarse progresivamente al proyecto. El README describe la arquitectura prevista y no implica que todos estén activos actualmente.
 
-
-
-
 ---
 
-🌿 Flujo de trabajo
+## 🌿 Flujo de trabajo
 
 El flujo recomendado es:
 
+```text
 Nueva funcionalidad
        │
        ▼
@@ -378,9 +313,11 @@ Nueva funcionalidad
        │
        ▼
    Cloudflare
+```
 
 Para publicar una nueva versión:
 
+```text
 main
  │
  ▼
@@ -396,53 +333,44 @@ Version
        │
        ▼
       APK
-
+```
 
 ---
 
-🔐 Seguridad
+## 🔐 Seguridad
 
 No subir nunca al repositorio:
 
-.env
-.env.local
-.env.production
-API keys
-Service Role Keys
-Cloudflare API Tokens
-Credenciales privadas
+- `.env`
+- `.env.local`
+- `.env.production`
+- API keys
+- Service Role Keys
+- Cloudflare API Tokens
+- Credenciales privadas
 
 Las credenciales utilizadas por GitHub Actions deben almacenarse como GitHub Secrets.
 
-
 ---
 
-🧪 Estado del proyecto
+## 🧪 Estado del proyecto
 
-Tiendly se encuentra actualmente en:
-
-Beta activa
+Tiendly se encuentra actualmente en **beta activa**.
 
 El proyecto continúa en desarrollo y algunas funcionalidades pueden cambiar antes de la versión estable.
 
-
 ---
 
-📄 Licencia
+## 📄 Licencia
 
 Este proyecto es propiedad de Tiendly.
 
 La licencia y las condiciones de uso se definirán de acuerdo con la política del proyecto.
 
-
 ---
 
-🌐 Tiendly
+## 🌐 Tiendly
 
-Sitio web:
+Sitio web: [https://www.tiendly.lat](https://www.tiendly.lat)
 
-https://www.tiendly.lat
-
-Repositorio:
-
-https://github.com/rblez/tiendly.web
+Repositorio: [https://github.com/rblez/tiendly.web](https://github.com/rblez/tiendly.web)
