@@ -707,71 +707,111 @@ $effect(() => {
 
 	async function saveProduct() {
 		productError = '';
+
+		if (!editingStoreId) {
+			productError = 'No hay una tienda seleccionada. Recarga la página e inténtalo de nuevo.';
+			return;
+		}
 		if (!formName.trim()) {
 			productError = 'El nombre es obligatorio.';
 			return;
 		}
+
+		const priceNum = parsePrice(formPrice);
+		if (!Number.isFinite(priceNum) || priceNum < 0) {
+			productError = 'El precio debe ser un número mayor o igual que 0.';
+			return;
+		}
+
 		const stockNum = formStock.trim() === '' ? null : Number(formStock);
 		if (formStock.trim() !== '' && (Number.isNaN(stockNum) || stockNum === null || (stockNum as number) < 0)) {
 			productError = 'El stock debe ser un número mayor o igual que 0 (o déjalo vacío para no controlarlo).';
 			return;
 		}
-		formSaving = true;
-		const variants = formVariantsList
-			.filter((v) => v.label.trim())
-			.map((v) => ({
-				...v,
-				label: v.label.trim(),
-				price: Number.isFinite(Number(v.price)) ? Number(v.price) : 0,
-				options: (v.options ?? [])
-					.filter((o) => o.label.trim())
-					.map((o) => ({
-						...o,
-						label: o.label.trim(),
-						price: Number.isFinite(Number(o.price)) ? Number(o.price) : 0,
-					})),
-			}));
-		const ask = formAskList.map((s) => s.trim()).filter(Boolean);
-		const payload = {
-			name: formName.trim(),
-			description: formDescription.trim() || null,
-			price: parsePrice(formPrice),
-currency: formCurrency,
-				product_type: formProductType,
-				category: formCategory.trim() || 'General',
-			agotado: formAgotado,
-		bajo_pedido: formBajoPedido,
-		delivery_type: formDeliveryType,
-		active: formActive,
-			variants: variants as unknown as import('$lib/database.types').Json,
-			images: formImages,
-			image: formImages[0] ?? null,
-			...(hasStockColumn ? { stock: stockNum } : {}),
-			...(hasAskColumn ? { ask } : {}),
-		};
 
-		let result;
-		if (editingId) {
-			result = await supabase.from('products').update(payload).eq('id', editingId).select('id').maybeSingle();
-		} else {
-			result = await supabase.from('products').insert({
-				...payload,
-				id: uniqueProductId(formName.trim(), products.map((p) => p.id)),
-				store_id: editingStoreId,
-				position: products.length,
-			});
-		}
-
-		if (result.error || (editingId && !result.data)) {
-			productError = result.error?.message ?? 'No tienes permisos para modificar este producto o la tienda no pertenece a tu cuenta.';
-			formSaving = false;
+		const currencyNorm = (formCurrency ?? '').trim().toUpperCase();
+		if (currencyNorm !== 'CUP' && currencyNorm !== 'USD') {
+			productError = 'La moneda del producto debe ser CUP o USD.';
 			return;
 		}
 
-		editingId = null;
-		productModalOpen = false;
-		formSaving = false;
-		await reloadProducts();
+		formSaving = true;
+		try {
+			const variants = formVariantsList
+				.filter((v) => v.label.trim())
+				.map((v) => ({
+					...v,
+					label: v.label.trim(),
+					price: Number.isFinite(Number(v.price)) ? Number(v.price) : 0,
+					options: (v.options ?? [])
+						.filter((o) => o.label.trim())
+						.map((o) => ({
+							...o,
+							label: o.label.trim(),
+							price: Number.isFinite(Number(o.price)) ? Number(o.price) : 0,
+						})),
+				}));
+			const ask = formAskList.map((s) => s.trim()).filter(Boolean);
+			const payload = {
+				name: formName.trim(),
+				description: formDescription.trim() || null,
+				price: priceNum,
+				currency: currencyNorm,
+				product_type: formProductType,
+				category: formCategory.trim() || 'General',
+				agotado: formAgotado,
+				bajo_pedido: formBajoPedido,
+				delivery_type: formDeliveryType,
+				active: formActive,
+				variants: variants as unknown as import('$lib/database.types').Json,
+				images: formImages,
+				image: formImages[0] ?? null,
+				...(hasStockColumn ? { stock: stockNum } : {}),
+				...(hasAskColumn ? { ask } : {}),
+			};
+
+			let result;
+			if (editingId) {
+				result = await supabase
+					.from('products')
+					.update(payload)
+					.eq('id', editingId)
+					.eq('store_id', editingStoreId)
+					.select('id')
+					.maybeSingle();
+			} else {
+				result = await supabase
+					.from('products')
+					.insert({
+						...payload,
+						id: uniqueProductId(formName.trim(), products.map((p) => p.id)),
+						store_id: editingStoreId,
+						position: products.length,
+					})
+					.select('id')
+					.single();
+			}
+
+			if (result.error) {
+				console.error('saveProduct: error de Supabase', result.error);
+				productError = result.error.message || 'No se pudo guardar el producto. Inténtalo de nuevo.';
+				return;
+			}
+			if (!result.data) {
+				console.error('saveProduct: sin datos de confirmación', { editingId, editingStoreId });
+				productError = 'No tienes permisos para modificar este producto o la tienda no pertenece a tu cuenta.';
+				return;
+			}
+
+			editingId = null;
+			productModalOpen = false;
+			await reloadProducts();
+		} catch (err) {
+			console.error('saveProduct: excepción inesperada', err);
+			productError = err instanceof Error ? err.message : 'Error inesperado al guardar el producto.';
+		} finally {
+			formSaving = false;
+		}
 	}
 
 	function closeProductModal() {
