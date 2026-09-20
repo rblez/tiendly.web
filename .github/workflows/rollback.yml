@@ -1,0 +1,69 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag al que se quiere volver (ej. v0.0.65)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rollback:
+    name: Crear PR de rollback
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Verificar que el tag exista
+        run: |
+          if ! git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
+            echo "El tag ${{ inputs.tag }} no existe en este repositorio."
+            exit 1
+          fi
+
+      - name: Restaurar el contenido del tag sobre main
+        run: |
+          set -e
+          TAG="${{ inputs.tag }}"
+
+          # Archivos que existen en main pero no existían en el tag: hay que borrarlos.
+          git ls-tree -r main --name-only | sort > /tmp/main_files.txt
+          git ls-tree -r "$TAG" --name-only | sort > /tmp/tag_files.txt
+          comm -23 /tmp/main_files.txt /tmp/tag_files.txt > /tmp/to_delete.txt || true
+
+          if [ -s /tmp/to_delete.txt ]; then
+            xargs -a /tmp/to_delete.txt -r git rm -q --ignore-unmatch
+          fi
+
+          # Restaura el contenido exacto del tag.
+          git checkout "$TAG" -- .
+          git add -A
+
+      - name: Crear Pull Request de rollback
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: rollback/${{ inputs.tag }}
+          base: main
+          commit-message: 'revert: rollback a ${{ inputs.tag }}'
+          title: 'revert: rollback a ${{ inputs.tag }}'
+          body: |
+            PR de rollback generado manualmente vía `rollback.yml`.
+
+            Restaura el contenido del repositorio al estado del tag
+            `${{ inputs.tag }}`, como un commit hacia adelante (no reescribe
+            historia). Al mergear este PR a `main`, Cloudflare Pages
+            redesplegará automáticamente esa versión mediante su integración
+            nativa con GitHub — este workflow no toca Cloudflare directamente.
+          labels: rollback
+          delete-branch: true

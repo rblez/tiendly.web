@@ -1,0 +1,64 @@
+name: Versionar
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Tipo de incremento de versión
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: version-release
+  cancel-in-progress: false
+
+jobs:
+  bump-version:
+    name: Crear PR de release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Incrementar versión en package.json
+        id: bump
+        run: |
+          NEW_VERSION=$(npm version "${{ inputs.bump }}" --no-git-tag-version | sed 's/^v//')
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Sincronizar package-lock.json
+        run: npm install --package-lock-only
+
+      - name: Crear Pull Request de release
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release/v${{ steps.bump.outputs.version }}
+          base: main
+          commit-message: 'chore: release v${{ steps.bump.outputs.version }} [release-bot skip]'
+          title: 'chore: release v${{ steps.bump.outputs.version }} [release-bot skip]'
+          body: |
+            PR automático de release generado por `version.yml` (`${{ inputs.bump }}`).
+
+            Al mergear este PR a `main`, `release.yml` creará el tag
+            `v${{ steps.bump.outputs.version }}` y el GitHub Release correspondiente.
+          labels: release
+          delete-branch: true

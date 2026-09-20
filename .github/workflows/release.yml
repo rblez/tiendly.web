@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: version-release
+  cancel-in-progress: false
+
+jobs:
+  tag-and-release:
+    name: Crear tag y GitHub Release
+    runs-on: ubuntu-latest
+    if: "startsWith(github.event.head_commit.message, 'chore: release v')"
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Extraer versión del commit
+        id: version
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          VERSION=$(echo "$MSG" | head -n1 | sed -E 's/^chore: release v([0-9A-Za-z.\-]+).*/\1/')
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$MSG" ]; then
+            echo "No se pudo extraer la versión del mensaje de commit: $MSG"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verificar que el tag no exista ya
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "El tag ${{ steps.version.outputs.tag }} ya existe. Abortando."
+            exit 1
+          fi
+
+      - name: Crear y publicar tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Crear GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "Release ${{ steps.version.outputs.tag }}" \
+            --generate-notes
