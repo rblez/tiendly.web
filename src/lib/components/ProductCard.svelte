@@ -72,9 +72,7 @@
 			{/if}
 		</div>
 		<h3 class="text-sm sm:text-lg font-semibold text-ink leading-tight">{product.name}</h3>
-		{#if product.description}
-			<p class="text-xs sm:text-sm text-body leading-relaxed line-clamp-2">{product.description}</p>
-		{/if}
+		
 		<p class="text-base sm:text-xl font-bold text-ember">
 			{#if product.variants.length > 0}
 				Desde {displayFormat(minPrice, store)}
