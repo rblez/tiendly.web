@@ -9,7 +9,7 @@
 const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 	import { cart } from '$lib/stores/cart.svelte';
 	import { currency } from '$lib/stores/currency.svelte';
-	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery } from '$lib/utils';
+	import { SITE_URL, getUtmFromUrl, saveUtm, themeStyle, storeUrl as buildStoreUrl, utmQuery, waLink } from '$lib/utils';
 	import type { Store } from '$lib/types';
 
 	let { children, data }: {
@@ -198,9 +198,23 @@ const PUBLIC_SUPABASE_URL = publicEnv.PUBLIC_SUPABASE_URL ?? '';
 		{@render children()}
 	</main>
 	<Footer {store} onTrackOrder={openTrack} />
-	{#if data.ownerPlan === 'free' || data.ownerPlan === 'creator'}
+		{#if data.ownerPlan === 'free' || data.ownerPlan === 'creator'}
 		<CreateStoreToast />
 	{/if}
+
+	{#if store.whatsapp}
+		<a
+			href={waLink(store.whatsapp, `Hola ${store.name} 👋 Vengo desde tu tienda online de Tiendly`)}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label="Contactar por WhatsApp"
+			title="Contactar por WhatsApp"
+			class="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+		>
+			<i class="ri-whatsapp-line text-3xl" aria-hidden="true"></i>
+		</a>
+	{/if}
+
 	{#if trackModalOpen}
 		<TrackOrderModal {store} initialCode={trackCode} onClose={() => (trackModalOpen = false)} />
 	{/if}
