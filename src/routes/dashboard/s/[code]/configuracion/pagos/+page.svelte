@@ -30,9 +30,9 @@
 	};
 
 	const PAYMENT_TEMPLATES: PaymentTemplate[] = [
-		{ id: 'bandec', title: 'BANDEC', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
-		{ id: 'bpa', title: 'BPA', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
-		{ id: 'banmet', title: 'BANMET', currency: 'CUP', fieldLabels: ['Titular', 'Número de tarjeta'], proof_type: 'captura' },
+		{ id: 'bandec', title: 'BANDEC', currency: 'CUP', fieldLabels: ['Número de cuenta', 'Teléfono a confirmar'], proof_type: 'captura' },
+		{ id: 'bpa', title: 'BPA', currency: 'CUP', fieldLabels: ['Número de cuenta', 'Teléfono a confirmar'], proof_type: 'captura' },
+		{ id: 'banmet', title: 'BANMET', currency: 'CUP', fieldLabels: ['Número de cuenta', 'Teléfono a confirmar'], proof_type: 'captura' },
 		{ id: 'mitransfer', title: 'MiTransfer', currency: 'CUP', fieldLabels: ['Número de teléfono'], proof_type: 'captura', note: 'Monedero de Transfermóvil' },
 		{ id: 'saldo_movil', title: 'Saldo Móvil', currency: 'CUP', fieldLabels: ['Número de teléfono'], proof_type: 'captura', note: 'Saldo Cubacel (ETECSA)' },
 		{ id: 'qusd', title: 'QUSD', currency: 'USD', fieldLabels: ['Usuario o correo de QvaPay'], proof_type: 'captura_y_tx' },
