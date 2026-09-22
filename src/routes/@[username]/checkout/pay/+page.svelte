@@ -3,7 +3,7 @@
 	import { cart } from '$lib/stores/cart.svelte';
 	import { formatPrice, clearUtm, loadUtm, utmQuery, waLink } from '$lib/utils';
 	import { track } from '$lib/analytics';
-	import { migratePayment, renderPayment } from '$lib/payments';
+	import { migratePayment, renderPayment, templateLogoFor } from '$lib/payments';
 	import type { PaymentMethod, Store } from '$lib/types';
 
 	let { data }: { data: { store: Store } } = $props();
@@ -366,7 +366,7 @@
 								? 'border-ember/60 bg-ember/5'
 								: 'border-hairline hover:border-ember/50 hover:bg-bone'}"
 						>
-								{#if pm.image}<img src={pm.image} alt="" class="h-9 w-9 rounded-btn object-cover border border-hairline flex-shrink-0" />{:else}<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">{pm.title.slice(0, 4)}</span>{/if}
+								{#if pm.image || templateLogoFor({ templateId: pm.templateId, title: pm.title })}<img src={pm.image || templateLogoFor({ templateId: pm.templateId, title: pm.title })} alt="" class="h-9 w-9 rounded-btn object-cover border border-hairline flex-shrink-0" />{:else}<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">{pm.title.slice(0, 4)}</span>{/if}
 							<span class="flex-1 min-w-0">
 								<span class="block text-sm font-semibold text-ink truncate">{pm.title}</span>
 								<span class="block text-xs text-muted-soft truncate">{(pm.fields ?? []).filter((f) => f.value).length} datos para copiar</span>
@@ -378,7 +378,10 @@
 
 				{#if rendered}
 					<div class="border border-hairline rounded-btn p-4 bg-bone">
-						<p class="text-sm font-bold text-ink mb-3">{rendered.title}</p>
+						<div class="flex items-center gap-2 mb-3">
+							{#if rendered.logo}<img src={rendered.logo} alt="Logo de {rendered.title}" class="h-8 w-8 rounded-btn object-cover border border-hairline" />{/if}
+							<p class="text-sm font-bold text-ink">{rendered.title}</p>
+						</div>
 						<div class="space-y-2">
 							{#each rendered.fields as f (f.label + f.value)}
 								<div class="flex items-center gap-2">

@@ -31,6 +31,7 @@ export interface PaymentMethod {
 	fields: PaymentField[];
 	instructions?: string | null;
 	image?: string | null;
+	templateId?: string | null;
 	proof_type?: PaymentProofType;
 }
 

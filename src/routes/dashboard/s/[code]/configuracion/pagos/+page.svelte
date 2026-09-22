@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
-	import { migratePayment } from '$lib/payments';
+	import { migratePayment, templateLogoFor } from '$lib/payments';
 	import { fileToDataUrl } from '$lib/utils';
 	import type { PaymentCurrency, PaymentMethod } from '$lib/types';
 	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
@@ -58,10 +58,16 @@
 				currency: t.currency,
 				fields: t.fieldLabels.map((label) => ({ id: newId(), label, value: '' })),
 				instructions: t.note ?? null,
+				templateId: t.id,
 				proof_type: t.proof_type
 			}
 		];
 		templatePickerOpen = false;
+	}
+
+	/** true si el método usa un logo oficial fijo (no personalizable). */
+	function isFixedLogo(pm: PaymentMethod): boolean {
+		return !!templateLogoFor({ templateId: pm.templateId, title: pm.title });
 	}
 
 	onMount(async () => {
@@ -93,9 +99,10 @@
 
 	async function save() {
 		saving = true; error = ''; msg = '';
-		// Foto obligatoria: cada método con título y al menos un dato debe tener imagen.
+		// Foto obligatoria: cada método con título y al menos un dato debe tener imagen,
+		// salvo los que ya tienen logo oficial fijo de plantilla.
 		const missingImage = payments
-			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()))
+			.filter((p) => p.title.trim() && p.fields.some((f) => f.value.trim()) && !isFixedLogo(p))
 			.find((p) => !p.image);
 		if (missingImage) {
 			saving = false;
@@ -112,6 +119,7 @@
 					.map((f) => ({ id: f.id, label: f.label.trim(), value: f.value.trim() })),
 				instructions: p.instructions?.trim() || null,
 				image: p.image || null,
+				templateId: p.templateId || null,
 				proof_type: p.proof_type || 'captura',
 				currency: (p.currency === 'CUP' || p.currency === 'USD' ? p.currency : 'ambas') as PaymentCurrency
 			}));
@@ -148,12 +156,17 @@
 						<div class="border border-hairline rounded-btn p-3">
 							<div class="flex items-start gap-3">
 								<div class="shrink-0">
-									{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-error/60 flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
-									<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline">
-										<span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span>
-										{#if !pm.image}<span class="ml-1 inline-flex items-center gap-0.5 text-error font-semibold"><i class="ri-asterisk"></i>Requerida</span>{/if}
-										<input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} />
-									</label>
+									{#if isFixedLogo(pm)}
+										<img src={templateLogoFor({ templateId: pm.templateId, title: pm.title })} alt="Logo oficial de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />
+										<p class="mt-1 text-[11px] text-muted-soft">Logo oficial</p>
+									{:else}
+										{#if pm.image}<img src={pm.image} alt="Logo de {pm.title || 'método de pago'}" class="h-12 w-12 rounded-btn object-cover border border-hairline" />{:else}<div class="h-12 w-12 rounded-btn bg-bone border border-dashed border-error/60 flex items-center justify-center text-muted-soft"><i class="ri-bank-card-line"></i></div>{/if}
+										<label class="mt-1 block cursor-pointer text-[11px] font-medium text-ember hover:underline">
+											<span>{pm.image ? 'Cambiar foto' : 'Añadir foto'}</span>
+											{#if !pm.image}<span class="ml-1 inline-flex items-center gap-0.5 text-error font-semibold"><i class="ri-asterisk"></i>Requerida</span>{/if}
+											<input type="file" accept="image/*" class="hidden" onchange={(e) => handleMethodImage(e, i)} />
+										</label>
+									{/if}
 								</div>
 								<div class="flex-1 min-w-0 space-y-2">
 									<input type="text" bind:value={pm.title} placeholder="Nombre del método (ej. PayPal, Transfermóvil)" class="input input-sm w-full" />

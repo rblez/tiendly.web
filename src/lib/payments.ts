@@ -7,6 +7,43 @@ const LEGACY_BANK_LABELS: Record<string, string> = {
 	monedero: 'Monedero MiTransfer',
 };
 
+// Logos oficiales fijos por método de pago de plantilla. No editables por el
+// vendedor: viven como assets estáticos en /static/banks/.
+export const TEMPLATE_LOGOS: Record<string, string> = {
+	bandec: '/banks/bandec.png',
+	bpa: '/banks/bpa.png',
+	banmet: '/banks/banmet.png',
+	mitransfer: '/banks/bolsa_mitransfer.png',
+	saldo_movil: '/banks/saldo_movil.png',
+	qusd: '/banks/qvapay.png',
+	zelle: '/banks/zelle.png',
+	paypal: '/banks/paypal.png',
+	usdt: '/banks/usdt.png',
+};
+
+// Para métodos ya guardados antes de que existiera `templateId`: se
+// identifican por el título exacto que usa cada plantilla.
+const TITLE_TO_TEMPLATE_ID: Record<string, string> = {
+	bandec: 'bandec',
+	bpa: 'bpa',
+	banmet: 'banmet',
+	mitransfer: 'mitransfer',
+	'saldo móvil': 'saldo_movil',
+	qusd: 'qusd',
+	zelle: 'zelle',
+	paypal: 'paypal',
+	usdt: 'usdt',
+};
+
+/** Resuelve el logo fijo de plantilla para un método, o null si es personalizado. */
+export function templateLogoFor(input: { templateId?: string | null; title?: string | null }): string | null {
+	const byId = input.templateId ? TEMPLATE_LOGOS[input.templateId] : undefined;
+	if (byId) return byId;
+	const normalizedTitle = (input.title ?? '').trim().toLowerCase();
+	const idFromTitle = TITLE_TO_TEMPLATE_ID[normalizedTitle];
+	return idFromTitle ? TEMPLATE_LOGOS[idFromTitle] : null;
+}
+
 export interface RenderedPaymentField {
 	label: string;
 	value: string;
@@ -16,6 +53,7 @@ export interface RenderedPayment {
 	title: string;
 	fields: RenderedPaymentField[];
 	instructions: string;
+	logo: string | null;
 }
 
 let _id = 0;
@@ -42,6 +80,7 @@ export function migratePayment(pm: unknown): PaymentMethod | null {
 				.map((f) => ({ id: f.id || newId(), label: (f.label ?? '').trim(), value: (f.value ?? '').trim() })),
 			instructions: ((pm as { instructions?: string | null }).instructions ?? '').trim() || null,
 			image: typeof (pm as { image?: unknown }).image === 'string' ? (pm as { image: string }).image : null,
+			templateId: typeof (pm as { templateId?: unknown }).templateId === 'string' ? (pm as { templateId: string }).templateId : null,
 			proof_type: ['captura', 'captura_y_tx', 'hash', 'ninguno'].includes(String((pm as { proof_type?: string }).proof_type)) ? (pm as { proof_type: PaymentMethod['proof_type'] }).proof_type : 'captura'
 		};
 	}
@@ -76,5 +115,6 @@ export function renderPayment(pm: unknown): RenderedPayment | null {
 		title: migrated.title || 'Pago manual',
 		fields: migrated.fields.filter((f) => f.value.trim()),
 		instructions: migrated.instructions ?? '',
+		logo: migrated.image || templateLogoFor({ templateId: migrated.templateId, title: migrated.title }),
 	};
 }
