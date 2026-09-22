@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 /* ============ TOKENS ============ */
+
 html {
 	-webkit-tap-highlight-color: transparent;
 }
@@ -123,6 +124,7 @@ body {
 }
 
 /* Textura casi imperceptible */
+
 body::before {
 	position: fixed;
 	inset: 0;
@@ -150,12 +152,37 @@ h6 {
 	letter-spacing: -0.02em;
 	font-weight: 500 !important;
 }
+
+/* ============ THEME TOGGLE GLOBAL ============ */
+
+/*
+ * El toggle vive fijo en el footer:
+ * - izquierda
+ * - respetando el área segura del dispositivo
+ * - por encima del contenido
+ * - sin bloquear otros elementos
+ */
+
 .global-theme-toggle {
-		position: fixed;
-		top: 16px;
-		right: 16px;
-		z-index: 100;
+	position: fixed;
+	left: 1rem;
+	bottom: calc(1rem + env(safe-area-inset-bottom));
+	z-index: 40;
+	pointer-events: none;
+}
+
+.global-theme-toggle :global(.theme-toggle) {
+	pointer-events: auto;
+}
+
+/* En pantallas pequeñas */
+
+@media (max-width: 480px) {
+	.global-theme-toggle {
+		left: 0.75rem;
+		bottom: calc(0.75rem + env(safe-area-inset-bottom));
 	}
+}
 
 .font-display {
 	font-family: 'Poppins';
@@ -293,6 +320,7 @@ select option {
 }
 
 /* Primario */
+
 .btn-3d {
 	background: var(--accent);
 	border: 1px solid color-mix(in srgb, var(--accent-active) 55%, #000000 45%);
@@ -319,6 +347,7 @@ select option {
 }
 
 /* Acrylic */
+
 .acrylic {
 	background-color: color-mix(in srgb, var(--color-card) 78%, transparent);
 	-webkit-backdrop-filter: blur(18px) saturate(135%);
@@ -327,6 +356,7 @@ select option {
 }
 
 /* Secundario */
+
 .btn-secondary {
 	background-color: var(--color-bone);
 	border: 1px solid var(--color-hairline);
@@ -339,6 +369,7 @@ select option {
 }
 
 /* Sólido oscuro */
+
 .btn-ink {
 	background-color: var(--color-ink);
 	border: 1px solid var(--color-ink);
@@ -350,6 +381,7 @@ select option {
 }
 
 /* Fantasma */
+
 .btn-ghost {
 	background: transparent;
 	border: 1px solid transparent;
@@ -362,6 +394,7 @@ select option {
 }
 
 /* Peligro */
+
 .btn-danger {
 	background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent);
@@ -374,6 +407,7 @@ select option {
 }
 
 /* CTA */
+
 .cta-primary {
 	display: inline-flex;
 	align-items: center;
