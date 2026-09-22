@@ -9,7 +9,8 @@
 	import { theme } from '$lib/stores/theme.svelte';
 	import { trackPageView } from '$lib/analytics';
 	import { SITE_URL } from '$lib/utils';
-	let { children } = $props();
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+    let { children } = $props();
 	let isNativeApp = $state(false);
 
 	$effect(() => {
@@ -63,6 +64,9 @@
 	<OfflineBanner />
 	<Analytics />
 	<ToastContainer />
+    <div class="global-theme-toggle">
+	<ThemeToggle />
+    </div>
 	<main class="min-h-[calc(100vh-4rem)]">
 	{@render children()}
 </main>
