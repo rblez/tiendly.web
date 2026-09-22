@@ -8,11 +8,9 @@ html {
 :root {
 	color-scheme: light;
 
-	/* Accent (color de marca / tienda) */
 	--accent: #22c55e;
 	--accent-active: #16a34a;
 
-	/* Paleta de superficie y texto */
 	--c-canvas: #ffffff;
 	--c-canvas-soft: #f9fafb;
 	--c-bone: #f3f4f6;
@@ -72,8 +70,8 @@ html {
 	--color-ember-active: var(--accent-active);
 	--color-glow: var(--c-glow);
 
-	--font-sans: sans-serif;
-	--font-display: 'General Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--font-sans: 'General Sans';
+	--font-display: 'General Sans';
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	--spacing-section: 80px;
@@ -84,7 +82,6 @@ html {
 }
 
 @theme {
-	/* Escala de espaciado del sistema */
 	--space-1: 4px;
 	--space-2: 8px;
 	--space-3: 12px;
@@ -98,11 +95,19 @@ html {
 	--space-20: 80px;
 	--space-24: 96px;
 
-	/* Duración de animaciones */
 	--duration: 200ms;
 }
 
 /* ============ FONTS ============ */
+
+@font-face {
+	font-family: 'General Sans';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/GeneralSans-Medium.otf') format('opentype');
+}
+
 @font-face {
 	font-family: 'General Sans';
 	font-style: normal;
@@ -111,18 +116,25 @@ html {
 	src: url('/fonts/GeneralSans-Medium.otf') format('opentype');
 }
 
-
 /* ============ BASE ============ */
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+	font-family: 'General Sans';
+}
+
 body {
 	background-color: var(--color-canvas);
 	color: var(--color-ink);
-	font-family: var(--font-sans);
 	font-weight: 400;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Textura casi imperceptible para dar profundidad sin competir con el contenido. */
 body::before {
 	position: fixed;
 	inset: 0;
@@ -146,26 +158,23 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-display);
+	font-family: 'General Sans';
 	letter-spacing: -0.02em;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.font-display {
 	font-weight: 500 !important;
 }
 
 .font-display {
-	font-family: var(--font-display);
+	font-family: 'General Sans';
 }
 
 button {
-	font-family: var(--font-sans);
+	font-family: 'General Sans';
+}
+
+input,
+textarea,
+select {
+	font-family: 'General Sans';
 }
 
 input[type='color'] {
@@ -176,74 +185,68 @@ input[type='color'] {
 	background: none;
 	cursor: pointer;
 }
+
 input[type='color']::-webkit-color-swatch-wrapper {
 	padding: 0;
 }
+
 input[type='color']::-webkit-color-swatch {
 	border: 1px solid var(--color-hairline);
 	border-radius: var(--radius-btn);
 }
 
 .select-pill {
-		appearance: none;
-		cursor: pointer;
-		padding: 0.5rem 2rem 0.5rem 0.95rem;
-		border-radius: 9999px;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
-		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
-		color: var(--color-ink);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 8%, transparent);
-		transition:
-			border-color 0.2s ease,
-			background-color 0.2s ease,
-			box-shadow 0.2s ease;
-	}
+	appearance: none;
+	cursor: pointer;
+	padding: 0.5rem 2rem 0.5rem 0.95rem;
+	border-radius: 9999px;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+	background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+	color: var(--color-ink);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 8%, transparent);
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
 
-	.select-pill:hover {
-		border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-		background-color: color-mix(in srgb, var(--accent) 10%, transparent);
-	}
+.select-pill:hover {
+	border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+}
 
-	.select-pill:focus {
-		outline: none;
-		border-color: var(--accent);
-		box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
-	}
+.select-pill:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
 
-	select {
-		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-	}
+select {
+	background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
 
-	select:focus {
-		background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
-	}
-
-	select option {
-		background-color: var(--color-card);
-		color: var(--color-ink);
-	}
-
-
-.select-pill-sm {
-  padding: 0.35rem 0.9rem 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  }
+select:focus {
+	background-color: color-mix(in srgb, var(--color-card) 58%, transparent);
+}
 
 select option {
 	background-color: var(--color-card);
 	color: var(--color-ink);
 }
 
+.select-pill-sm {
+	padding: 0.35rem 0.9rem 0.35rem 0.75rem;
+	font-size: 0.75rem;
+}
+
 /* ============ DESIGN SYSTEM ============ */
 
-/* ---- Botones ---- */
-/* Base: layout + estados. Tamaños con .btn-sm / .btn-md / .btn-lg (md por defecto) */
 .btn {
 	display: inline-flex;
 	align-items: center;
@@ -263,28 +266,32 @@ select option {
 		background-color 0.15s ease,
 		color 0.15s ease;
 }
+
 .btn:active {
 	transform: translateY(1px);
 }
+
 .btn:disabled {
 	opacity: 0.55;
 	cursor: not-allowed;
 	filter: none;
 }
+
 .btn-sm {
 	padding: 0.45rem 0.9rem;
 	font-size: 0.8125rem;
 }
+
 .btn-md {
 	padding: 0.625rem 1.25rem;
 	font-size: 0.875rem;
 }
+
 .btn-lg {
 	padding: 0.75rem 1.5rem;
 	font-size: 0.9375rem;
 }
 
-/* Primario con profundidad sutil: limpio, con un pequeño borde inferior */
 .btn-3d {
 	background: var(--accent);
 	border: 1px solid color-mix(in srgb, var(--accent-active) 55%, #000000 45%);
@@ -311,56 +318,55 @@ select option {
 }
 
 .acrylic {
-		background-color: color-mix(in srgb, var(--color-card) 78%, transparent);
-		-webkit-backdrop-filter: blur(18px) saturate(135%);
-		backdrop-filter: blur(18px) saturate(135%);
-		box-shadow: 0 10px 30px color-mix(in srgb, var(--color-ink) 4%, transparent);
-	}
+	background-color: color-mix(in srgb, var(--color-card) 78%, transparent);
+	-webkit-backdrop-filter: blur(18px) saturate(135%);
+	backdrop-filter: blur(18px) saturate(135%);
+	box-shadow: 0 10px 30px color-mix(in srgb, var(--color-ink) 4%, transparent);
+}
 
-/* Secundario: neutro con borde */
 .btn-secondary {
 	background-color: var(--color-bone);
 	border: 1px solid var(--color-hairline);
 	color: var(--color-ink);
 }
+
 .btn-secondary:hover {
 	border-color: color-mix(in srgb, var(--accent) 55%, #ffffff 45%);
 	color: var(--color-ink);
 }
 
-/* Sólido oscuro: para fondos donde el primario no resalta */
 .btn-ink {
 	background-color: var(--color-ink);
 	border: 1px solid var(--color-ink);
 	color: var(--color-canvas);
 }
+
 .btn-ink:hover {
 	filter: brightness(1.15);
 }
 
-/* Fantasma: sin fondo */
 .btn-ghost {
 	background: transparent;
 	border: 1px solid transparent;
 	color: var(--color-body);
 }
+
 .btn-ghost:hover {
 	background: var(--color-bone);
 	color: var(--color-ink);
 }
 
-/* Peligro: destructivo */
 .btn-danger {
 	background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	border: 1px solid color-mix(in srgb, var(--color-error) 25%, transparent);
 	color: var(--color-error);
 }
+
 .btn-danger:hover {
 	background: var(--color-error);
 	color: #ffffff;
 }
 
-/* CTA de landing: usa la misma geometría del sistema (md+) */
 .cta-primary {
 	display: inline-flex;
 	align-items: center;
@@ -392,14 +398,12 @@ select option {
 	transform: translateY(2px);
 }
 
-/* ---- Cards ---- */
 .card {
 	background-color: var(--color-card);
 	border: 1px solid var(--color-hairline);
 	border-radius: var(--radius-card);
 }
 
-/* ---- Inputs ---- */
 .input {
 	width: 100%;
 	padding-top: 0.625rem;
@@ -416,14 +420,17 @@ select option {
 		box-shadow 0.15s ease,
 		background-color 0.15s ease;
 }
+
 .input::placeholder {
 	color: var(--color-muted-soft);
 }
+
 .input:focus {
 	outline: none;
 	border-color: var(--accent);
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
+
 .input-sm {
 	padding-top: 0.45rem;
 	padding-bottom: 0.45rem;
@@ -432,7 +439,6 @@ select option {
 	font-size: 0.8125rem;
 }
 
-/* ---- Chips / badges ---- */
 .chip {
 	display: inline-flex;
 	align-items: center;
@@ -444,7 +450,6 @@ select option {
 	white-space: nowrap;
 }
 
-/* ---- Estado vacío ---- */
 .empty-state {
 	text-align: center;
 	padding: 4rem 1.5rem;
@@ -453,24 +458,25 @@ select option {
 	border-radius: var(--radius-card);
 }
 
-/* Scrollbar fina para áreas internas (wizard, listas) */
 .scroll-thin {
 	scrollbar-width: thin;
 	scrollbar-color: var(--color-hairline) transparent;
 }
+
 .scroll-thin::-webkit-scrollbar {
 	width: 6px;
 	height: 6px;
 }
+
 .scroll-thin::-webkit-scrollbar-thumb {
 	background: var(--color-hairline);
 	border-radius: 9999px;
 }
+
 .scroll-thin::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-/* Entrada de pasos del wizard */
 @keyframes step-in {
 	from {
 		opacity: 0;
@@ -481,11 +487,11 @@ select option {
 		transform: translateY(0);
 	}
 }
+
 .step-enter {
 	animation: step-in 0.3s ease both;
 }
 
-/* ── Panel (dashboard): HyperOS flat style, sin botones 3D ─────────────── */
 [data-panel] .btn-3d {
 	background: var(--accent);
 	background-image: none;
@@ -496,11 +502,13 @@ select option {
 	color: #ffffff;
 	font-weight: 600;
 }
+
 [data-panel] .btn-3d:hover {
 	background: var(--accent-active);
 	background-image: none;
 	box-shadow: 0 1px 0 color-mix(in srgb, var(--accent-active) 78%, #000000 22%);
 }
+
 [data-panel] .btn-3d:active {
 	background: var(--accent-active);
 	background-image: none;
@@ -508,6 +516,7 @@ select option {
 	box-shadow: none;
 	transform: translateY(1px);
 }
+
 [data-panel] .btn-3d:disabled,
 [data-panel] .btn-3d.opacity-75 {
 	background: var(--accent);
