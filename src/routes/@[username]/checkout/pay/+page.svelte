@@ -366,16 +366,11 @@
 								? 'border-ember/60 bg-ember/5'
 								: 'border-hairline hover:border-ember/50 hover:bg-bone'}"
 						>
-								{@const officialLogo = templateLogoFor({
-	templateId: pm.templateId,
-	title: pm.title
-})}
+								
 
-{@const paymentLogo = officialLogo ?? pm.image}
-
-{#if paymentLogo}
+ {#if templateLogoFor({ templateId: pm.templateId, title: pm.title }) || pm.image}
 	<img
-		src={paymentLogo}
+		src={templateLogoFor({ templateId: pm.templateId, title: pm.title }) || pm.image}
 		alt=""
 		aria-hidden="true"
 		class="h-10 w-10 flex-shrink-0 rounded-btn object-contain border border-hairline bg-canvas p-1.5"
