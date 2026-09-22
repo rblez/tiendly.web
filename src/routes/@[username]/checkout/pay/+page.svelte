@@ -370,7 +370,7 @@
     <img
         src={templateLogoFor({ templateId: pm.templateId, title: pm.title }) || pm.image}
         alt={pm.title}
-        ...
+       
     />
 {:else}<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">{pm.title.slice(0, 4)}</span>{/if}
 							<span class="flex-1 min-w-0">
