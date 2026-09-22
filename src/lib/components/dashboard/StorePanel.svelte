@@ -725,11 +725,16 @@ $effect(() => {
 			return;
 		}
 
-		const stockNum = formStock.trim() === '' ? null : Number(formStock);
-		if (formStock.trim() !== '' && (Number.isNaN(stockNum) || stockNum === null || (stockNum as number) < 0)) {
-			productError = 'El stock debe ser un número mayor o igual que 0 (o déjalo vacío para no controlarlo).';
-			return;
-		}
+		const stockRaw = String(formStock ?? '').trim();
+const stockNum = stockRaw === '' ? null : Number(stockRaw);
+
+if (
+    stockRaw !== '' &&
+    (!Number.isFinite(stockNum) || !Number.isInteger(stockNum) || stockNum < 0)
+) {
+    productError = 'El stock debe ser un número entero mayor o igual que 0 (o déjalo vacío para no controlarlo).';
+    return;
+}
 
 		const currencyNorm = (formCurrency ?? '').trim().toUpperCase();
 		if (currencyNorm !== 'CUP' && currencyNorm !== 'USD') {
