@@ -5,6 +5,7 @@ import { socialIcon, storeSocials } from '$lib/socials';
 import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
 import { theme } from '$lib/stores/theme.svelte';
 import type { Store } from '$lib/types';
+import { migratePayment, templateLogoFor } from '$lib/payments';
 
 let { store = null, onTrackOrder = null }: { store?: Store | null; onTrackOrder?: ((code: string) => void) | null } = $props();
 
