@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { uploadImage } from '$lib/utils';
+	import { errorMessage, toast } from '$lib/stores/toast.svelte';
 	import { PLAN_MAP } from '$lib/plans';
 	import { supabase } from '$lib/supabase/client';
 	import SettingsSection from '$lib/components/settings/SettingsSection.svelte';
@@ -51,8 +52,9 @@
 		try {
 			const url = await uploadImage(file, 'logo');
 			await auth.updateProfile({ avatar_url: url });
-		} catch {
-			error = 'No se pudo subir la foto.';
+		} catch (err) {
+			error = errorMessage(err) || 'No se pudo subir la foto.';
+			toast.error(err);
 		} finally {
 			uploading = false;
 		}

@@ -192,16 +192,41 @@ export function imageSrcset(src: string | null | undefined): string | null {
 export type UploadKind = 'logo' | 'product';
 
 export async function uploadImage(file: File, kind: UploadKind = 'product'): Promise<string> {
-	const form = new FormData();
-	form.append('file', file);
-	form.append('kind', kind);
-	const headers: Record<string, string> = {};
+	const send = async (token: string | undefined) => {
+		const form = new FormData();
+		form.append('file', file);
+		form.append('kind', kind);
+		const headers: Record<string, string> = {};
+		if (token) headers.Authorization = `Bearer ${token}`;
+		return fetch('/api/upload-image', { method: 'POST', headers, body: form });
+	};
+
 	const { data } = await supabase.auth.getSession();
-	if (data.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`;
-	const res = await fetch('/api/upload-image', { method: 'POST', headers, body: form });
-	const json = await res.json();
-	if (!res.ok) throw new Error(json.error || 'Error al subir la imagen');
-	return json.url as string;
+	if (!data.session) throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+	let res = await send(data.session.access_token);
+	if (res.status === 401) {
+		const refreshed = await supabase.auth.refreshSession();
+		if (!refreshed.data.session) throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+		res = await send(refreshed.data.session.access_token);
+	}
+
+	let json: { error?: string; message?: string; url?: string } = {};
+	try {
+		json = (await res.json()) as typeof json;
+	} catch {
+		json = {};
+	}
+	if (!res.ok) {
+		const fallback: Record<number, string> = {
+			401: 'Tu sesión expiró. Inicia sesión de nuevo.',
+			403: 'No tienes permisos para subir imágenes.',
+			429: 'Alcanzaste el límite de subidas. Inténtalo más tarde.',
+			500: 'El servidor no pudo procesar la imagen.',
+		};
+		throw new Error(json.error || json.message || fallback[res.status] || `Error al subir la imagen (${res.status}).`);
+	}
+	if (!json.url) throw new Error('El servidor no devolvió la imagen subida.');
+	return json.url;
 }
 
 export function themeStyle(store: { theme_color: string }): string {

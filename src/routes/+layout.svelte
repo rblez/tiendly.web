@@ -5,6 +5,7 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Analytics from '$lib/components/seo/Analytics.svelte';
+	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { trackPageView } from '$lib/analytics';
 	import { SITE_URL } from '$lib/utils';
@@ -61,6 +62,7 @@
 
 	<OfflineBanner />
 	<Analytics />
+	<ToastContainer />
 	<main class="min-h-[calc(100vh-4rem)]">
 	{@render children()}
 </main>

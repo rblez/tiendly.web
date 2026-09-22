@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase/client';
 	import { uploadImage, productImage } from '$lib/utils';
+ import { errorMessage, toast } from '$lib/stores/toast.svelte';
 	import { onMount } from 'svelte';
 
 	let storeCode = $derived($page.params.code ?? '');
@@ -35,7 +36,7 @@
 	async function handleLogo(e:Event){
 		const input=e.target as HTMLInputElement; const file=input.files?.[0]; if(!file) return;
 		saving=true; error='';
-		try{ const url=await uploadImage(file,'logo'); logo=url; }catch{ error='No se pudo subir el logo.'; }
+		try{ const url=await uploadImage(file,'logo'); logo=url; }catch(err){ error=errorMessage(err) || 'No se pudo subir el logo.'; toast.error(err); }
 		saving=false; input.value='';
 	}
 	async function removeLogo(){
