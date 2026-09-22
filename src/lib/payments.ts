@@ -111,10 +111,15 @@ export function renderPayment(pm: unknown): RenderedPayment | null {
 	if (!pm || typeof pm !== 'object') return null;
 	const migrated = migratePayment(pm);
 	if (!migrated) return null;
-	return {
-		title: migrated.title || 'Pago manual',
-		fields: migrated.fields.filter((f) => f.value.trim()),
-		instructions: migrated.instructions ?? '',
-		logo: migrated.image || templateLogoFor({ templateId: migrated.templateId, title: migrated.title }),
-	};
+	const officialLogo = templateLogoFor({
+    templateId: migrated.templateId,
+    title: migrated.title
+});
+
+return {
+    title: migrated.title || 'Pago manual',
+    fields: migrated.fields.filter((f) => f.value.trim()),
+    instructions: migrated.instructions ?? '',
+    logo: officialLogo ?? migrated.image ?? null,
+};
 }
