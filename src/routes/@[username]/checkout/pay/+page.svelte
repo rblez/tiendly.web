@@ -366,13 +366,27 @@
 								? 'border-ember/60 bg-ember/5'
 								: 'border-hairline hover:border-ember/50 hover:bg-bone'}"
 						>
-								{#if templateLogoFor({ templateId: pm.templateId, title: pm.title }) || pm.image}
-    <img
-        src={templateLogoFor({ templateId: pm.templateId, title: pm.title }) || pm.image}
-        alt={pm.title}
-       
-    />
-{:else}<span class="h-9 w-9 flex items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase flex-shrink-0">{pm.title.slice(0, 4)}</span>{/if}
+								{@const officialLogo = templateLogoFor({
+	templateId: pm.templateId,
+	title: pm.title
+})}
+
+{@const paymentLogo = officialLogo ?? pm.image}
+
+{#if paymentLogo}
+	<img
+		src={paymentLogo}
+		alt=""
+		aria-hidden="true"
+		class="h-10 w-10 flex-shrink-0 rounded-btn object-contain border border-hairline bg-canvas p-1.5"
+	/>
+{:else}
+	<span
+		class="h-10 w-10 flex flex-shrink-0 items-center justify-center rounded-btn bg-bone border border-hairline text-[11px] font-black text-ember uppercase"
+	>
+		{pm.title.slice(0, 4)}
+	</span>
+{/if}
 							<span class="flex-1 min-w-0">
 								<span class="block text-sm font-semibold text-ink truncate">{pm.title}</span>
 								<span class="block text-xs text-muted-soft truncate">{(pm.fields ?? []).filter((f) => f.value).length} datos para copiar</span>
