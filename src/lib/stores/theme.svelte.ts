@@ -2,7 +2,7 @@ export type ThemePref = 'dark' | 'light' | 'auto';
 export type ResolvedTheme = 'dark' | 'light';
 
 // Modo claro desactivado temporalmente (reactivar: cambiar a true)
-const LIGHT_ENABLED = false;
+const LIGHT_ENABLED = true;
 
 const STORAGE_KEY = 'tiendly-theme';
 const media = () => window.matchMedia('(prefers-color-scheme: light)');
