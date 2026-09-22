@@ -8,6 +8,7 @@ import { supabase } from '$lib/supabase/client';
 	import { theme } from '$lib/stores/theme.svelte';
 	import type { Coupon, DeliveryConfig, DeliveryZone, Order, PaymentMethod, Product, Store, Variant } from '$lib/types';
 	import { formatPrice, parsePrice, productImage, slugify, storeUrl, uniqueProductId, uploadImage, vendorCurrency, waLink } from '$lib/utils';
+	import { errorMessage, toast } from '$lib/stores/toast.svelte';
 	import { migratePayment, renderPayment } from '$lib/payments';
 	import { exportOrdersCsv, exportProductsCsv } from '$lib/export';
 	import { SOCIAL_NETWORKS as NETWORKS, socialHandle, socialIcon, socialUrl, type SocialKey as SocialKeyType } from '$lib/socials';
@@ -643,9 +644,10 @@ $effect(() => {
 			for (const file of files) {
 				formImages.push(await uploadImage(file, "product"));
 			}
-		} catch {
-			productError = 'No se pudieron subir las imágenes.';
-		}
+	} catch (err) {
+		productError = errorMessage(err) || 'No se pudieron subir las imágenes.';
+		toast.error(err);
+	}
 		input.value = '';
 	}
 
@@ -806,10 +808,10 @@ $effect(() => {
 			editingId = null;
 			productModalOpen = false;
 			await reloadProducts();
-		} catch (err) {
-			console.error('saveProduct: excepción inesperada', err);
-			productError = err instanceof Error ? err.message : 'Error inesperado al guardar el producto.';
-		} finally {
+	} catch (err) {
+		productError = errorMessage(err) || 'Error inesperado al guardar el producto.';
+		toast.error(err);
+	} finally {
 			formSaving = false;
 		}
 	}
@@ -1217,8 +1219,9 @@ $effect(() => {
 			const url = await uploadImage(file, 'logo');
 			await supabase.from('stores').update({ logo: url }).eq('id', store.id);
 			store = { ...store, logo: url };
-		} catch {
-			settingsError = 'No se pudo subir el logo.';
+	} catch (err) {
+		settingsError = errorMessage(err) || 'No se pudo subir el logo.';
+		toast.error(err);
 		}
 		input.value = '';
 	}

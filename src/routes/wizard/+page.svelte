@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabase/client';
+  import { errorMessage, toast } from '$lib/stores/toast.svelte';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
 	import { ensureUniqueSlug, generateStoreCode, slugify } from '$lib/utils';
@@ -65,8 +66,9 @@
 			if (storeError) throw storeError;
 			createdCode = store.code;
 			completed = true;
-		} catch (e) {
-			error = e instanceof Error ? `No se pudo crear tu tienda: ${e.message}` : 'No se pudo crear tu tienda. Inténtalo de nuevo.';
+} catch (e) {
+  error = e instanceof Error ? `No se pudo crear tu tienda: ${e.message}` : 'No se pudo crear tu tienda. Inténtalo de nuevo.';
+  toast.error(e);
 		} finally { creating = false; }
 	}
 
