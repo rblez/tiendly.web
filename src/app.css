@@ -150,6 +150,12 @@ h6 {
 	letter-spacing: -0.02em;
 	font-weight: 500 !important;
 }
+.global-theme-toggle {
+		position: fixed;
+		top: 16px;
+		right: 16px;
+		z-index: 100;
+	}
 
 .font-display {
 	font-family: 'Poppins';
