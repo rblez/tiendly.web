@@ -11,9 +11,21 @@ let { store = null, onTrackOrder = null }: { store?: Store | null; onTrackOrder?
 const socials = $derived(storeSocials(store));
 // Solo se muestran en el footer los métodos con imagen (la foto es obligatoria al guardar).
 const footerPayments = $derived(
-	(store?.payments ?? [])
-		.filter((p) => p && p.title && p.image)
-		.map((p) => ({ id: p.id, title: p.title, image: p.image as string }))
+    (store?.payments ?? [])
+        .map((p) => migratePayment(p))
+        .filter((p) => p && p.title)
+        .map((p) => ({
+            id: p!.id,
+            title: p!.title,
+            image:
+                templateLogoFor({
+                    templateId: p!.templateId,
+                    title: p!.title
+                }) ??
+                p!.image ??
+                null
+        }))
+        .filter((p) => p.image)
 );
 const year = new Date().getFullYear();
 
