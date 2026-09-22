@@ -1,10 +1,26 @@
 <script lang="ts">
 	import { theme, type ThemePref } from '$lib/stores/theme.svelte';
 
-	const options: { value: ThemePref; label: string; icon: string }[] = [
-		{ value: 'light', label: 'Claro', icon: '☀' },
-		{ value: 'dark', label: 'Oscuro', icon: '☾' },
-		{ value: 'auto', label: 'Auto', icon: '◐' }
+	const options: {
+		value: ThemePref;
+		label: string;
+		icon: string;
+	}[] = [
+		{
+			value: 'light',
+			label: 'Claro',
+			icon: 'ri-sun-line'
+		},
+		{
+			value: 'dark',
+			label: 'Oscuro',
+			icon: 'ri-moon-line'
+		},
+		{
+			value: 'auto',
+			label: 'Automático',
+			icon: 'ri-contrast-2-line'
+		}
 	];
 
 	function setTheme(value: ThemePref) {
@@ -23,10 +39,10 @@
 			class:active={theme.pref === option.value}
 			aria-label={`Tema ${option.label}`}
 			aria-pressed={theme.pref === option.value}
+			title={option.label}
 			onclick={() => setTheme(option.value)}
 		>
-			<span class="icon">{option.icon}</span>
-			<span class="label">{option.label}</span>
+			<i class={option.icon} aria-hidden="true"></i>
 		</button>
 	{/each}
 </div>
@@ -35,60 +51,88 @@
 	.theme-toggle {
 		display: inline-flex;
 		align-items: center;
-		gap: 2px;
-		padding: 3px;
+		gap: 3px;
+		padding: 4px;
 		border: 1px solid var(--color-hairline);
-		border-radius: 9999px;
-		background: var(--color-card);
-		box-shadow: 0 2px 10px var(--color-glow);
+		border-radius: 999px;
+		background: color-mix(
+			in srgb,
+			var(--color-card) 94%,
+			transparent
+		);
+		box-shadow:
+			0 2px 8px color-mix(
+				in srgb,
+				var(--color-ink) 8%,
+				transparent
+			),
+			inset 0 1px 0 color-mix(
+				in srgb,
+				var(--color-ink) 4%,
+				transparent
+			);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 	}
 
 	button {
-		display: inline-flex;
+		display: flex;
+		width: 38px;
+		height: 32px;
 		align-items: center;
 		justify-content: center;
-		gap: 5px;
-		height: 32px;
-		padding: 0 10px;
+		padding: 0;
 		border: 0;
-		border-radius: 9999px;
+		border-radius: 999px;
 		background: transparent;
 		color: var(--color-muted);
-		font-family: 'Poppins';
-		font-size: 12px;
-		font-weight: 500;
+		font-size: 17px;
 		cursor: pointer;
 		transition:
-			background-color 150ms ease,
-			color 150ms ease;
+			background-color 160ms ease,
+			color 160ms ease,
+			transform 160ms ease;
 	}
 
 	button:hover {
 		color: var(--color-ink);
 	}
 
+	button:active {
+		transform: scale(0.94);
+	}
+
 	button.active {
 		background: var(--color-ink);
 		color: var(--color-canvas);
+		box-shadow:
+			0 1px 3px color-mix(
+				in srgb,
+				var(--color-ink) 15%,
+				transparent
+			);
 	}
 
-	.icon {
-		font-size: 15px;
-		line-height: 1;
+	button:focus-visible {
+		outline: 2px solid var(--color-ember);
+		outline-offset: 2px;
 	}
 
-	.label {
+	i {
+		display: block;
 		line-height: 1;
 	}
 
 	@media (max-width: 480px) {
-		button {
-			width: 34px;
-			padding: 0;
+		.theme-toggle {
+			gap: 2px;
+			padding: 3px;
 		}
 
-		.label {
-			display: none;
+		button {
+			width: 34px;
+			height: 30px;
+			font-size: 16px;
 		}
 	}
 </style>
