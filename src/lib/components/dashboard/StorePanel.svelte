@@ -729,13 +729,12 @@ $effect(() => {
 const stockNum = stockRaw === '' ? null : Number(stockRaw);
 
 if (
-    stockRaw !== '' &&
+    stockNum !== null &&
     (!Number.isFinite(stockNum) || !Number.isInteger(stockNum) || stockNum < 0)
 ) {
     productError = 'El stock debe ser un número entero mayor o igual que 0 (o déjalo vacío para no controlarlo).';
     return;
 }
-
 		const currencyNorm = (formCurrency ?? '').trim().toUpperCase();
 		if (currencyNorm !== 'CUP' && currencyNorm !== 'USD') {
 			productError = 'La moneda del producto debe ser CUP o USD.';
