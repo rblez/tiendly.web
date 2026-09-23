@@ -19,30 +19,29 @@
 		},
 	];
 
-	const showcase = [
-		{
-			title: 'Tu tienda, impecable en cualquier pantalla',
-			text: 'Un link corto que abre una vitrina rápida y ordenada. Fotos, precios y variantes claras para que comprar sea fácil.',
-			img: '/feature-1.webp',
-			alt: 'Tienda de Tiendly en móvil',
-			ready: false,
-		},
-		{
-			title: 'Cobra como tú quieras, sin intermediarios',
-			text: 'Crea tus propios métodos de pago — Zelle, BANDEC, USDT, efectivo — con tus datos y el cliente sube el comprobante al hacer el pedido.',
-			img: '/feature-2.webp',
-			alt: 'Métodos de pago personalizados en Tiendly',
-			ready: false,
-		},
-		{
-			title: 'Gestiona todo desde el panel',
-			text: 'Productos, pedidos, métodos de pago y envíos en un solo lugar. Sin correos ni apps extra.',
-			img: '/feature-3.webp',
-			alt: 'Panel de control de Tiendly',
-			ready: false,
-		},
-	];
-
+	 const showcase = [
+	{
+		title: 'Tu tienda, impecable en cualquier pantalla',
+		text: 'Un link corto que abre una vitrina rápida y ordenada. Fotos, precios y variantes claras para que comprar sea fácil.',
+		img: '/feature-1.webp',
+		alt: 'Tienda de Tiendly en móvil',
+		ready: true,
+	},
+	{
+		title: 'Cobra como tú quieras, sin intermediarios',
+		text: 'Crea tus propios métodos de pago — Zelle, BANDEC, USDT, efectivo — con tus datos y el cliente sube el comprobante al hacer el pedido.',
+		img: '/feature-2.webp',
+		alt: 'Métodos de pago personalizados en Tiendly',
+		ready: true,
+	},
+	{
+		title: 'Gestiona todo desde el panel',
+		text: 'Productos, pedidos, métodos de pago y envíos en un solo lugar. Sin correos ni apps extra.',
+		img: '/feature-3.webp',
+		alt: 'Panel de control de Tiendly',
+		ready: true,
+	},
+];
 	const faqs = [
 		{
 			q: '¿Cuánto cuesta Tiendly?',
