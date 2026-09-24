@@ -37,6 +37,7 @@
 		"wrangler": "^4.132.0"
 	},
 	"dependencies": {
+   "@sentry/sveltekit": "^10.22.0",
 		"@capacitor/android": "^8.5.1",
 		"@capacitor/core": "^8.5.1",
 		"@capacitor/network": "^8.0.1",
