@@ -16,8 +16,6 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 	CUP: '$',
 	USD: '$',
 	EUR: '€',
-	MXN: 'MX$',
-	ARS: 'ARS$',
 };
 
 export function formatPrice(price: number, currency: string): string {
@@ -194,16 +192,32 @@ export type UploadKind = 'logo' | 'product';
 async function compressProductImage(file: File): Promise<File> {
 	if (!file.type.startsWith('image/')) return file;
 
-	const MAX_BYTES = 500 * 1024;
-	const MAX_DIMENSION = 2500;
+	const MAX_ORIGINAL_BYTES = 2 * 1024 * 1024; // 2 MB
+	const TARGET_BYTES = 100 * 1024; // 100 KB
+	const MAX_DIMENSION = 2000;
+	const MIN_QUALITY = 0.45;
 
-	if (file.size <= MAX_BYTES) return file;
+	// No permitimos originales mayores de 2 MB.
+	if (file.size > MAX_ORIGINAL_BYTES) {
+		throw new Error(
+			'La imagen es demasiado grande. El tamaño máximo permitido es de 2 MB.',
+		);
+	}
 
-	const bitmap = await createImageBitmap(file);
+	let bitmap: ImageBitmap;
+
+	try {
+		bitmap = await createImageBitmap(file);
+	} catch {
+		throw new Error(
+			'No se pudo procesar la imagen. Intenta subir una imagen JPG, PNG o WebP.',
+		);
+	}
 
 	let width = bitmap.width;
 	let height = bitmap.height;
 
+	// Limitar dimensiones iniciales.
 	if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
 		const scale = MAX_DIMENSION / Math.max(width, height);
 		width = Math.round(width * scale);
@@ -211,45 +225,127 @@ async function compressProductImage(file: File): Promise<File> {
 	}
 
 	const canvas = document.createElement('canvas');
-	canvas.width = width;
-	canvas.height = height;
-
 	const ctx = canvas.getContext('2d');
 
 	if (!ctx) {
 		bitmap.close();
-		return file;
+		throw new Error('No se pudo procesar la imagen.');
 	}
 
-	ctx.drawImage(bitmap, 0, 0, width, height);
-	bitmap.close();
+	/*
+	 * Intentamos varias combinaciones de dimensiones/calidad.
+	 * Primero bajamos calidad y después dimensiones.
+	 */
+	let currentWidth = width;
+	let currentHeight = height;
 
-	let quality = 0.82;
+	try {
+		for (let dimensionPass = 0; dimensionPass < 6; dimensionPass++) {
+			canvas.width = currentWidth;
+			canvas.height = currentHeight;
 
-	for (let i = 0; i < 5; i++) {
-		const blob = await new Promise<Blob | null>((resolve) => {
-			canvas.toBlob(resolve, 'image/webp', quality);
-		});
+			ctx.clearRect(0, 0, currentWidth, currentHeight);
+			ctx.drawImage(bitmap, 0, 0, currentWidth, currentHeight);
 
-		if (!blob) break;
+			for (
+				let quality = 0.85;
+				quality >= MIN_QUALITY;
+				quality -= 0.05
+			) {
+				const blob = await new Promise<Blob | null>((resolve) => {
+					canvas.toBlob(resolve, 'image/webp', quality);
+				});
 
-		if (blob.size <= MAX_BYTES || quality <= 0.5) {
-			return new File(
-				[blob],
-				file.name.replace(/\.[^.]+$/, '') + '.webp',
-				{
-					type: 'image/webp',
-					lastModified: Date.now(),
-				},
-			);
+				if (!blob) continue;
+
+				if (blob.size <= TARGET_BYTES) {
+					return new File(
+						[blob],
+						file.name.replace(/\.[^.]+$/, '') + '.webp',
+						{
+							type: 'image/webp',
+							lastModified: Date.now(),
+						},
+					);
+				}
+			}
+
+			// Si todavía supera 100 KB, reducimos dimensiones un 20%.
+			currentWidth = Math.max(320, Math.round(currentWidth * 0.8));
+			currentHeight = Math.max(320, Math.round(currentHeight * 0.8));
 		}
 
-		quality -= 0.08;
+		// Último intento con calidad mínima.
+		canvas.width = currentWidth;
+		canvas.height = currentHeight;
+
+		ctx.clearRect(0, 0, currentWidth, currentHeight);
+		ctx.drawImage(bitmap, 0, 0, currentWidth, currentHeight);
+
+		const finalBlob = await new Promise<Blob | null>((resolve) => {
+			canvas.toBlob(resolve, 'image/webp', MIN_QUALITY);
+		});
+
+		if (!finalBlob) {
+			throw new Error('No se pudo comprimir la imagen.');
+		}
+
+		/*
+		 * Si incluso después de todos los intentos supera 100 KB,
+		 * seguimos reduciendo hasta conseguirlo.
+		 */
+		if (finalBlob.size > TARGET_BYTES) {
+			let emergencyWidth = currentWidth;
+			let emergencyHeight = currentHeight;
+
+			for (let i = 0; i < 8; i++) {
+				emergencyWidth = Math.max(
+					160,
+					Math.round(emergencyWidth * 0.75),
+				);
+				emergencyHeight = Math.max(
+					160,
+					Math.round(emergencyHeight * 0.75),
+				);
+
+				canvas.width = emergencyWidth;
+				canvas.height = emergencyHeight;
+
+				ctx.clearRect(0, 0, emergencyWidth, emergencyHeight);
+				ctx.drawImage(
+					bitmap,
+					0,
+					0,
+					emergencyWidth,
+					emergencyHeight,
+				);
+
+				const emergencyBlob = await new Promise<Blob | null>(
+					(resolve) => {
+						canvas.toBlob(resolve, 'image/webp', MIN_QUALITY);
+					},
+				);
+
+				if (emergencyBlob && emergencyBlob.size <= TARGET_BYTES) {
+					return new File(
+						[emergencyBlob],
+						file.name.replace(/\.[^.]+$/, '') + '.webp',
+						{
+							type: 'image/webp',
+							lastModified: Date.now(),
+						},
+					);
+				}
+			}
+		}
+
+		throw new Error(
+			'No se pudo comprimir la imagen al límite de 100 KB. Intenta con otra imagen.',
+		);
+	} finally {
+		bitmap.close();
 	}
-
-	return file;
 }
-
 export async function uploadImage(file: File, kind: UploadKind = 'product'): Promise<string> {
 	const optimizedFile =
 		kind === 'product'
