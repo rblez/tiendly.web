@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 /* ============ TOKENS ============ */
@@ -66,16 +66,18 @@ html {
 	--color-muted: var(--c-muted);
 	--color-muted-soft: var(--c-muted-soft);
 	--color-card: var(--c-card);
+
 	--color-error: var(--c-error);
 	--color-warning: var(--c-warning);
 	--color-success: var(--c-success);
 	--color-primary-light: var(--c-primary-light);
+
 	--color-ember: var(--accent);
 	--color-ember-active: var(--accent-active);
 	--color-glow: var(--c-glow);
 
-	--font-sans: 'Poppins';
-	--font-display: 'Poppins';
+	--font-sans: 'Inter';
+	--font-display: 'Inter';
 	--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 	--spacing-section: 80px;
@@ -112,7 +114,7 @@ button,
 input,
 textarea,
 select {
-	font-family: 'Poppins';
+	font-family: 'Inter';
 }
 
 body {
@@ -148,20 +150,12 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: 'Poppins';
+	font-family: 'Inter';
 	letter-spacing: -0.02em;
 	font-weight: 500 !important;
 }
 
 /* ============ THEME TOGGLE GLOBAL ============ */
-
-/*
- * El toggle vive fijo en el footer:
- * - izquierda
- * - respetando el área segura del dispositivo
- * - por encima del contenido
- * - sin bloquear otros elementos
- */
 
 .global-theme-toggle {
 	position: fixed;
@@ -175,8 +169,6 @@ h6 {
 	pointer-events: auto;
 }
 
-/* En pantallas pequeñas */
-
 @media (max-width: 480px) {
 	.global-theme-toggle {
 		left: 0.75rem;
@@ -185,17 +177,17 @@ h6 {
 }
 
 .font-display {
-	font-family: 'Poppins';
+	font-family: 'Inter';
 }
 
 button {
-	font-family: 'Poppins';
+	font-family: 'Inter';
 }
 
 input,
 textarea,
 select {
-	font-family: 'Poppins';
+	font-family: 'Inter';
 }
 
 /* ============ COLOR INPUT ============ */
