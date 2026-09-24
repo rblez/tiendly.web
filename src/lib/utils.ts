@@ -191,31 +191,119 @@ export function imageSrcset(src: string | null | undefined): string | null {
 
 export type UploadKind = 'logo' | 'product';
 
+async function compressProductImage(file: File): Promise<File> {
+	if (!file.type.startsWith('image/')) return file;
+
+	const MAX_BYTES = 500 * 1024;
+	const MAX_DIMENSION = 2500;
+
+	if (file.size <= MAX_BYTES) return file;
+
+	const bitmap = await createImageBitmap(file);
+
+	let width = bitmap.width;
+	let height = bitmap.height;
+
+	if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+		const scale = MAX_DIMENSION / Math.max(width, height);
+		width = Math.round(width * scale);
+		height = Math.round(height * scale);
+	}
+
+	const canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = height;
+
+	const ctx = canvas.getContext('2d');
+
+	if (!ctx) {
+		bitmap.close();
+		return file;
+	}
+
+	ctx.drawImage(bitmap, 0, 0, width, height);
+	bitmap.close();
+
+	let quality = 0.82;
+
+	for (let i = 0; i < 5; i++) {
+		const blob = await new Promise<Blob | null>((resolve) => {
+			canvas.toBlob(resolve, 'image/webp', quality);
+		});
+
+		if (!blob) break;
+
+		if (blob.size <= MAX_BYTES || quality <= 0.5) {
+			return new File(
+				[blob],
+				file.name.replace(/\.[^.]+$/, '') + '.webp',
+				{
+					type: 'image/webp',
+					lastModified: Date.now(),
+				},
+			);
+		}
+
+		quality -= 0.08;
+	}
+
+	return file;
+}
+
 export async function uploadImage(file: File, kind: UploadKind = 'product'): Promise<string> {
+	const optimizedFile =
+		kind === 'product'
+			? await compressProductImage(file)
+			: file;
+
 	const send = async (token: string | undefined) => {
 		const form = new FormData();
-		form.append('file', file);
+		form.append('file', optimizedFile);
 		form.append('kind', kind);
+
 		const headers: Record<string, string> = {};
-		if (token) headers.Authorization = `Bearer ${token}`;
-		return fetch('/api/upload-image', { method: 'POST', headers, body: form });
+
+		if (token) {
+			headers.Authorization = `Bearer ${token}`;
+		}
+
+		return fetch('/api/upload-image', {
+			method: 'POST',
+			headers,
+			body: form,
+		});
 	};
 
 	const { data } = await supabase.auth.getSession();
-	if (!data.session) throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+
+	if (!data.session) {
+		throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+	}
+
 	let res = await send(data.session.access_token);
+
 	if (res.status === 401) {
 		const refreshed = await supabase.auth.refreshSession();
-		if (!refreshed.data.session) throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+
+		if (!refreshed.data.session) {
+			throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+		}
+
 		res = await send(refreshed.data.session.access_token);
 	}
 
-	let json: { error?: string; message?: string; url?: string } = {};
+	let json: {
+		error?: string;
+		message?: string;
+		url?: string;
+	} = {};
+
 	try {
 		json = (await res.json()) as typeof json;
 	} catch {
 		json = {};
 	}
+
 	if (!res.ok) {
 		const fallback: Record<number, string> = {
 			401: 'Tu sesión expiró. Inicia sesión de nuevo.',
@@ -223,9 +311,19 @@ export async function uploadImage(file: File, kind: UploadKind = 'product'): Pro
 			429: 'Alcanzaste el límite de subidas. Inténtalo más tarde.',
 			500: 'El servidor no pudo procesar la imagen.',
 		};
-		throw new Error(json.error || json.message || fallback[res.status] || `Error al subir la imagen (${res.status}).`);
+
+		throw new Error(
+			json.error ||
+				json.message ||
+				fallback[res.status] ||
+				`Error al subir la imagen (${res.status}).`,
+		);
 	}
-	if (!json.url) throw new Error('El servidor no devolvió la imagen subida.');
+
+	if (!json.url) {
+		throw new Error('El servidor no devolvió la imagen subida.');
+	}
+
 	return json.url;
 }
 
