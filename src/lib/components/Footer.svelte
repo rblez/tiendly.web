@@ -4,6 +4,7 @@
 import { socialIcon, storeSocials } from '$lib/socials';
 import SocialBrandIcon from '$lib/components/SocialBrandIcon.svelte';
 import { theme } from '$lib/stores/theme.svelte';
+import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 import type { Store } from '$lib/types';
 import { migratePayment, templateLogoFor } from '$lib/payments';
 
@@ -147,8 +148,9 @@ let trackError = $state('');
 			{/if}
 		</div>
 		<div class="border-t border-hairline">
-			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
+			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-wrap items-center justify-between gap-3 {store.whatsapp ? 'pb-20' : 'pb-4'}">
 				<p class="text-xs text-muted-soft">&copy; {year} {store.name}</p>
+				<ThemeToggle />
 			</div>
 		</div>
 	{:else}
@@ -197,8 +199,9 @@ let trackError = $state('');
 			</div>
 		</div>
 		<div class="border-t border-hairline">
-			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+			<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-3">
 				<p class="text-xs text-muted-soft">&copy; {year} Tiendly. Todos los derechos reservados.</p>
+				<ThemeToggle />
 			</div>
 		</div>
 	{/if}
