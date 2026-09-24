@@ -40,8 +40,6 @@
     "@capacitor/core": "^8.5.1",
     "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
-    "@sentry/cloudflare": "^10.75.3",
-    "@sentry/sveltekit": "^10.75.3",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.49.0",
     "jspdf": "^4.2.1",
