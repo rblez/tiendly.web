@@ -36,3 +36,30 @@ jobs:
             --saas \
             --org rblez \
             --project tiendly \
+            --skip-connect
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Verificar proyecto
+        run: npm run check
+
+      - name: Crear Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/setup-sentry
+          base: main
+          commit-message: "chore: configurar Sentry"
+          title: "chore: configurar Sentry"
+          body: |
+            Configuración automática de Sentry para Tiendly.
+
+            El cambio fue generado mediante el Sentry Wizard
+            para SvelteKit.
+
+            Antes de hacer merge:
+            - Revisar los archivos modificados.
+            - Verificar npm run check.
+            - Confirmar la configuración del DSN.
+          delete-branch: true
