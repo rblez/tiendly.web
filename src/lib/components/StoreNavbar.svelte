@@ -77,7 +77,7 @@
 						class="relative flex items-center transition-colors duration-200 no-underline
 							{$page.url.pathname === cartPath ? 'text-ember' : 'text-body hover:text-ink'}"
 					>
-						<i class="{$page.url.pathname === cartPath ? 'ri-shopping-bag-4-fill' : 'ri-shopping-bag-4-line'} text-xl sm:text-lg"></i>
+						<i class="{$page.url.pathname === cartPath ? 'ri-shopping-bag-fill' : 'ri-shopping-bag-line'} text-xl sm:text-lg"></i>
 						<span class="hidden sm:inline text-sm font-medium ml-1.5">Carrito</span>
 						{#if totalItems > 0}
 							<span class="absolute -top-2 -right-3 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-ember text-white rounded-full">
