@@ -1475,6 +1475,7 @@ async function duplicateProduct(p: Product) {
 				</div>
 		</aside>
 			<div class="min-w-0">
+				{#if tab === 'resumen'}
 				<div class="lg:hidden grid grid-cols-3 gap-2 sm:gap-3 mb-5">
 					<div class="bg-card border border-hairline rounded-card px-2.5 sm:px-4 py-3.5">
 						<p class="text-xs text-muted mb-1">Visitas</p>
@@ -1494,6 +1495,7 @@ async function duplicateProduct(p: Product) {
 						</p>
 					</div>
 				</div>
+				{/if}
 
 		{#if tab === 'resumen'}
 			<div class="bg-card border border-hairline rounded-card p-4 sm:p-5 mb-5">
