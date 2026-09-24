@@ -1,60 +1,63 @@
 {
-  "name": "tiendly",
-  "version": "0.0.67",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "cf:dev": "wrangler dev",
-    "cf:deploy": "pnpm run build && wrangler pages deploy .svelte-kit/cloudflare --project-name tiendly",
-    "format": "prettier --write package.json docs/**/*.md",
-    "format:check": "prettier --check package.json docs/**/*.md",
-    "cap:sync": "npm run build && npx cap sync android",
-    "cap:open": "npx cap open android",
-    "cap:run": "npx cap run android",
-    "cap:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug",
-    "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
-  },
-  "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.5.1",
-    "@sveltejs/adapter-cloudflare": "^7.2.9",
-    "@sveltejs/kit": "^2.63.0",
-    "@types/node": "^24.0.0",
-    "@types/qrcode": "^1.5.6",
-    "prettier": "^3.9.6",
-    "prettier-plugin-svelte": "^4.1.1",
-    "sharp": "^0.34.5",
-    "svelte": "^5.56.1",
-    "svelte-check": "^4.6.0",
-    "tailwindcss": "^4.1.4",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.16",
-    "wrangler": "^4.132.0"
-  },
-  "dependencies": {
-    "@capacitor/android": "^8.5.1",
-    "@capacitor/core": "^8.5.1",
-    "@capacitor/network": "^8.0.1",
-    "@capacitor/preferences": "^8.0.1",
-    "@supabase/ssr": "^0.12.5",
-    "@supabase/supabase-js": "^2.49.0",
-    "jspdf": "^4.2.1",
-    "qrcode": "^1.5.4",
-    "remixicon": "^4.9.1",
-    "simple-icons": "^16.28.0"
-  },
-  "overrides": {
-    "cookie": "^0.7.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "core-js",
-      "esbuild",
-      "sharp"
-    ]
-  }
+	"name": "tiendly",
+	"version": "0.0.67",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"cf:dev": "wrangler dev",
+		"cf:deploy": "pnpm run build && wrangler pages deploy .svelte-kit/cloudflare --project-name tiendly",
+		"format": "prettier --write package.json docs/**/*.md",
+		"format:check": "prettier --check package.json docs/**/*.md",
+		"cap:sync": "npm run build && npx cap sync android",
+		"cap:open": "npx cap open android",
+		"cap:run": "npx cap run android",
+		"cap:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+	},
+	"devDependencies": {
+		"@capacitor/assets": "^3.0.5",
+		"@capacitor/cli": "^8.5.1",
+		"@sveltejs/adapter-cloudflare": "^7.2.9",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/vite": "^4.1.4",
+		"@types/node": "^24.0.0",
+		"@types/qrcode": "^1.5.6",
+		"prettier": "^3.9.6",
+		"prettier-plugin-svelte": "^4.1.1",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"tailwindcss": "^4.1.4",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16",
+		"wrangler": "^4.132.0"
+	},
+	"dependencies": {
+		"@capacitor/android": "^8.5.1",
+		"@capacitor/core": "^8.5.1",
+		"@capacitor/network": "^8.0.1",
+		"@capacitor/preferences": "^8.0.1",
+		"@lucide/svelte": "^1.39.0",
+		"@supabase/ssr": "^0.12.5",
+		"@supabase/supabase-js": "^2.49.0",
+		"jspdf": "^4.2.1",
+		"qrcode": "^1.5.4",
+		"remixicon": "^4.9.1",
+		"sharp": "^0.34.5",
+		"simple-icons": "^16.28.0"
+	},
+	"overrides": {
+		"cookie": "^0.7.2"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"core-js",
+			"esbuild",
+			"sharp"
+		]
+	}
 }
