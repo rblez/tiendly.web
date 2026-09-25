@@ -1,0 +1,35 @@
+name: Rollback to Commit
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Commit al que quieres volver"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate commit
+        run: |
+          git cat-file -e "${{ inputs.commit }}^{commit}"
+
+      - name: Reset to selected commit
+        run: |
+          git reset --hard "${{ inputs.commit }}"
+
+      - name: Push rollback
+        run: |
+          git push origin HEAD:${{ github.ref_name }} --force
