@@ -1,5 +1,9 @@
 <script lang="ts">
+	/* Shell del demo con reglas iOS: nav bar 44pt + safe area, blur,
+	   tab bar 49pt + safe area, targets de 44pt. */
 	import type { Snippet } from "svelte";
+	import TIcon from "$lib/components/ios/TIcon.svelte";
+	import TTabBar, { type TabItem } from "$lib/components/ios/TTabBar.svelte";
 
 	type NavKey = "inicio" | "productos" | "pedidos" | "ajustes";
 
@@ -17,79 +21,158 @@
 		children: Snippet;
 	} = $props();
 
-	const nav: { key: NavKey; label: string; icon: string; href: string | null }[] = [
-		{ key: "inicio", label: "Inicio", icon: "ri-home-5-line", href: "/demo/panel" },
-		{ key: "productos", label: "Productos", icon: "ri-box-3-line", href: null },
-		{ key: "pedidos", label: "Pedidos", icon: "ri-list-ordered", href: null },
-		{ key: "ajustes", label: "Ajustes", icon: "ri-settings-line", href: "/demo/panel/ajustes" },
+	const tabs: TabItem[] = [
+		{ key: "inicio", label: "Inicio", icon: "home", href: "/demo/panel" },
+		{ key: "productos", label: "Productos", icon: "box", href: null },
+		{ key: "pedidos", label: "Pedidos", icon: "orders", href: null, badge: 3 },
+		{ key: "ajustes", label: "Ajustes", icon: "sliders", href: "/demo/panel/ajustes" },
 	];
 </script>
 
-<div class="min-h-screen bg-canvas text-ink" data-panel>
-	<div class="border-b border-ember/25 bg-ember/10 px-4 py-2 text-center text-xs font-medium text-ember">
+<div class="tshell" data-ios>
+	<div class="tshell-banner t-footnote" role="note">
 		Vista previa del rediseño con datos de ejemplo — no está en producción
 	</div>
-	<header class="sticky top-0 z-30 border-b border-hairline bg-canvas/95 backdrop-blur-xl">
-		<div class="flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-			<div class="flex min-w-0 items-center gap-3">
-				<span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ember text-sm font-black text-white" aria-hidden="true">
-					{initials}
-				</span>
-				<div class="min-w-0">
-					<p class="truncate font-semibold tracking-tight">{storeName}</p>
-					<p class="hidden truncate text-[11px] text-muted sm:block">Panel de tu tienda</p>
+
+	<header class="tnav" style:padding-top="env(safe-area-inset-top)">
+		<div class="tnav-bar">
+			<div class="tnav-id">
+				<span class="tnav-avatar t-headline" aria-hidden="true">{initials}</span>
+				<div class="tnav-titles">
+					<p class="t-headline tnav-name">{storeName}</p>
+					<p class="t-caption t-secondary">Panel de tu tienda</p>
 				</div>
 			</div>
-			<div class="ml-auto flex items-center gap-2">
-				<span class="flex h-9 w-9 items-center justify-center rounded-xl border border-hairline bg-card text-muted" aria-hidden="true">
-					<i class="ri-notification-3-line"></i>
-				</span>
-				<span class="flex h-9 items-center gap-2 rounded-xl border border-hairline bg-card px-2.5" aria-hidden="true">
-					<span class="flex h-6 w-6 items-center justify-center rounded-lg bg-ember/10 text-ember">
-						<i class="ri-user-line text-sm"></i>
+			<div class="tnav-actions">
+				<button type="button" class="tnav-btn t-press" aria-label="Notificaciones">
+					<TIcon name="bell" size={22} />
+					<span class="tnav-dot" aria-hidden="true"></span>
+				</button>
+				<button type="button" class="tnav-user t-press" aria-label={`Cuenta de ${userName}`}>
+					<span class="tnav-user-icon" aria-hidden="true">
+						<TIcon name="user" size={16} strokeWidth={2.2} />
 					</span>
-					<span class="hidden text-xs font-semibold sm:block">{userName}</span>
-					<i class="ri-arrow-down-s-line text-muted"></i>
-				</span>
+					<span class="t-subhead tnav-user-name">{userName}</span>
+				</button>
 			</div>
 		</div>
 	</header>
 
-	<div class="min-h-[calc(100vh-9rem)] pb-24">
+	<main class="tshell-main">
 		{@render children()}
-	</div>
+	</main>
 
-	<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl" aria-label="Navegación principal">
-		<div class="mx-auto grid max-w-md grid-cols-4 gap-1">
-			{#each nav as item}
-				{@const isActive = item.key === active}
-				{#if item.href}
-					<a
-						href={item.href}
-						class={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-medium no-underline ${isActive ? "is-current" : "text-muted"}`}
-						aria-current={isActive ? "page" : undefined}
-					>
-						<i class={`${item.icon} text-xl leading-none`} aria-hidden="true"></i>
-						<span>{item.label}</span>
-					</a>
-				{:else}
-					<span
-						class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-medium text-muted opacity-40"
-						aria-disabled="true"
-						title="No incluido en esta vista previa"
-					>
-						<i class={`${item.icon} text-xl leading-none`} aria-hidden="true"></i>
-						<span>{item.label}</span>
-					</span>
-				{/if}
-			{/each}
-		</div>
-	</nav>
+	<TTabBar {tabs} {active} />
 </div>
 
 <style>
-	.is-current {
-		background: color-mix(in srgb, var(--accent) 12%, transparent);
-		color: var(--accent);
+	.tshell {
+		min-height: 100vh;
+		min-height: 100dvh;
+	}
+	.tshell-banner {
+		padding: var(--s2) var(--s4);
+		text-align: center;
+		font-weight: 500;
+		color: var(--ios-orange);
+		background: color-mix(in srgb, var(--ios-orange) 12%, transparent);
+	}
+	.tnav {
+		position: sticky;
+		top: 0;
+		z-index: 30;
+		background: color-mix(in srgb, var(--ios-grouped) 82%, transparent);
+		backdrop-filter: blur(20px) saturate(1.6);
+		-webkit-backdrop-filter: blur(20px) saturate(1.6);
+		border-bottom: 1px solid var(--ios-separator);
+	}
+	.tnav-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--s3);
+		min-height: var(--nav-h);
+		padding: var(--s2) var(--s4);
+	}
+	.tnav-id {
+		display: flex;
+		align-items: center;
+		gap: var(--s3);
+		min-width: 0;
+		flex: 1;
+	}
+	.tnav-avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		flex-shrink: 0;
+		border-radius: var(--r-sm);
+		background: var(--ios-tint);
+		color: #fff;
+	}
+	.tnav-titles {
+		min-width: 0;
+	}
+	.tnav-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.tnav-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--s1);
+		margin-left: auto;
+	}
+	.tnav-btn {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--touch-min);
+		height: var(--touch-min);
+		border: 0;
+		border-radius: 50%;
+		background: transparent;
+		color: var(--ios-label);
+		cursor: pointer;
+	}
+	.tnav-dot {
+		position: absolute;
+		top: 10px;
+		right: 12px;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--ios-red);
+	}
+	.tnav-user {
+		display: flex;
+		align-items: center;
+		gap: var(--s2);
+		min-height: var(--touch-min);
+		padding: 0 var(--s3) 0 var(--s1);
+		border: 0;
+		border-radius: 999px;
+		background: var(--ios-fill);
+		color: var(--ios-label);
+		cursor: pointer;
+	}
+	.tnav-user-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 50%;
+		background: var(--ios-tint);
+		color: #fff;
+	}
+	.tnav-user-name {
+		font-weight: 600;
+	}
+	.tshell-main {
+		padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s4));
 	}
 </style>
