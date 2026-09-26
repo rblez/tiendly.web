@@ -1,0 +1,110 @@
+/* ============================================================
+   Tiendly "Hyper" — sistema visual estilo Xiaomi HyperOS + Telegram Android.
+   Oscuro primero (como las referencias), con modo claro completo.
+   Alcance: solo dentro de [data-hyper] (demo). No toca el panel real.
+   ============================================================ */
+
+[data-hyper] {
+	/* ---- Paleta oscura (Telegram Android dark) ---- */
+	--hx-bg: #0e1621;
+	--hx-bar: #17212b;          /* app bar + bottom pill */
+	--hx-card: #17212b;
+	--hx-card-2: #1e2c3a;       /* superficies elevadas */
+	--hx-text: #ffffff;
+	--hx-text-2: #8a99a8;       /* subtítulos */
+	--hx-text-3: #5d6b7a;
+	--hx-accent: #4ade80;       /* verde Tiendly en oscuro */
+	--hx-accent-ink: #052e16;   /* texto sobre acento */
+	--hx-divider: rgba(255, 255, 255, 0.08);
+	--hx-tile-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--hx-scrim: rgba(0, 0, 0, 0.5);
+
+	/* ---- Forma ---- */
+	--hx-r-card: 1.125rem;      /* 18px */
+	--hx-r-tile: 0.625rem;      /* 10px */
+	--hx-r-pill: 999px;
+
+	/* ---- Medidas ---- */
+	--hx-appbar-h: 3.5rem;      /* 56dp */
+	--hx-row-min: 4.25rem;      /* 68dp, filas de dos líneas */
+	--hx-tile: 2.625rem;        /* 42dp */
+	--hx-nav-h: 4rem;           /* pill inferior */
+
+	/* ---- Tipo (escala con --font-scale del store de apariencia) ---- */
+	--hx-t-appbar: 1.375rem;    /* 22px */
+	--hx-t-title: 1rem;         /* 16px */
+	--hx-t-sub: 0.875rem;       /* 14px */
+	--hx-t-section: 0.875rem;   /* cabecera de tarjeta */
+	--hx-t-tab: 0.75rem;        /* 12px */
+
+	--hx-ease: cubic-bezier(0.2, 0, 0, 1);
+	--hx-dur: 200ms;
+
+	font-family:
+		"Roboto", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+	background: var(--hx-bg);
+	color: var(--hx-text);
+	font-size: calc(1rem * var(--font-scale, 1));
+	-webkit-tap-highlight-color: transparent;
+}
+
+[data-hyper][data-theme="light"],
+[data-theme="light"] [data-hyper] {
+	--hx-bg: #eef1f4;
+	--hx-bar: #ffffff;
+	--hx-card: #ffffff;
+	--hx-card-2: #f4f6f8;
+	--hx-text: #111b21;
+	--hx-text-2: #667781;
+	--hx-text-3: #8696a0;
+	--hx-accent: #16a34a;
+	--hx-accent-ink: #ffffff;
+	--hx-divider: rgba(17, 27, 33, 0.08);
+	--hx-tile-shadow: 0 1px 2px rgba(17, 27, 33, 0.12);
+}
+
+/* Alto contraste: texto al 100% y divisores marcados */
+[data-hyper][data-contrast="high"] {
+	--hx-text-2: var(--hx-text);
+	--hx-divider: rgba(255, 255, 255, 0.28);
+}
+[data-hyper][data-theme="light"][data-contrast="high"] {
+	--hx-divider: rgba(17, 27, 33, 0.28);
+}
+
+/* Movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+	[data-hyper] *,
+	[data-hyper] *::before,
+	[data-hyper] *::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+[data-hyper][data-motion="reduced"] *,
+[data-hyper][data-motion="reduced"] *::before,
+[data-hyper][data-motion="reduced"] *::after {
+	animation-duration: 0.01ms !important;
+	transition-duration: 0.01ms !important;
+}
+
+/* Foco visible */
+[data-hyper] :focus-visible {
+	outline: 2px solid var(--hx-accent);
+	outline-offset: 2px;
+	border-radius: 6px;
+}
+
+/* Feedback táctil */
+[data-hyper] .hx-press {
+	transition: transform var(--hx-dur) var(--hx-ease), filter var(--hx-dur) var(--hx-ease);
+}
+[data-hyper] .hx-press:active {
+	transform: scale(0.97);
+	filter: brightness(0.92);
+}
+
+/* Utilidades de texto */
+[data-hyper] .hx-t2 { color: var(--hx-text-2); }
+[data-hyper] .hx-t3 { color: var(--hx-text-3); }
+[data-hyper] .hx-accent { color: var(--hx-accent); }

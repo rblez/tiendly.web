@@ -1,11 +1,10 @@
 <script lang="ts">
 	import DemoShell from "$lib/components/dashboard/DemoShell.svelte";
-	import TPage from "$lib/components/ios/TPage.svelte";
-	import TGroup from "$lib/components/ios/TGroup.svelte";
-	import TRow from "$lib/components/ios/TRow.svelte";
-	import TSwitch from "$lib/components/ios/TSwitch.svelte";
-	import TSegmented from "$lib/components/ios/TSegmented.svelte";
-	import TSearchBar from "$lib/components/ios/TSearchBar.svelte";
+	import HCard from "$lib/components/hx/HCard.svelte";
+	import HRow from "$lib/components/hx/HRow.svelte";
+	import HSwitch from "$lib/components/hx/HSwitch.svelte";
+	import HSegmented from "$lib/components/hx/HSegmented.svelte";
+	import HSearchBar from "$lib/components/hx/HSearchBar.svelte";
 	import { appearance, type TextSize } from "$lib/stores/appearance.svelte";
 	import { theme, type ThemePref } from "$lib/stores/theme.svelte";
 
@@ -94,91 +93,112 @@
 </svelte:head>
 
 <DemoShell initials="BF" storeName="Bodega La Fortuna" userName="María" active="ajustes">
-	<TPage title="Ajustes">
-		<div class="ajustes-search">
-			<TSearchBar bind:value={query} placeholder="Buscar en Ajustes" />
-		</div>
+	<div class="ajustes-search">
+		<HSearchBar bind:value={query} placeholder="Buscar en Ajustes" />
+	</div>
 
-		{#if !q}
-			<TGroup>
-				<TRow
-					icon="store"
-					tint="green"
-					title={profile.name}
-					subtitle="@{profile.handle}"
-					detail="Ver tienda"
-					chevron
-					href="#"
-				/>
-			</TGroup>
-		{/if}
-
-		{#each visibleGroups as group (group.title)}
-			<TGroup title={group.title}>
-				{#each group.rows as row (row.title)}
-					<TRow
-						icon={row.icon}
-						tint={row.tint}
-						title={row.title}
-						subtitle={row.subtitle}
-						detail={row.detail}
-						badge={row.badge}
-						chevron={row.kind === "link"}
-						href={row.href}
-					>
-						{#snippet suffix()}
-							{#if row.kind === "textsize"}
-								<TSegmented
-									options={textSizes}
-									value={appearance.textSize}
-									onchange={(v) => appearance.setTextSize(v as TextSize)}
-									label="Tamaño del texto"
-								/>
-							{:else if row.kind === "apptheme"}
-								<TSegmented
-									options={themeOpts}
-									value={theme.pref}
-									onchange={(v) => theme.set(v as ThemePref)}
-									label="Apariencia"
-								/>
-							{:else if row.kind === "motion"}
-								<TSwitch
-									checked={appearance.reduceMotion}
-									onchange={(v) => appearance.setReduceMotion(v)}
-									label="Reducir movimiento"
-								/>
-							{:else if row.kind === "contrast"}
-								<TSwitch
-									checked={appearance.highContrast}
-									onchange={(v) => appearance.setHighContrast(v)}
-									label="Aumentar contraste"
-								/>
-							{/if}
-						{/snippet}
-					</TRow>
-				{/each}
-			</TGroup>
-		{/each}
-
-		{#if visibleGroups.length === 0}
-			<div class="ajustes-empty">
-				<p class="t-body t-secondary">Sin resultados para “{query.trim()}”</p>
-				<p class="t-footnote t-tertiary">Prueba con otra palabra.</p>
+	{#if !q}
+		<div class="ajustes-profile">
+			<span class="ajustes-avatar" aria-hidden="true">{profile.initials}</span>
+			<div class="ajustes-identity">
+				<p class="ajustes-name">{profile.name}</p>
+				<p class="ajustes-handle hx-t2">@{profile.handle}</p>
 			</div>
-		{/if}
-	</TPage>
+		</div>
+	{/if}
+
+	{#each visibleGroups as group (group.title)}
+		<HCard title={group.title}>
+			{#each group.rows as row (row.title)}
+				<HRow
+					icon={row.icon}
+					tint={row.tint}
+					title={row.title}
+					subtitle={row.subtitle}
+					detail={row.detail}
+					badge={row.badge}
+					chevron={row.kind === "link"}
+					href={row.href}
+				>
+					{#snippet suffix()}
+						{#if row.kind === "textsize"}
+							<HSegmented
+								options={textSizes}
+								value={appearance.textSize}
+								onchange={(v) => appearance.setTextSize(v as TextSize)}
+								label="Tamaño del texto"
+							/>
+						{:else if row.kind === "apptheme"}
+							<HSegmented
+								options={themeOpts}
+								value={theme.pref}
+								onchange={(v) => theme.set(v as ThemePref)}
+								label="Apariencia"
+							/>
+						{:else if row.kind === "motion"}
+							<HSwitch
+								checked={appearance.reduceMotion}
+								onchange={(v) => appearance.setReduceMotion(v)}
+								label="Reducir movimiento"
+							/>
+						{:else if row.kind === "contrast"}
+							<HSwitch
+								checked={appearance.highContrast}
+								onchange={(v) => appearance.setHighContrast(v)}
+								label="Aumentar contraste"
+							/>
+						{/if}
+					{/snippet}
+				</HRow>
+			{/each}
+		</HCard>
+	{/each}
+
+	{#if visibleGroups.length === 0}
+		<div class="ajustes-empty">
+			<p class="hx-t2">Sin resultados para “{query.trim()}”</p>
+			<p class="hx-t3 ajustes-empty-hint">Prueba con otra palabra.</p>
+		</div>
+	{/if}
 </DemoShell>
 
 <style>
 	.ajustes-search {
-		margin-bottom: var(--s4);
-		padding-inline: var(--s1);
+		margin-bottom: 1rem;
+	}
+	.ajustes-profile {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.5rem 0.5rem 1.25rem;
+	}
+	.ajustes-avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 4.5rem;
+		height: 4.5rem;
+		flex-shrink: 0;
+		border-radius: 50%;
+		background: var(--hx-accent);
+		color: var(--hx-accent-ink);
+		font-size: 1.5rem;
+		font-weight: 600;
+	}
+	.ajustes-name {
+		font-size: 1.375rem;
+		font-weight: 600;
+	}
+	.ajustes-handle {
+		font-size: var(--hx-t-title);
+		margin-top: 2px;
 	}
 	.ajustes-empty {
-		padding: var(--s8) 0;
+		padding: 3rem 0;
 		text-align: center;
 	}
-	.ajustes-empty .t-footnote {
-		margin-top: var(--s1);
+	.ajustes-empty-hint {
+		margin-top: 0.25rem;
+		font-size: var(--hx-t-sub);
 	}
 </style>

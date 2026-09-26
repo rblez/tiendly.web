@@ -1,56 +1,49 @@
-# Tiendly iOS Design System
+# Tiendly "Hyper" Design System
 
-Rediseño del panel siguiendo las **iOS Human Interface Guidelines** de forma completa.
+Rediseño del panel con el lenguaje visual de **Xiaomi HyperOS + Telegram Android**
+(oscuro primero, tarjetas grandes, tiles de color, píldora de navegación).
 Alcance actual: `/demo/panel` (laboratorio). El panel real (`/dashboard`) no se toca
 hasta aprobar cada página.
 
-## Reglas iOS aplicadas
+> Se descartó la dirección iOS/HIG: el usuario prefiere el estilo Xiaomi/Telegram.
 
-### Colores del sistema (`ios.css`)
-- Paleta `systemBackground`, `secondarySystemBackground`, `systemGroupedBackground`
-  y familia, con valores diurnos y nocturnos oficiales de iOS.
-- Texto: `label`, `secondaryLabel` (60%), `tertiaryLabel` (30%).
-- Separadores: `rgba(60,60,67,0.29)` / `rgba(84,84,88,0.6)` en oscuro.
-- Tinte de la app = verde Tiendly = `systemGreen` (`#34C759` / `#30D158`).
-- El modo sigue el store de tema de Tiendly (`data-theme`), con fallback a
-  `prefers-color-scheme`.
+## Reglas aplicadas
 
-### Dynamic Type
-- Escala completa: Large Title 34, Title 1/2/3 (28/22/20), Headline 17 semibold,
-  Body 17, Callout 16, Subheadline 15, Footnote 13, Caption 12/11 — en `rem`.
-- Ajuste manual S/M/L/XL (`--font-scale` 0.875/1/1.125/1.3) en Ajustes →
-  Accesibilidad → Tamaño del texto. Escala todo el panel como en iOS.
+### Colores (`hyper.css`, alcance `[data-hyper]`)
+- Oscuro tipo Telegram: fondo `#0E1621`, tarjetas `#17212B`, texto `#FFF`,
+  secundario `#8A99A8`, divisores `rgba(255,255,255,0.08)`.
+- Claro tipo Xiaomi: fondo `#EEF1F4`, tarjetas `#FFF`, texto `#111B21`.
+- Acento = verde Tiendly (`#4ADE80` en oscuro, `#16A34A` en claro): headers de
+  tarjeta, switches, tabs activas, badges.
+- Tiles de fila en colores sólidos vivos (azul, verde, rojo, naranja, morado…)
+  con icono blanco, como Xiaomi/Telegram.
+- Sigue el store de tema de Tiendly (`data-theme`), con `prefers-color-scheme`
+  como respaldo.
 
-### Layout
-- Grid de 8pt, márgenes laterales de 16pt, contenido máx. 44rem.
-- Nav bar 44pt + safe area, con blur (`backdrop-filter` saturado como iOS).
-- Tab bar 49pt + safe area, máx. 5 tabs, icono 24pt + caption 10pt.
-- Filas de tabla: 44pt mínimo, icono 29pt con radio 7pt (estilo Ajustes de iOS),
-  separadores con inset tras el icono, chevron de detalle.
-- Switch 51×31pt, segmented control, search bar 36pt.
+### Forma y medidas
+- Tarjetas: radio 18px, sombra sutil, margen lateral.
+- Filas: 68dp mínimo, tile 42dp radio 10dp, título 16px + subtítulo 14px gris,
+  divisor con inset tras el icono, chevron gris a la derecha.
+- App bar: 56dp + safe area, título 22px semibold a la izquierda, acciones a la
+  derecha, sombra inferior (estilo Telegram).
+- Navegación inferior: píldora flotante (radio 28px, márgenes 16dp), tab activa
+  con píldora en tinte de acento, badges rojos de conteo.
+- Buscador estilo Xiaomi: campo de píldora completa.
 
-### Interacción y motion
-- Targets táctiles mínimos de 44×44pt en todo lo interactivo.
-- Feedback táctil: escala 0.97 al presionar (`t-press`).
-- Curva `--ease-ios` (0.32, 0.72, 0, 1), duraciones 200/350ms.
-- `prefers-reduced-motion` + ajuste manual "Reducir movimiento".
-
-### Accesibilidad
-- Contraste AA en texto; "Aumentar contraste" lleva labels a 100% y
-  separadores a opacos.
-- Foco visible con anillo del tinte en todo lo interactivo.
-- HTML semántico: `nav`, `role="switch"`, `role="radiogroup"`, `aria-current`,
-  `aria-checked`, `aria-label` en iconos con significado.
-- El estado nunca se comunica solo con color (badge = icono + texto).
-- Fuente del sistema: San Francisco en Apple, Inter como respaldo.
+### Tipo y accesibilidad
+- Fuente del sistema (Roboto en Android).
+- Tamaño de texto S/M/L/XL persistente (`appearance` store) escala todo el panel.
+- Reducir movimiento (manual + `prefers-reduced-motion`), aumentar contraste.
+- Foco visible con anillo de acento, HTML semántico (`nav`, `role="switch"`,
+  `role="radiogroup"`, `aria-current`), targets de 44dp.
 
 ### Iconos
-- Un solo set (`TIcon.svelte`): trazo 2pt, esquinas redondeadas, estilo
-  SF Symbols. Prohibido mezclar familias.
+- Un solo set (`HIcon.svelte`): trazo 2pt, esquinas redondeadas, glifo blanco
+  sobre tile de color. Prohibido mezclar familias.
 
-## Componentes (`src/lib/components/ios/`)
-`TIcon`, `TPage` (Large Title), `TGroup` (sección agrupada), `TRow`,
-`TSwitch`, `TButton`, `TSegmented`, `TSearchBar`, `TTabBar`.
+## Componentes (`src/lib/components/hx/`)
+`HIcon`, `HShell` (app bar + pill nav), `HCard`, `HRow`, `HSwitch` (Material 3),
+`HSegmented` (Material), `HSearchBar`.
 
 ## Preferencias (`src/lib/stores/appearance.svelte.ts`)
 Tamaño de texto, reducir movimiento y alto contraste. Persisten en
@@ -58,6 +51,6 @@ Tamaño de texto, reducir movimiento y alto contraste. Persisten en
 
 ## Fases
 1. ✅ Fundación: tokens, iconos, componentes base, shell demo, Ajustes demo.
-2. ⬜ Inicio del panel (`PanelOverview`) con reglas iOS.
+2. ⬜ Inicio del panel (`PanelOverview`) con reglas Hyper.
 3. ⬜ Productos, Pedidos, Cupones, Notificaciones.
 4. ⬜ Migrar `/dashboard/s/[code]` página por página con aprobación.
