@@ -186,9 +186,7 @@ let trackError = $state('');
 			<div>
 				<p class="text-sm font-semibold text-ink mb-3">Legal</p>
 				<ul class="space-y-2">
-					<li>
-						<a href="/about" class="text-sm text-body hover:text-ember transition-colors no-underline">Sobre nosotros</a>
-					</li>
+
 					<li>
 						<a href="/legal/terminos" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
 					</li>

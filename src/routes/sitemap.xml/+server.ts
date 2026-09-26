@@ -27,7 +27,6 @@ export const GET = async () => {
 		['/wizard', 'monthly', '0.9'],
 		['/tiendas', 'weekly', '0.8'],
 		['/precios', 'monthly', '0.7'],
-		['/about', 'monthly', '0.4'],
 		['/legal/terminos', 'monthly', '0.3'],
 		['/legal/privacidad', 'monthly', '0.3'],
 		['/legal/cookies', 'monthly', '0.3'],
