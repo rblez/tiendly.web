@@ -214,14 +214,16 @@
 
 <MarketingNav />
 
-<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
 	<div class="text-center">
 		<img src="/tiendly-logo.webp" alt="Tiendly" class="h-10 object-contain mx-auto mb-8" />
-		<p class="text-6xl sm:text-7xl font-black tracking-tighter text-ink">{notFound ? '404' : 'Error'}</p>
-		<h1 class="text-xl sm:text-2xl font-bold text-ink mt-3 mb-2">
+		<p class="inline-flex items-center rounded-full border border-hairline bg-card px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted mb-6">
+			{notFound ? 'Error 404' : 'Error'}
+		</p>
+		<h1 class="text-3xl sm:text-4xl font-black tracking-tight text-ink mb-3">
 			{notFound ? 'Página no encontrada' : 'Algo salió mal'}
 		</h1>
-		<p class="text-body max-w-md mx-auto mb-8 leading-relaxed">
+		<p class="text-body max-w-md mx-auto mb-10 leading-relaxed">
 			{notFound
 				? 'La página que buscas no existe o fue movida. Puede que el enlace esté mal escrito o que la tienda haya cambiado.'
 				: ($page.error?.message ?? 'Algo salió mal. Intenta de nuevo en unos minutos.')}

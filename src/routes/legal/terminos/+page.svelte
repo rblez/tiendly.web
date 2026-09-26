@@ -1,13 +1,18 @@
 <script lang="ts">
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { SITE_URL } from '$lib/utils';
 </script>
 
-<svelte:head>
-	<title>Términos de uso | Tiendly</title>
-	<meta name="description" content="Términos de uso de Tiendly. Este texto informativo requiere revisión legal antes de publicarse como documento vinculante." />
-	<link rel="canonical" href="https://tiendly.lat/legal/terminos" />
-</svelte:head>
+<Seo
+	title="Términos de uso | Tiendly"
+	description="Términos de uso de Tiendly. Este texto informativo requiere revisión legal antes de publicarse como documento vinculante."
+	canonical={SITE_URL + '/legal/terminos'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Términos de uso de Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+/>
 
 <MarketingNav />
 <main class="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">

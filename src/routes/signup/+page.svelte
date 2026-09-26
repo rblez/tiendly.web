@@ -14,8 +14,6 @@
 	let error = $state('');
 	let info = $state('');
 	let loading = $state(false);
-	let claiming = $state(false);
-	let claimed = $state(false);
 
 	async function afterAuth() {
 		await goto('/wizard');
@@ -75,6 +73,16 @@
 	.fade-up {
 		animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
+	@media (prefers-reduced-motion: reduce) {
+		.fade-up {
+			animation: none;
+		}
+	}
+	a:focus-visible,
+	button:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
 </style>
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
@@ -85,11 +93,11 @@
 			<p class="text-sm text-muted">{subtitle}</p>
 		</div>
 
-		<form onsubmit={handleSubmit} class="space-y-4 fade-up" style="animation-delay: 0.12s">
+		<form onsubmit={handleSubmit} class="space-y-4 fade-up" style="animation-delay: 0.12s" aria-describedby={error ? 'signup-error' : info ? 'signup-info' : undefined}>
 			<div>
 				<label for="name" class="block text-sm font-medium text-body mb-1.5">Tu nombre</label>
 				<div class="relative">
-					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="ri-user-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="name"
 						type="text"
@@ -97,6 +105,7 @@
 						bind:value={name}
 						placeholder="Ana Pérez"
 						autocomplete="name"
+						autocapitalize="words"
 						class="input pl-11 pr-4"
 					/>
 				</div>
@@ -104,7 +113,7 @@
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<div class="relative">
-					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="email"
 						type="email"
@@ -112,6 +121,9 @@
 						bind:value={email}
 						placeholder="tu@correo.com"
 						autocomplete="email"
+						inputmode="email"
+						autocapitalize="none"
+						spellcheck={false}
 						class="input pl-11 pr-4"
 					/>
 				</div>
@@ -119,14 +131,14 @@
 			<div>
 				<label for="password" class="block text-sm font-medium text-body mb-1.5">Contraseña</label>
 				<div class="relative">
-					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
 						required
 						minlength="8"
 						bind:value={password}
-						placeholder="Mínimo 6 caracteres"
+						placeholder="Mínimo 8 caracteres"
 						autocomplete="new-password"
 						class="input pl-11 pr-12"
 					/>
@@ -134,6 +146,7 @@
 						type="button"
 						onclick={() => (showPassword = !showPassword)}
 						class="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer"
+						aria-pressed={showPassword}
 						aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
 					>
 						<i class={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-lg`}></i>
@@ -142,13 +155,13 @@
 			</div>
 
 			{#if error}
-				<p class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
+				<p id="signup-error" role="alert" class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
 					<i class="ri-error-warning-line mt-0.5"></i>
 					<span>{error}</span>
 				</p>
 			{/if}
 			{#if info}
-				<p class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
+				<p id="signup-info" role="status" class="text-xs text-ember bg-ember/10 border border-ember/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
 					<i class="ri-information-line mt-0.5"></i>
 					<span>{info}</span>
 				</p>
@@ -157,18 +170,21 @@
 			<button
 				type="submit"
 				disabled={loading}
+				aria-busy={loading}
 				class="btn btn-3d btn-lg w-full disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				{#if loading}
-						<i class="ri-loader-4-line animate-spin"></i>
-					{/if}
-					{loading ? 'Creando cuenta...' : 'Crear cuenta'}
-					{#if !loading}{/if}
-				</button>
-				<p class="text-xs text-muted-soft text-center">Al crear tu cuenta aceptas los términos de Tiendly.</p>
-			</form>
-			<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
-				¿Ya tienes cuenta? <a href='/login' class="text-ember font-medium hover:text-ember-active no-underline">Iniciar sesión</a>
-			</p>
+					<i class="ri-loader-4-line animate-spin"></i>
+				{/if}
+				{loading ? 'Creando cuenta…' : 'Crear cuenta'}
+			</button>
+			<p class="text-xs text-muted-soft text-center">Al crear tu cuenta aceptas los términos de Tiendly.</p>
+		</form>
+		<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
+			¿Ya tienes cuenta? <a href='/login' class="text-ember font-medium hover:text-ember-active no-underline">Iniciar sesión</a>
+		</p>
+		<p class="text-center text-xs text-muted-soft mt-4 fade-up" style="animation-delay: 0.24s">
+			<a href="/" class="no-underline hover:text-muted inline-flex items-center gap-1"><i class="ri-arrow-left-line" aria-hidden="true"></i>Volver al inicio</a>
+		</p>
 		</div>
 	</div>

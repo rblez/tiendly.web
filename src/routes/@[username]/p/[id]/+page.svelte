@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
 	import { supabase } from '$lib/supabase/client';
-	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, SITE_URL, variantPrice, productStock, isOutOfStock } from '$lib/utils';
+	import Seo from '$lib/components/Seo.svelte';
+	import { formatPrice, productImage, productImages, imageSrcset, storeUrl, productUrl, absoluteUrl, SITE_URL, variantPrice, productStock, isOutOfStock } from '$lib/utils';
 	import { displayCurrency as viewCurrency, displayPrice as toDisplayPrice } from '$lib/stores/currency.svelte';
 	import { track } from '$lib/analytics';
 	import type { Product, Store, Variant } from '$lib/types';
@@ -91,16 +92,16 @@
 	const curStock = $derived(productStock(product, selectedVariant?.id ?? null, selectedOption));
 
 	const img = $derived(productImage(product));
-	const shareUrl = $derived(`${storeUrl(data.store.slug)}/p/${product.id}`);
+	const shareUrl = $derived(productUrl(data.store.slug, product.id));
 	const displayPrice = $derived(toDisplayPrice(currentPrice, data.store));
 	const displayCurrency = $derived(viewCurrency(data.store));
 	const productLd = $derived(
-		JSON.stringify({
+		{
 			'@context': 'https://schema.org',
 			'@type': 'Product',
 			name: product.name,
 			description: product.description ?? undefined,
-			image: img ? [img] : undefined,
+			image: img ? [absoluteUrl(img)] : undefined,
 			brand: { '@type': 'Brand', name: data.store.name },
 			offers: {
 				'@type': 'Offer',
@@ -109,10 +110,10 @@
 				availability: isAgotado ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
 				url: shareUrl,
 			},
-		}),
+		},
 	);
 	const breadcrumbLd = $derived(
-		JSON.stringify({
+		{
 			'@context': 'https://schema.org',
 			'@type': 'BreadcrumbList',
 			itemListElement: [
@@ -120,7 +121,7 @@
 				{ '@type': 'ListItem', position: 2, name: data.store.name, item: storeUrl(data.store.slug) },
 				{ '@type': 'ListItem', position: 3, name: product.name, item: shareUrl },
 			],
-		}),
+		},
 	);
 
 	function addToCart() {
@@ -137,28 +138,15 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{product.name} | {data.store.name}</title>
-	<meta name="description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
-	<link rel="canonical" href={shareUrl} />
-	<meta property="og:type" content="product" />
-	<meta property="og:title" content={`${product.name} | ${data.store.name}`} />
-	<meta property="og:description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
-	<meta property="og:url" content={shareUrl} />
-	<meta property="og:site_name" content={data.store.name} />
-	<meta property="og:locale" content="es_ES" />
-	{#if img}
-		<meta property="og:image" content={img} />
-	{/if}
-	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={`${product.name} | ${data.store.name}`} />
-	<meta name="twitter:description" content={product.description ?? `${product.name} en ${data.store.name}.`} />
-	{#if img}
-		<meta name="twitter:image" content={img} />
-	{/if}
-	<script type="application/ld+json">{productLd}</script>
-	<script type="application/ld+json">{breadcrumbLd}</script>
-</svelte:head>
+<Seo
+	title={`${product.name} | ${data.store.name}`}
+	description={product.description ?? `${product.name} en ${data.store.name}. Pide directo por Tiendly.`}
+	canonical={shareUrl}
+	image={img ? absoluteUrl(img) : `${SITE_URL}/og-banner.webp`}
+	imageAlt={product.name}
+	type="product"
+	jsonLd={[productLd, breadcrumbLd]}
+/>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 	<div class="grid sm:grid-cols-2 gap-8 sm:gap-10 items-start pt-4 sm:pt-0">

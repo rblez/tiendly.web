@@ -1,13 +1,18 @@
 <script lang="ts">
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { SITE_URL } from '$lib/utils';
 </script>
 
-<svelte:head>
-	<title>Privacidad | Tiendly</title>
-	<meta name="description" content="Información sobre los datos que Tiendly utiliza para operar tiendas, catálogos y pedidos." />
-	<link rel="canonical" href="https://tiendly.lat/legal/privacidad" />
-</svelte:head>
+<Seo
+	title="Privacidad | Tiendly"
+	description="Información sobre los datos que Tiendly utiliza para operar tiendas, catálogos y pedidos."
+	canonical={SITE_URL + '/legal/privacidad'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Política de privacidad de Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+/>
 
 <MarketingNav />
 <main class="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">

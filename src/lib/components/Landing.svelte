@@ -1,3 +1,24 @@
+<script module lang="ts">
+	export const landingFaqs = [
+		{
+			q: '¿Cuánto cuesta Tiendly?',
+			a: 'El plan Gratis incluye 1 tienda y hasta 10 productos, sin costo y sin tarjeta. Solo pagas si necesitas más espacio en el futuro.',
+		},
+		{
+			q: '¿Cómo recibo el pago de mis clientes?',
+			a: 'Directo, por fuera de Tiendly: el cliente transfiere a tus cuentas, sube el comprobante y tú confirmas. Nunca tocamos tu dinero ni cobramos por venta.',
+		},
+		{
+			q: '¿Necesito saber de tecnología?',
+			a: 'No. El catálogo se administra desde un panel simple en tu teléfono. Agregas productos y tu tienda queda lista para compartir.',
+		},
+		{
+			q: '¿Funciona para Cuba?',
+			a: 'Sí. Tiendly está diseñado para el mercado cubano: admite CUP y USD, y los métodos de pago incluyen BANDEC, BPA, BANMET, MiTransfer, Saldo Móvil, Zelle, USDT y más.',
+		},
+	];
+</script>
+
 <script lang="ts">
 	import { SITE_URL } from '$lib/utils';
 
@@ -42,24 +63,7 @@
 		ready: true,
 	},
 ];
-	const faqs = [
-		{
-			q: '¿Cuánto cuesta Tiendly?',
-			a: 'El plan Gratis incluye 1 tienda y hasta 10 productos, sin costo y sin tarjeta. Solo pagas si necesitas más espacio en el futuro.',
-		},
-		{
-			q: '¿Cómo recibo el pago de mis clientes?',
-			a: 'Directo, por fuera de Tiendly: el cliente transfiere a tus cuentas, sube el comprobante y tú confirmas. Nunca tocamos tu dinero ni cobramos por venta.',
-		},
-		{
-			q: '¿Necesito saber de tecnología?',
-			a: 'No. El catálogo se administra desde un panel simple en tu teléfono. Agregas productos y tu tienda queda lista para compartir.',
-		},
-		{
-			q: '¿Funciona para Cuba?',
-			a: 'Sí. Tiendly está diseñado para el mercado cubano: admite CUP y USD, y los métodos de pago incluyen BANDEC, BPA, BANMET, MiTransfer, Saldo Móvil, Zelle, USDT y más.',
-		},
-	];
+	const faqs = landingFaqs;
 
 	const socials = [
 		{ icon: 'ri-telegram-fill', href: 'https://t.me/+dFQ2WyJvCkg4YmFh', label: 'Telegram' },

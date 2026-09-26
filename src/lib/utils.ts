@@ -12,6 +12,17 @@ export function storeUrl(slug: string): string {
 	return `${appUrl()}/@${slug}`;
 }
 
+export function productUrl(storeSlug: string, productId: string): string {
+	return `${storeUrl(storeSlug)}/p/${productId}`;
+}
+
+/** Convierte una ruta o URL en URL absoluta (los og:* exigen URLs absolutas). */
+export function absoluteUrl(path: string): string {
+	if (!path) return SITE_URL;
+	if (/^https?:\/\//i.test(path)) return path;
+	return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
 	CUP: '$',
 	USD: '$',
@@ -82,13 +93,17 @@ export function convertPrice(
 }
 
 export function slugify(input: string): string {
-	return input
+	const clean = input
 		.toLowerCase()
 		.normalize('NFD')
 		.replace(/[\u0300-\u036f]/g, '')
 		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-		.slice(0, 40);
+		.replace(/^-+|-+$/g, '');
+	if (clean.length <= 40) return clean;
+	// Cortar en límite de palabra: evita URLs truncadas a mitad ("...-casa-espe")
+	const cut = clean.slice(0, 40);
+	const lastDash = cut.lastIndexOf('-');
+	return lastDash > 0 ? cut.slice(0, lastDash) : cut;
 }
 
 export function uniqueProductId(name: string, existingIds: Iterable<string> = []): string {

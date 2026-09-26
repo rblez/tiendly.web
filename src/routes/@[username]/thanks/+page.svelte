@@ -60,6 +60,7 @@
 </script>
 
 <svelte:head>
+	<meta name="robots" content="noindex, nofollow" />
 	<title>Gracias por tu pedido | {data.store.name}</title>
 </svelte:head>
 

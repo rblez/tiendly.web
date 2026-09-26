@@ -120,6 +120,7 @@
 </script>
 
 <svelte:head>
+	<meta name="robots" content="noindex, nofollow" />
 	<title>Tu carrito | {data.store.name}</title>
 </svelte:head>
 

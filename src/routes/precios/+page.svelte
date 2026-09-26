@@ -1,13 +1,18 @@
 <script lang="ts">
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { SITE_URL } from '$lib/utils';
 </script>
 
-<svelte:head>
-	<title>Precios | Tiendly</title>
-	<meta name="description" content="Tiendly está en beta: crea tu tienda online y empieza a organizar tus productos y pedidos." />
-	<link rel="canonical" href="https://tiendly.lat/precios" />
-</svelte:head>
+<Seo
+	title="Precios | Tiendly"
+	description="Tiendly está en beta: crea tu tienda online y empieza a organizar tus productos y pedidos."
+	canonical={SITE_URL + '/precios'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Precios de Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+/>
 
 <MarketingNav />
 <main class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:py-24">

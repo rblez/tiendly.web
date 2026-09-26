@@ -3,8 +3,9 @@
 	import { toast } from '$lib/stores/toast.svelte';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth.svelte';
-	import { ensureUniqueSlug, generateStoreCode, slugify } from '$lib/utils';
+	import { ensureUniqueSlug, generateStoreCode, slugify, SITE_URL } from '$lib/utils';
 	import { STORE_CATEGORIES } from '$lib/categories';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const STEP_META = [
 		{
@@ -157,13 +158,15 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Crear mi tienda | Tiendly</title>
-	<meta
-		name="description"
-		content="Crea tu tienda online gratis con Tiendly."
-	/>
-</svelte:head>
+<Seo
+	title="Crear mi tienda | Tiendly"
+	description="Crea tu tienda online gratis con Tiendly: catálogo, pedidos y tu propio link para compartir."
+	canonical={SITE_URL + '/wizard'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Crea tu tienda gratis en Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+	noindex
+/>
 
 <section class="wizard-shell">
 	<!-- CONTENIDO SUPERIOR FIJO -->

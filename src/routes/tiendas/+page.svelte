@@ -2,7 +2,9 @@
 	import { page } from '$app/stores';
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { categoryInfo } from '$lib/categories';
+	import { SITE_URL } from '$lib/utils';
 
 	let { data }: { data: { stores: Array<{ id: string; name: string; slug: string; logo: string | null; description: string | null; category: string | null; created_at: string }>; visits: Record<string, number> } } = $props();
 
@@ -63,10 +65,14 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Tiendas por categoría | Tiendly</title>
-	<meta name="description" content="Explora tiendas de Tiendly por categoría: servicios digitales, alimentos, ferretería, moda, tecnología y más. Encuentra lo que buscas y pide directo." />
-</svelte:head>
+<Seo
+	title="Tiendas por categoría | Tiendly"
+	description="Explora tiendas de Tiendly por categoría: servicios digitales, alimentos, ferretería, moda, tecnología y más. Encuentra lo que buscas y pide directo."
+	canonical={SITE_URL + '/tiendas'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Explora tiendas en Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+/>
 
 <MarketingNav />
 

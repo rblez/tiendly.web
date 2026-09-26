@@ -1,13 +1,18 @@
 <script lang="ts">
 	import MarketingNav from '$lib/components/MarketingNav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import { SITE_URL } from '$lib/utils';
 </script>
 
-<svelte:head>
-	<title>Cookies y almacenamiento local | Tiendly</title>
-	<meta name="description" content="Cómo Tiendly utiliza cookies y almacenamiento local para preferencias y funcionamiento básico." />
-	<link rel="canonical" href="https://tiendly.lat/legal/cookies" />
-</svelte:head>
+<Seo
+	title="Cookies y almacenamiento local | Tiendly"
+	description="Cómo Tiendly utiliza cookies y almacenamiento local para preferencias y funcionamiento básico."
+	canonical={SITE_URL + '/legal/cookies'}
+	image={SITE_URL + '/og-banner.webp'}
+	imageAlt="Cookies y almacenamiento local en Tiendly"
+	imageSize={{ w: 1536, h: 1024 }}
+/>
 
 <MarketingNav />
 <main class="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">

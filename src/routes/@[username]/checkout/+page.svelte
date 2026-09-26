@@ -393,6 +393,7 @@
 </script>
 
 <svelte:head>
+	<meta name="robots" content="noindex, nofollow" />
 	<title>Completar pedido | {data.store.name}</title>
 </svelte:head>
 

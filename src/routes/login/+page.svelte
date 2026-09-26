@@ -25,8 +25,6 @@
 		}
 	});
 
-	let claimed = $state(false);
-
 	async function afterAuth() {
 		await auth.init();
 		const next = $page.url.searchParams.get('next');
@@ -87,6 +85,16 @@
 	.fade-up {
 		animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
+	@media (prefers-reduced-motion: reduce) {
+		.fade-up {
+			animation: none;
+		}
+	}
+	a:focus-visible,
+	button:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
 </style>
 
 <div class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
@@ -104,7 +112,7 @@
 				<p class="mt-4 text-sm text-muted">Verificando tu sesión…</p>
 			</div>
 		{:else}
-		<form onsubmit={handleSubmit} class="space-y-4 fade-up" style="animation-delay: 0.12s">
+		<form onsubmit={handleSubmit} class="space-y-4 fade-up" style="animation-delay: 0.12s" aria-describedby={error ? 'login-error' : undefined}>
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<div class="relative">
@@ -117,6 +125,8 @@
 						placeholder="tu@correo.com"
 						autocomplete="email"
 						inputmode="email"
+						autocapitalize="none"
+						spellcheck={false}
 						class="input pl-11 pr-4"
 					/>
 				</div>
@@ -146,6 +156,7 @@
 						type="button"
 						onclick={() => (showPassword = !showPassword)}
 						class="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors cursor-pointer"
+						aria-pressed={showPassword}
 						aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
 					>
 						<i class={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-lg`}></i>
@@ -154,7 +165,7 @@
 			</div>
 
 			{#if error}
-				<p role="alert" aria-live="assertive" class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
+				<p id="login-error" role="alert" class="text-xs text-error bg-error/10 border border-error/20 rounded-btn px-3 py-2.5 flex items-start gap-2">
 					<i class="ri-error-warning-line mt-0.5"></i>
 					<span>{error}</span>
 				</p>
@@ -163,19 +174,22 @@
 			<button
 				type="submit"
 				disabled={loading}
+				aria-busy={loading}
 				class="btn btn-3d btn-lg w-full disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				{#if loading}
 					<i class="ri-loader-4-line animate-spin"></i>
 				{/if}
-				{loading ? 'Entrando...' : 'Entrar'}
-				{#if !loading}{/if}
+				{loading ? 'Verificando…' : 'Entrar'}
 			</button>
 		</form>
 		{/if}
 		{#if !checkingSession}
 		<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
 			¿No tienes cuenta? <a href='/signup' class="text-ember font-medium hover:text-ember-active no-underline">Crear cuenta gratis</a>
+		</p>
+		<p class="text-center text-xs text-muted-soft mt-4 fade-up" style="animation-delay: 0.24s">
+			<a href="/" class="no-underline hover:text-muted inline-flex items-center gap-1"><i class="ri-arrow-left-line" aria-hidden="true"></i>Volver al inicio</a>
 		</p>
 		{/if}
 	</div>

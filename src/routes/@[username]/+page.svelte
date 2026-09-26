@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import ProductCard from '$lib/components/ProductCard.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import SelectPicker from '$lib/components/dashboard/SelectPicker.svelte';
 	import { supabase } from '$lib/supabase/client';
 	import { filters, type SortOrder } from '$lib/stores/filters.svelte';
+	import { SITE_URL, storeUrl } from '$lib/utils';
 	import type { Product, Store } from '$lib/types';
 
 	const SORT_OPTIONS = [
@@ -141,9 +143,21 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<svelte:head>
-	<title>{store.name} | Catálogo</title>
-</svelte:head>
+<Seo
+	title={`${store.name} | Catálogo`}
+	description={store.description ?? `${store.name}: catálogo online en Tiendly. Explora los productos y haz tu pedido directo.`}
+	canonical={storeUrl(store.slug)}
+	image={store.logo ?? `${SITE_URL}/og-banner.webp`}
+	imageAlt={store.name}
+	jsonLd={{
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: [
+			{ '@type': 'ListItem', position: 1, name: 'Tiendly', item: SITE_URL },
+			{ '@type': 'ListItem', position: 2, name: store.name, item: storeUrl(store.slug) },
+		],
+	}}
+/>
 
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 	{#if categories.length > 1}
