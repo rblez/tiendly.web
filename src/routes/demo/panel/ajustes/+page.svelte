@@ -2,13 +2,9 @@
 	import DemoShell from "$lib/components/dashboard/DemoShell.svelte";
 	import HCard from "$lib/components/hx/HCard.svelte";
 	import HRow from "$lib/components/hx/HRow.svelte";
-	import HSwitch from "$lib/components/hx/HSwitch.svelte";
-	import HSegmented from "$lib/components/hx/HSegmented.svelte";
 	import HSearchBar from "$lib/components/hx/HSearchBar.svelte";
-	import { appearance, type TextSize } from "$lib/stores/appearance.svelte";
-	import { theme, type ThemePref } from "$lib/stores/theme.svelte";
 
-	type RowKind = "link" | "textsize" | "apptheme" | "motion" | "contrast";
+	type RowKind = "link";
 	type Row = {
 		kind: RowKind;
 		icon: string;
@@ -42,10 +38,7 @@
 		{
 			title: "Accesibilidad",
 			rows: [
-				{ kind: "textsize", icon: "type", tint: "blue", title: "Tamaño del texto", subtitle: "Ajusta la letra de todo el panel" },
-				{ kind: "apptheme", icon: "moon", tint: "indigo", title: "Apariencia", subtitle: "Claro, oscuro o automático" },
-				{ kind: "motion", icon: "gauge", tint: "teal", title: "Reducir movimiento", subtitle: "Minimiza animaciones y transiciones" },
-				{ kind: "contrast", icon: "contrast", tint: "gray", title: "Aumentar contraste", subtitle: "Texto y separadores más marcados" },
+				{ kind: "link", icon: "a11y", tint: "blue", title: "Accesibilidad", subtitle: "Texto, apariencia y movimiento", href: "/demo/panel/ajustes/accesibilidad" },
 			],
 		},
 		{
@@ -56,18 +49,6 @@
 				{ kind: "link", icon: "crown", tint: "yellow", title: "Plan", subtitle: "Tu suscripción actual", badge: "Gratis", href: "#" },
 			],
 		},
-	];
-
-	const textSizes: { value: TextSize; label: string }[] = [
-		{ value: "s", label: "S" },
-		{ value: "m", label: "M" },
-		{ value: "l", label: "L" },
-		{ value: "xl", label: "XL" },
-	];
-	const themeOpts: { value: ThemePref; label: string }[] = [
-		{ value: "light", label: "Claro" },
-		{ value: "dark", label: "Oscuro" },
-		{ value: "auto", label: "Auto" },
 	];
 
 	let query = $state("");
@@ -119,37 +100,7 @@
 					badge={row.badge}
 					chevron={row.kind === "link"}
 					href={row.href}
-				>
-					{#snippet suffix()}
-						{#if row.kind === "textsize"}
-							<HSegmented
-								options={textSizes}
-								value={appearance.textSize}
-								onchange={(v) => appearance.setTextSize(v as TextSize)}
-								label="Tamaño del texto"
-							/>
-						{:else if row.kind === "apptheme"}
-							<HSegmented
-								options={themeOpts}
-								value={theme.pref}
-								onchange={(v) => theme.set(v as ThemePref)}
-								label="Apariencia"
-							/>
-						{:else if row.kind === "motion"}
-							<HSwitch
-								checked={appearance.reduceMotion}
-								onchange={(v) => appearance.setReduceMotion(v)}
-								label="Reducir movimiento"
-							/>
-						{:else if row.kind === "contrast"}
-							<HSwitch
-								checked={appearance.highContrast}
-								onchange={(v) => appearance.setHighContrast(v)}
-								label="Aumentar contraste"
-							/>
-						{/if}
-					{/snippet}
-				</HRow>
+				/>
 			{/each}
 		</HCard>
 	{/each}

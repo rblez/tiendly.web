@@ -43,7 +43,16 @@ hasta aprobar cada página.
 
 ## Componentes (`src/lib/components/hx/`)
 `HIcon`, `HShell` (app bar + pill nav), `HCard`, `HRow`, `HSwitch` (Material 3),
-`HSegmented` (Material), `HSearchBar`.
+`HSegmented` (Material), `HSearchBar`, `HSubPage`, `HSection`, `HChips`, `HSlider`.
+
+## Reglas de subpáginas (estilo Xiaomi)
+- Sin app bar: flecha atrás 48dp arriba a la izquierda + título grande (36px,
+  bold) debajo. Fondo negro puro.
+- Etiqueta de sección gris 14px **sobre** la tarjeta (no dentro).
+- Tarjetas radio 20px; filas **sin tiles ni divisores**, solo texto.
+- Controles nativos de la sección: switches Material, deslizadores con riel de
+  acento, chips de elección (relleno el activo, borde el resto).
+- Sin navegación inferior en subpáginas.
 
 ## Preferencias (`src/lib/stores/appearance.svelte.ts`)
 Tamaño de texto, reducir movimiento y alto contraste. Persisten en
