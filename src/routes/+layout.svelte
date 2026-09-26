@@ -7,7 +7,6 @@
 	import Analytics from '$lib/components/seo/Analytics.svelte';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import { theme } from '$lib/stores/theme.svelte';
-	import { appearance } from '$lib/stores/appearance.svelte';
 	import { trackPageView } from '$lib/analytics';
 	import { SITE_URL } from '$lib/utils';
     let { children } = $props();
@@ -27,7 +26,6 @@
 
 	$effect(() => {
 		theme.init();
-		appearance.init();
 		const tr = $page.url.searchParams.get('theme_refresh');
 		if (tr === '1' || tr === '2' || tr === 'auto') {
 			theme.set(tr === '1' ? 'dark' : tr === '2' ? 'light' : 'auto');
