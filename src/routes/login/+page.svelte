@@ -10,8 +10,20 @@
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
+	let checkingSession = $state(true);
 
 	$effect(() => { auth.init(); });
+
+	// Si ya hay sesión (p. ej. la app nativa), no mostrar el formulario: ir directo al panel.
+	$effect(() => {
+		if (!auth.ready) return;
+		if (auth.session) {
+			const next = $page.url.searchParams.get('next');
+			goto(next?.startsWith('/') ? next : '/dashboard', { replaceState: true });
+		} else {
+			checkingSession = false;
+		}
+	});
 
 	let claimed = $state(false);
 
@@ -85,11 +97,18 @@
 			<p class="text-sm text-muted">Entra a tu cuenta para administrar tus tiendas.</p>
 		</div>
 
+		{#if checkingSession}
+			<div class="flex flex-col items-center py-16 fade-up" role="status" aria-label="Verificando sesión">
+				<img src="/tiendly-logo.webp" alt="Tiendly" class="h-10 object-contain mb-6 opacity-80" />
+				<i class="ri-loader-4-line animate-spin text-2xl text-ember" aria-hidden="true"></i>
+				<p class="mt-4 text-sm text-muted">Verificando tu sesión…</p>
+			</div>
+		{:else}
 		<form onsubmit={handleSubmit} class="space-y-4 fade-up" style="animation-delay: 0.12s">
 			<div>
 				<label for="email" class="block text-sm font-medium text-body mb-1.5">Correo</label>
 				<div class="relative">
-					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
+					<i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-lg pointer-events-none"></i>
 					<input
 						id="email"
 						type="email"
@@ -97,6 +116,7 @@
 						bind:value={email}
 						placeholder="tu@correo.com"
 						autocomplete="email"
+						inputmode="email"
 						class="input pl-11 pr-4"
 					/>
 				</div>
@@ -112,7 +132,7 @@
 					</a>
 				</div>
 				<div class="relative">
-					<i class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
+					<i class="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-muted-soft text-base pointer-events-none"></i>
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
@@ -152,8 +172,11 @@
 				{#if !loading}{/if}
 			</button>
 		</form>
+		{/if}
+		{#if !checkingSession}
 		<p class="text-center text-sm text-muted mt-8 fade-up" style="animation-delay: 0.2s">
 			¿No tienes cuenta? <a href='/signup' class="text-ember font-medium hover:text-ember-active no-underline">Crear cuenta gratis</a>
 		</p>
+		{/if}
 	</div>
 </div>
