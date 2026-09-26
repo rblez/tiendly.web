@@ -176,6 +176,9 @@ let trackError = $state('');
 						<a href="/wizard" class="text-sm text-body hover:text-ember transition-colors no-underline">Crea tu tienda</a>
 					</li>
 					<li>
+						<a href="/precios" class="text-sm text-body hover:text-ember transition-colors no-underline">Precios</a>
+					</li>
+					<li>
 						<a href="/login" class="text-sm text-body hover:text-ember transition-colors no-underline">Iniciar sesión</a>
 					</li>
 				</ul>
@@ -187,10 +190,13 @@ let trackError = $state('');
 						<a href="/about" class="text-sm text-body hover:text-ember transition-colors no-underline">Sobre nosotros</a>
 					</li>
 					<li>
-						<a href="/terms-of-use" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
+						<a href="/legal/terminos" class="text-sm text-body hover:text-ember transition-colors no-underline">Términos de uso</a>
 					</li>
 						<li>
-							<a href="/privacy" class="text-sm text-body hover:text-ember transition-colors no-underline">Política de privacidad</a>
+							<a href="/legal/privacidad" class="text-sm text-body hover:text-ember transition-colors no-underline">Privacidad</a>
+						</li>
+						<li>
+							<a href="/legal/cookies" class="text-sm text-body hover:text-ember transition-colors no-underline">Cookies</a>
 						</li>
 						<li>
 							<a href="https://t.me/+EgoH1iuFRIcwNjFh" target="_blank" rel="noopener noreferrer" class="text-sm text-body hover:text-ember transition-colors no-underline">Únete a nuestro grupo de Telegram</a>

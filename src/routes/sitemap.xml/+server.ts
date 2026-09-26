@@ -26,11 +26,11 @@ export const GET = async () => {
 		['/', 'monthly', '1.0'],
 		['/wizard', 'monthly', '0.9'],
 		['/tiendas', 'weekly', '0.8'],
+		['/precios', 'monthly', '0.7'],
 		['/about', 'monthly', '0.4'],
-		['/terms-of-use', 'monthly', '0.3'],
-		['/privacy', 'monthly', '0.3'],
-		['/login', 'monthly', '0.3'],
-		['/signup', 'monthly', '0.3'],
+		['/legal/terminos', 'monthly', '0.3'],
+		['/legal/privacidad', 'monthly', '0.3'],
+		['/legal/cookies', 'monthly', '0.3'],
 	];
 
 	const storeEntries: Array<[string, string, string]> = (stores ?? []).map((s) => [storeUrl(s.slug), 'weekly', '0.8']);
