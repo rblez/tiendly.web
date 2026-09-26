@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
 			'import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(loadedEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''),
 		},
 		plugins: [tailwindcss(), sveltekit()],
+		ssr: {
+			resolve: {
+				conditions: ['workerd'],
+			},
+		},
 		server: {
 			host: true,
 			allowedHosts: true,
